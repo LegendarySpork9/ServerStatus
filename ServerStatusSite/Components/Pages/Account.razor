@@ -1,0 +1,38 @@
+﻿@page "/account"
+
+<PageTitle>Account</PageTitle>
+
+<div class="container">
+    <div class="@GetStyle("Form") form-grid">
+        <div class="form-full-row form-icon">
+            <img src="/Images/Account Icon.png" />
+        </div>
+
+        <label>Username:</label>
+        <input type="text" style="@GetStyle("Input")" @bind="Username" />
+
+        <label>Password:</label>
+        <input type="password" style="@GetStyle("Input")" @bind="Password" />
+
+        <label>Discord Name:</label>
+        <input type="text" style="@GetStyle("Input")" @bind="DiscordName" />
+
+        <label>Dark Mode:</label>
+        <label class="switch">
+            <input type="checkbox" @bind="DarkMode">
+            <span class="slider round"></span>
+        </label>
+
+        <div class="form-full-row">
+            @if (Loading)
+            {
+                <div class="spinner-border text-primary" role="status"></div>
+            }
+
+            else
+            {
+                <button class="btn btn-primary" @onclick="SaveClick">Save</button>
+            }
+        </div>
+    </div>
+</div>
