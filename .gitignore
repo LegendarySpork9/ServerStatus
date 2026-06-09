@@ -1,0 +1,13 @@
+# Builds
+**[Bb]in/
+***[Dd]ebug/
+***[Rr]elease/
+
+# Odds
+/.vs/
+
+# Obj
+**[Oo]bj/
+
+# Development Settings
+**[Aa]ppsettings.Development.json
