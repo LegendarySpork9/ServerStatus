@@ -1,0 +1,48 @@
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('/Login Background.gif');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.login-form {
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    margin: auto;
+    background-color: white;
+    text-align: center;
+    max-width: 90%;
+}
+
+.login-form label {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    display: block;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0.25rem auto 0;
+}
+
+.login-form img {
+    width: 75px;
+    height: auto;
+}
+
+.login-fail {
+    display: block;
+    max-width: 100%;
+    border: 2px solid red;
+    margin: 0 auto 0.5rem;
+    color: white;
+    background-color: red;
+    text-align: left;
+}

@@ -1,0 +1,29 @@
+﻿@page "/login"
+@layout Layout.BlankLayout
+
+<PageTitle>Login</PageTitle>
+
+<div class="login-page">
+    <div class="login-form">
+        <img class="login-icon" src="/Images/favicon.png" />
+        <h1>Login</h1>
+        @if (ShowError)
+        {
+            <label class="login-fail">Your username or password was incorrect.</label>
+        }
+        <label>Username:</label>
+        <input type="text" @bind="User.Username" />
+        <label>Password:</label>
+        <input type="password" @bind="User.Password" />
+        <br />
+        @if (Loading)
+        {
+            <div class="spinner-border text-primary" role="status"></div>
+        }
+
+        else
+        {
+            <button class="btn btn-primary" @onclick="LoginClick">Login</button>
+        }
+    </div>
+</div>
