@@ -16,10 +16,7 @@ namespace ServerStatus.Tests.Common.Functions
         public void TestLoadConfig()
         {
             Configuration result = SharedSettingsLoader.LoadConfig(Path.Combine(
-                Directory.GetCurrentDirectory()
-                    .Replace(
-                        @"bin\Debug\net8.0",
-                        ""),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")),
                 @"Mocks\Configs\Test.config"));
 
             Assert.IsTrue(result.AppSettings.Settings.Count == 2);
@@ -38,10 +35,7 @@ namespace ServerStatus.Tests.Common.Functions
         public void TestLoadConfigFail()
         {
             Configuration result = SharedSettingsLoader.LoadConfig(Path.Combine(
-                Directory.GetCurrentDirectory()
-                    .Replace(
-                        @"bin\Debug\net8.0",
-                        ""),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")),
                 @"Mocks\Configs\Test Two.config"));
 
             Assert.IsTrue(result.AppSettings.Settings.Count == 0);
@@ -64,10 +58,7 @@ namespace ServerStatus.Tests.Common.Functions
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
-                Directory.GetCurrentDirectory()
-                    .Replace(
-                        @"bin\Debug\net8.0",
-                        ""),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")),
                 @"Mocks\Configs\AutomationTest.config")));
 
             result.Should().BeEquivalentTo(expectedSharedSettings);
@@ -88,10 +79,7 @@ namespace ServerStatus.Tests.Common.Functions
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
-                Directory.GetCurrentDirectory()
-                    .Replace(
-                        @"bin\Debug\net8.0",
-                        ""),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")),
                 @"Mocks\Configs\ReporterTest.config")));
 
             result.Should().BeEquivalentTo(expectedSharedSettings);
