@@ -165,5 +165,25 @@ namespace ServerSite.Tests.Site.Converters
                 string.Empty,
                 style);
         }
+
+        [TestMethod]
+        public void TestLoadingDarkModeTrue()
+        {
+            string style = StyleConverter.GetLoadingDarkMode(true);
+
+            Assert.AreEqual(
+                "spinner-border text-light",
+                style);
+        }
+
+        [TestMethod]
+        public void TestLoadingDarkModeFalse()
+        {
+            string style = StyleConverter.GetLoadingDarkMode(false);
+
+            Assert.AreEqual(
+                "spinner-border",
+                style);
+        }
     }
 }

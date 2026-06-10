@@ -26,7 +26,10 @@ namespace ServerStatusSite.Components.Pages.Alerts
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private AlertModel Alert = StandardValues.AlertValues.DefaultAlert;
+        private AlertModel? Alert;
+
+        private bool IsLoading;
+
         private int AlertId { get; set; } = 0;
         private bool Loading { get; set; } = false;
 
@@ -38,6 +41,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Edit Alerts Page");
             _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Url: {Navigation.Uri}");
 
+            IsLoading = true;
+
             Uri uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
@@ -48,7 +53,9 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Alert Id: {AlertId}");
             }
 
-            Alert = await APIService.GetAlert(AlertId) ?? StandardValues.AlertValues.DefaultAlert;
+            Alert = await APIService.GetAlert(AlertId);
+
+            IsLoading = false;
         }
 
         /// <summary>

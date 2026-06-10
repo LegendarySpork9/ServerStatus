@@ -26,8 +26,11 @@ namespace ServerStatusSite.Components.Pages.Alerts
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private List<ServerModel> Servers = [];
+        private List<ServerModel>? Servers;
         private List<string> ServersNames = [];
+
+        private bool IsLoading;
+
         private string Server { get; set; } = string.Empty;
         private string Component { get; set; } = string.Empty;
         private string ComponentStatus { get; set; } = string.Empty;
@@ -42,12 +45,12 @@ namespace ServerStatusSite.Components.Pages.Alerts
         {
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Register Alerts Page");
 
-            Servers = await APIService.GetServers();
+            IsLoading = true;
 
-            foreach (ServerModel server in Servers)
-            {
-                ServersNames.Add($"{server.Game} ({server.GameVersion})");
-            }
+            Servers = await APIService.GetServers();
+            ServersNames.AddRange(Servers.Select(s => $"{s.Game} ({s.GameVersion})"));
+
+            IsLoading = false;
         }
 
         /// <summary>

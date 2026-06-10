@@ -2,40 +2,60 @@
 
 <PageTitle>Edit Alert</PageTitle>
 
-<div class="container">
-    <div class="@GetStyle("Form") form-grid">
-        <label>Reporter:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.Reporter" />
-
-        <label>Occured:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.AlertDate" />
-
-        <label>Server:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" value="@Alert.Server.Name" />
-
-        <label>Component:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.Component" />
-
-        <label>Component Status:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.ComponentStatus" />
-
-        <label>Alert Status:</label>
-        <select style="@GetStyle("Input")" @bind="Alert.AlertStatus">
-            <option value="Reported">Reported</option>
-            <option value="Investigating">Investigating</option>
-            <option value="Resolved">Resolved</option>
-        </select>
-
-        <div class="form-full-row">
-            @if (Loading)
-            {
-                <div class="spinner-border text-primary" role="status"></div>
-            }
-
-            else
-            {
-                <button class="btn btn-primary" @onclick="SaveClick">Save</button>
-            }
+@if (IsLoading && Alert == null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-</div>
+}
+
+else
+{
+    @if (Alert == null)
+    {
+        <div class="alert alert-warning">Alert not found.</div>
+    }
+
+    else
+    {
+        <div class="container">
+            <div class="@GetStyle("Form") form-grid">
+                <label>Reporter:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.Reporter" />
+
+                <label>Occured:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.AlertDate" />
+
+                <label>Server:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" value="@Alert.Server.Name" />
+
+                <label>Component:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.Component" />
+
+                <label>Component Status:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.ComponentStatus" />
+
+                <label>Alert Status:</label>
+                <select style="@GetStyle("Input")" @bind="Alert.AlertStatus">
+                    <option value="Reported">Reported</option>
+                    <option value="Investigating">Investigating</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+
+                <div class="form-full-row">
+                    @if (Loading)
+                    {
+                        <div class="spinner-border text-primary" role="status"></div>
+                    }
+
+                    else
+                    {
+                        <button class="btn btn-primary" @onclick="SaveClick">Save</button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

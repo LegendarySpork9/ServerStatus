@@ -98,5 +98,17 @@ namespace ServerStatusSite.Converters
                 _ => string.Empty
             };
         }
+
+        /// <summary>
+        /// Returns the CSS to change the loading spinner to dark mode.
+        /// </summary>
+        public static string GetLoadingDarkMode(bool darkMode)
+        {
+            return darkMode switch
+            {
+                true => "spinner-border text-light",
+                _ => "spinner-border"
+            };
+        }
     }
 }
