@@ -26,8 +26,11 @@ namespace ServerStatusSite.Components.Pages.Alerts
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private List<ServerModel> Servers = [];
+        private List<ServerModel>? Servers;
         private List<string> ServersNames = [];
+
+        private bool IsLoading;
+
         private string Server { get; set; } = string.Empty;
         private string Component { get; set; } = string.Empty;
         private string ComponentStatus { get; set; } = string.Empty;
@@ -40,14 +43,16 @@ namespace ServerStatusSite.Components.Pages.Alerts
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Register Alerts Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Register Alerts Page");
+
+            IsLoading = true;
 
             Servers = await APIService.GetServers();
+            ServersNames.AddRange(Servers.Select(s => $"{s.Game} ({s.GameVersion})"));
 
-            foreach (ServerModel server in Servers)
-            {
-                ServersNames.Add($"{server.Game} ({server.GameVersion})");
-            }
+            IsLoading = false;
         }
 
         /// <summary>
@@ -77,9 +82,14 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             if (alert == null)
             {
-                DiscordService _discordService = new(_Logger, _HTTPClient, SharedSettings);
+                DiscordService _discordService = new(
+                    _Logger,
+                    _HTTPClient,
+                    SharedSettings);
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Attempting Alert Register");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Attempting Alert Register");
 
                 SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
 
@@ -102,19 +112,27 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
                 if (newAlert != null)
                 {
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Alert Registered");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        "Alert Registered");
                 }
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Alert Register Complete");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Alert Register Complete");
 
                 if (SharedSettings.RecipientIds.Contains(','))
                 {
-                    await _discordService.SendNotification(SharedSettings.RecipientIds.Split(',')[0], $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                    await _discordService.SendNotification(
+                        SharedSettings.RecipientIds.Split(',')[0],
+                        $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
                 }
 
                 else
                 {
-                    await _discordService.SendNotification(SharedSettings.RecipientIds, $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                    await _discordService.SendNotification(
+                        SharedSettings.RecipientIds,
+                        $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
                 }
 
                 Navigation.NavigateTo("/alerts");

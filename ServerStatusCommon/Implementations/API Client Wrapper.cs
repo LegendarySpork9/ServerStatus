@@ -160,8 +160,12 @@ namespace ServerStatusCommon.Implementations
 
                 RestResponse response = await client.ExecuteAsync(request);
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Response Code: {response.StatusCode}");
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Response Message: {response.Content ?? "No Response Content"}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Response Code: {response.StatusCode}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Response Message: {response.Content ?? "No Response Content"}");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != null)
                 {
@@ -1174,7 +1178,9 @@ namespace ServerStatusCommon.Implementations
                 {
                     foreach (KeyValuePair<string, object> queryParameter in queryParameters)
                     {
-                        query = query.Replace($"{queryParameter.Key}", $"{queryParameter.Value}");
+                        query = query.Replace(
+                            $"{queryParameter.Key}",
+                            $"{queryParameter.Value}");
                     }
                 }
             }

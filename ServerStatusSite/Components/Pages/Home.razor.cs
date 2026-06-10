@@ -25,10 +25,12 @@ namespace ServerStatusSite.Components.Pages
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private List<ServerModel> Servers = [];
-        private List<EventModel> PCEvents = [];
-        private List<EventModel> ServerEvents = [];
-        private List<EventModel> ConnectionEvents = [];
+        private List<ServerModel>? Servers;
+        private List<EventModel>? PCEvents;
+        private List<EventModel>? ServerEvents;
+        private List<EventModel>? ConnectionEvents;
+
+        private bool IsLoading;
 
         private Timer RefreshTimer { get; set; } = new();
         private DateTime NextElapse;
@@ -40,7 +42,11 @@ namespace ServerStatusSite.Components.Pages
         {
             TimerFunction _timerFunction = new(_Clock);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Home Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Home Page");
+
+            IsLoading = true;
 
             RefreshTimer = new()
             {
@@ -48,7 +54,9 @@ namespace ServerStatusSite.Components.Pages
             };
             RefreshTimer.Elapsed += async (sender, e) => await TimerElapsed(sender, e);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Timer Duration: {SharedSettings.RefreshTime} minutes");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
             Servers = await APIService.GetServers();
             PCEvents = await APIService.GetServerEvents("PC");
@@ -56,10 +64,13 @@ namespace ServerStatusSite.Components.Pages
             ConnectionEvents = await APIService.GetServerEvents("Connection");
 
             DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime).AddMilliseconds(-currentTime.Millisecond);
+            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
+                .AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
+
+            IsLoading = false;
         }
 
         /// <summary>
@@ -87,8 +98,12 @@ namespace ServerStatusSite.Components.Pages
 
             catch (Exception ex)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
             }
         }
     }

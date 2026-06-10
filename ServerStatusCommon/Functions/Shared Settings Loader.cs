@@ -12,10 +12,11 @@ namespace ServerStatusCommon.Functions
         /// <summary>
         /// Loads the given configuration file.
         /// </summary>
-        public static Configuration LoadConfig(string config) => ConfigurationManager.OpenMappedExeConfiguration(new ()
-            {
-                ExeConfigFilename = config
-    },ConfigurationUserLevel.None);
+        public static Configuration LoadConfig(string config) => ConfigurationManager.OpenMappedExeConfiguration(new()
+        {
+            ExeConfigFilename = config
+        },
+        ConfigurationUserLevel.None);
 
         /// <summary>
         /// Loads the app settings dynamically from the App.config.
@@ -35,14 +36,22 @@ namespace ServerStatusCommon.Functions
                 {
                     try
                     {
-                        object convertedValue = Convert.ChangeType(configurationValue, property.PropertyType);
-                        property.SetValue(sharedSettings, convertedValue);
+                        object convertedValue = Convert.ChangeType(
+                            configurationValue,
+                            property.PropertyType);
+                        property.SetValue(
+                            sharedSettings,
+                            convertedValue);
                     }
 
                     catch (Exception ex)
                     {
-                        _logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                        _logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                        _logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            ex.Message);
+                        _logger.LogMessage(
+                            StandardValues.LoggerValues.Error,
+                            ex.ToString());
                     }
                 }
             }

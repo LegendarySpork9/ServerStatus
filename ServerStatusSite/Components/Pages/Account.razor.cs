@@ -19,6 +19,8 @@ namespace ServerStatusSite.Components.Pages
         [Inject]
         private UserModel User { get; set; } = default!;
 
+        private bool IsLoading;
+
         private string Username { get; set; } = string.Empty;
         private string Password { get; set; } = string.Empty;
         private string DiscordName { get; set; } = string.Empty;
@@ -30,17 +32,31 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         protected override void OnInitialized()
         {
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Home Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Home Page");
+
+            IsLoading = true;
 
             Username = User.Username;
             Password = User.Password;
             DiscordName = User.Settings.Find(s => s.Name == "DiscordName")?.Value ?? User.Username;
             DarkMode = User.DarkMode;
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Username: {Username}");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Password: {Password}");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Discord: {DiscordName}");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Dark Mode: {DarkMode}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Username: {Username}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Password: {Password}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Discord: {DiscordName}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Dark Mode: {DarkMode}");
+
+            IsLoading = false;
         }
 
         /// <summary>
@@ -61,7 +77,9 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task SaveClick()
         {
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Attempting User Save");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Attempting User Save");
 
             Loading = true;
             StateHasChanged();
