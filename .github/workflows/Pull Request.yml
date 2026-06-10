@@ -26,3 +26,47 @@ jobs:
 
     - name: Run tests
       run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Publish Site
+      run: >
+        dotnet publish
+        "ServerStatusSite/ServerStatusSite.csproj"
+        -c Release
+        -o ./artifacts/ServerStatusSite
+
+    - name: Publish Reporter
+      run: >
+        dotnet publish
+        "ServerStatusReporter/ServerStatusReporter.csproj"
+        -c Release
+        -o ./artifacts/ServerStatusReporter
+
+    - name: Publish Automation
+      run: >
+        dotnet publish
+        "ServerStatusAutomation/ServerStatusAutomation.csproj"
+        -c Release
+        -o ./artifacts/ServerStatusAutomation
+
+    - name: Set Build Timestamp
+      id: timestamp
+      shell: bash
+      run: echo "value=$(date -u +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
+
+    - name: Upload Site Artefact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerStatusSite_${{ steps.timestamp.outputs.value }}
+        path: ./artifacts/ServerStatusSite
+
+    - name: Upload Reporter Artefact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerStatusReporter_${{ steps.timestamp.outputs.value }}
+        path: ./artifacts/ServerStatusReporter
+
+    - name: Upload Automation Artefact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerStatusAutomation_${{ steps.timestamp.outputs.value }}
+        path: ./artifacts/ServerStatusAutomation
