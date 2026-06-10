@@ -113,7 +113,7 @@ namespace ServerStatusReporter.Services
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    x.Message);
+                    ex.Message);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());

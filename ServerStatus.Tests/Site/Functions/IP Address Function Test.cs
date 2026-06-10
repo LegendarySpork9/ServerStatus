@@ -155,7 +155,7 @@ namespace ServerStatus.Tests.Site.Functions
         {
             HttpContextAccessor accessor = new()
             {
-                HttpContext = context
+                HttpContext = null
             };
 
             string actual = IPAddressFunction.FetchIpAddress(accessor);
