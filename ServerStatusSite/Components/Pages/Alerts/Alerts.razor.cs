@@ -43,7 +43,9 @@ namespace ServerStatusSite.Components.Pages.Alerts
         {
             TimerFunction _timerFunction = new(_Clock);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Alerts Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Alerts Page");
 
             IsLoading = true;
 
@@ -53,12 +55,15 @@ namespace ServerStatusSite.Components.Pages.Alerts
             };
             RefreshTimer.Elapsed += async (sender, e) => await TimerElapsed(sender, e);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Timer Duration: {SharedSettings.RefreshTime} minutes");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
             ReportedAlerts = await APIService.GetAlerts(PageNumber) ?? StandardValues.AlertValues.DefaultAlertInfo;
 
             DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime).AddMilliseconds(-currentTime.Millisecond);
+            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
+                .AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
@@ -122,7 +127,9 @@ namespace ServerStatusSite.Components.Pages.Alerts
         /// <summary>
         /// Loads the alerts from the API.
         /// </summary>
-        private async Task TimerElapsed(object? sender, ElapsedEventArgs e)
+        private async Task TimerElapsed(
+            object? sender,
+            ElapsedEventArgs e)
         {
             TimerFunction _timerFunction = new(_Clock);
 
@@ -139,8 +146,12 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             catch (Exception ex)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
             }
         }
     }

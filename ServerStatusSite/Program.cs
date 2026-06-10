@@ -14,23 +14,34 @@ namespace ServerStatusSite
         // Configures the application at startup.
         public static void Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure(new FileInfo(Path.Combine(AppContext.BaseDirectory, "log4net.config")));
+            log4net.Config.XmlConfigurator.Configure(new FileInfo(Path.Combine(
+                AppContext.BaseDirectory,
+                "log4net.config")));
 
             ILoggerService _logger = new LoggerServiceWrapper();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Info, "Starting Website");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Starting Website");
 
             var builder = WebApplication.CreateBuilder(args);
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Created Builder");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Created Builder");
 
-            builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents();
 
             SharedSettingsModel sharedSettings = new();
 
-            builder.Configuration.Bind("AppSettings", sharedSettings);
+            builder.Configuration.Bind(
+                "AppSettings",
+                sharedSettings);
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Loaded Configuration");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Loaded Configuration");
 
             builder.Services.AddSingleton(sharedSettings);
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
@@ -42,11 +53,15 @@ namespace ServerStatusSite
             builder.Services.AddScoped<UserModel>();
             builder.Services.AddHttpContextAccessor();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured Services");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Services");
 
             var app = builder.Build();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Built Application");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Built Application");
 
             if (!app.Environment.IsDevelopment())
             {
@@ -56,20 +71,31 @@ namespace ServerStatusSite
 
             app.UseHttpsRedirection();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured HTTPS Redirection");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured HTTPS Redirection");
 
             app.UseStaticFiles();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured Static Files");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Static Files");
 
             app.UseAntiforgery();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured Antiforgery");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Antiforgery");
 
-            app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
 
-            _logger.LogMessage(StandardValues.LoggerValues.Debug, "Mapped Razor Components with Interactive Server Render Mode");
-            _logger.LogMessage(StandardValues.LoggerValues.Info, "Running Website");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Mapped Razor Components with Interactive Server Render Mode");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Running Website");
 
             app.Run();
         }

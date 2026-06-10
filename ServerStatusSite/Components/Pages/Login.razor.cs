@@ -14,9 +14,9 @@ namespace ServerStatusSite.Components.Pages
         [Inject]
         private ILoggerService _Logger { get; set; } = default!;
         [Inject]
-        private APIService APIService { get; set; } = default!;
-        [Inject]
         private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
+        [Inject]
+        private APIService APIService { get; set; } = default!;
         [Inject]
         private NavigationManager Navigation { get; set; } = default!;
         [Inject]
@@ -34,17 +34,25 @@ namespace ServerStatusSite.Components.Pages
         protected override void OnInitialized()
         {
             _Logger.ChangeIdentifier(IPAddressFunction.FetchIpAddress(HttpContextAccessor));
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Login Page");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Url: {Navigation.Uri}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Login Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Url: {Navigation.Uri}");
 
             Uri uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
-            if (queryParams.TryGetValue("returnUrl", out var returnUrl))
+            if (queryParams.TryGetValue(
+                "returnUrl",
+                out var returnUrl))
             {
                 ReturnUrl = returnUrl.ToString() ?? "/";
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Return Url: {ReturnUrl}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Return Url: {ReturnUrl}");
             }
 
             APIService.SetLogger(_Logger);
@@ -58,9 +66,15 @@ namespace ServerStatusSite.Components.Pages
             Loading = true;
             StateHasChanged();
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Attempting Login");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Username: {User.Username}");
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Password: {User.Password}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Attempting Login");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Username: {User.Username}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Password: {User.Password}");
 
             await APIService.Authorise();
             List<UserModel> users = await APIService.GetUsers();
@@ -88,7 +102,9 @@ namespace ServerStatusSite.Components.Pages
 
             else
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Login Failed.");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Login Failed.");
                 ShowError = true;
             }
 

@@ -19,7 +19,9 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Sends a meessage to the specified logs.
         /// </summary>
-        public void LogMessage(string level, string message)
+        public void LogMessage(
+            string level,
+            string message)
         {
             switch (level)
             {
