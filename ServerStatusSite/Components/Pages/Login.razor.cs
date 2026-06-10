@@ -33,24 +33,21 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         protected override void OnInitialized()
         {
-            if (HttpContextAccessor != null && HttpContextAccessor.HttpContext != null && HttpContextAccessor.HttpContext.Connection != null && HttpContextAccessor.HttpContext.Connection.RemoteIpAddress != null)
+            _Logger.ChangeIdentifier(IPAddressFunction.FetchIpAddress(HttpContextAccessor));
+            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Login Page");
+            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Url: {Navigation.Uri}");
+
+            Uri uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+            if (queryParams.TryGetValue("returnUrl", out var returnUrl))
             {
-                _Logger.ChangeIdentifier(HttpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString());
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Login Page");
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Url: {Navigation.Uri}");
+                ReturnUrl = returnUrl.ToString() ?? "/";
 
-                Uri uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-                var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-                if (queryParams.TryGetValue("returnUrl", out var returnUrl))
-                {
-                    ReturnUrl = returnUrl.ToString() ?? "/";
-
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Return Url: {ReturnUrl}");
-                }
-
-                APIService.SetLogger(_Logger);
+                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Return Url: {ReturnUrl}");
             }
+
+            APIService.SetLogger(_Logger);
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace ServerStatusSite.Components.Pages
             if (user != null)
             {
                 _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Login Successful.");
-                _Logger.ChangeIdentifier(user.Username);
+                _Logger.ChangeIdentifier($"{user.Username} ({IPAddressFunction.FetchIpAddress(HttpContextAccessor)})");
                 APIService.SetLogger(_Logger);
                 user = await APIService.GetUserSettings(user);
 
