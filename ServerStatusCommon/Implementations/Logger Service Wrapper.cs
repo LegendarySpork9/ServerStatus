@@ -16,6 +16,8 @@ namespace ServerStatusCommon.Implementations
         /// <summary>
         /// Logs the given message to the log file.
         /// </summary>
-        public void LogMessage(string level, string message) => _Logger.LogMessage(level, message);
+        public void LogMessage(string level, string message) => _Logger.LogMessage(
+            level,
+            message);
     }
 }

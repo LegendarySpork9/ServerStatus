@@ -42,7 +42,9 @@ namespace ServerStatusSite.Components.Pages
         {
             TimerFunction _timerFunction = new(_Clock);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Home Page");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Opened Home Page");
 
             IsLoading = true;
 
@@ -52,7 +54,9 @@ namespace ServerStatusSite.Components.Pages
             };
             RefreshTimer.Elapsed += async (sender, e) => await TimerElapsed(sender, e);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Timer Duration: {SharedSettings.RefreshTime} minutes");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
             Servers = await APIService.GetServers();
             PCEvents = await APIService.GetServerEvents("PC");
@@ -60,7 +64,8 @@ namespace ServerStatusSite.Components.Pages
             ConnectionEvents = await APIService.GetServerEvents("Connection");
 
             DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime).AddMilliseconds(-currentTime.Millisecond);
+            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
+                .AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
@@ -93,8 +98,12 @@ namespace ServerStatusSite.Components.Pages
 
             catch (Exception ex)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
             }
         }
     }

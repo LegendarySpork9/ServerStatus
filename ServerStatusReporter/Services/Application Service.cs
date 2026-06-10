@@ -45,7 +45,9 @@ namespace ServerStatusReporter.Services
         /// </summary>
         public void Setup()
         {
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Configuring Application Service");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Configuring Application Service");
 
             RefreshTimer = new()
             {
@@ -53,8 +55,12 @@ namespace ServerStatusReporter.Services
             };
             RefreshTimer.Elapsed += async (sender, e) => await TimerElapsed(sender, e);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Timer Duration: {SharedSettings.RefreshTime} minutes");
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Configured Application Service");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Configured Application Service");
         }
 
         /// <summary>
@@ -67,7 +73,8 @@ namespace ServerStatusReporter.Services
             await Run();
 
             DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime).AddMilliseconds(-currentTime.Millisecond);
+            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
+                .AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
@@ -76,15 +83,23 @@ namespace ServerStatusReporter.Services
         /// <summary>
         /// Performs a run then restarts the timer.
         /// </summary>
-        private async Task TimerElapsed(object? sender, ElapsedEventArgs e)
+        private async Task TimerElapsed(
+            object? sender,
+            ElapsedEventArgs e)
         {
             TimerFunction _timerFunction = new(_Clock);
 
             try
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Timer Triggered");
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Token Expiry: {_APIService.ExpiryTime}");
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Current Time: {_Clock.UtcNow}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    "Timer Triggered");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Token Expiry: {_APIService.ExpiryTime}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Current Time: {_Clock.UtcNow}");
 
                 NextElapse = NextElapse.AddMinutes(SharedSettings.RefreshTime);
 
@@ -96,8 +111,12 @@ namespace ServerStatusReporter.Services
 
             catch (Exception ex)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    x.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
             }
         }
 
@@ -106,7 +125,9 @@ namespace ServerStatusReporter.Services
         /// </summary>
         private async Task Run()
         {
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Running Event Register");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Running Event Register");
 
             List<ServerModel> servers = await _APIService.GetServers();
 
@@ -117,11 +138,15 @@ namespace ServerStatusReporter.Services
 
                 ServerModel? server = servers.Find(c => c.HostName == AppSettingsModel.HostName && c.Game == gameParts[0] && c.GameVersion == gameParts[1]);
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Registering Events for {server.HostName ?? StandardValues.MissingValues.HostName} - {server.Game ?? StandardValues.MissingValues.Game} ({server.GameVersion ?? StandardValues.MissingValues.GameVersion})");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Registering Events for {server.HostName ?? StandardValues.MissingValues.HostName} - {server.Game ?? StandardValues.MissingValues.Game} ({server.GameVersion ?? StandardValues.MissingValues.GameVersion})");
 
                 foreach (string component in AppSettingsModel.Components)
                 {
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Component: {component}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Component: {component}");
 
                     if (component == "PC")
                     {
@@ -197,9 +222,13 @@ namespace ServerStatusReporter.Services
 
                     if (component == "Connection")
                     {
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"IP Address: {server.Connection.IPAddress}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"IP Address: {server.Connection.IPAddress}");
 
-                        string pingStatus = await PingAddress(server.Connection.IPAddress, server.Connection.Port);
+                        string pingStatus = await PingAddress(
+                            server.Connection.IPAddress,
+                            server.Connection.Port);
 
                         if (pingStatus == "Success")
                         {
@@ -272,22 +301,32 @@ namespace ServerStatusReporter.Services
                     }
                 }
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Registered Events for {server.HostName} - {server.Game} ({server.GameVersion})");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Registered Events for {server.HostName} - {server.Game} ({server.GameVersion})");
             }
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Ran Event Register");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Ran Event Register");
         }
 
         /// <summary>
         /// Tries to ping a given IP address.
         /// </summary>
-        private async Task<string> PingAddress(string ipAddress, int port)
+        private async Task<string> PingAddress(
+            string ipAddress,
+            int port)
         {
             string response = string.Empty;
 
-            bool success = await _TCPClient.PingAddress(ipAddress, port);
+            bool success = await _TCPClient.PingAddress(
+                ipAddress,
+                port);
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Connection Status: {success}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Connection Status: {success}");
 
             if (success)
             {
@@ -315,7 +354,9 @@ namespace ServerStatusReporter.Services
                 {
                     try
                     {
-                        if (process.MainModule != null && process.MainModule.FileName.StartsWith(serverPath, StringComparison.OrdinalIgnoreCase))
+                        if (process.MainModule != null && process.MainModule.FileName.StartsWith(
+                            serverPath,
+                            StringComparison.OrdinalIgnoreCase))
                         {
                             running = true;
                             process.Dispose();
@@ -334,11 +375,17 @@ namespace ServerStatusReporter.Services
 
             catch (Exception ex)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
             }
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Server Running: {running}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Server Running: {running}");
             return running;
         }
     }

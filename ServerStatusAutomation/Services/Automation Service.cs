@@ -76,7 +76,9 @@ namespace ServerStatusAutomation.Services
         }
 
         // Performs a run then restarts the timer.
-        private async Task TimerElapsed(object? sender, ElapsedEventArgs e)
+        private async Task TimerElapsed(
+            object? sender,
+            ElapsedEventArgs e)
         {
             TimerFunction _timerFunction = new(_Clock);
 
@@ -160,7 +162,9 @@ namespace ServerStatusAutomation.Services
                     TimeSpan time = TimeSpan.Parse(server.Downtime.Time);
                     downtime = _Clock.UtcNow.Date.Add(time);
 
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(10)}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(10)}");
                 }
 
                 if (pcStatus != null && (pcStatus.DateOccured < refreshPeriod || pcStatus.Status != "Online"))
@@ -169,12 +173,18 @@ namespace ServerStatusAutomation.Services
                     {
                         pcStatus.Status = "Unknown";
 
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Updated PC Status to Unknown");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            "Updated PC Status to Unknown");
                     }
 
                     if (downtime == null || (pcStatus.DateOccured < downtime || pcStatus.DateOccured > downtime.Value.AddMinutes(10)))
                     {
-                        await AlertsHandler(alerts.Entries, server, pcStatus.Component, pcStatus.Status);
+                        await AlertsHandler(
+                            alerts.Entries,
+                            server,
+                            pcStatus.Component,
+                            pcStatus.Status);
                     }
 
                     if (pcStatus.DateOccured < refreshPeriod)
@@ -207,12 +217,18 @@ namespace ServerStatusAutomation.Services
                     {
                         serverStatus.Status = "Unknown";
 
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Updated Server Status to Unknown");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            "Updated Server Status to Unknown");
                     }
 
                     if (downtime == null || (serverStatus.DateOccured < downtime || serverStatus.DateOccured > downtime.Value.AddMinutes(10)))
                     {
-                        await AlertsHandler(alerts.Entries, server, serverStatus.Component, serverStatus.Status);
+                        await AlertsHandler(
+                            alerts.Entries,
+                            server,
+                            serverStatus.Component,
+                            serverStatus.Status);
                     }
 
                     if (serverStatus.DateOccured < refreshPeriod)
@@ -245,12 +261,18 @@ namespace ServerStatusAutomation.Services
                     {
                         connectionStatus.Status = "Unknown";
 
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Updated Connection Status to Unknown");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            "Updated Connection Status to Unknown");
                     }
 
                     if (downtime == null || (connectionStatus.DateOccured < downtime || connectionStatus.DateOccured > downtime.Value.AddMinutes(10)))
                     {
-                        await AlertsHandler(alerts.Entries, server, connectionStatus.Component, connectionStatus.Status);
+                        await AlertsHandler(
+                            alerts.Entries,
+                            server,
+                            connectionStatus.Component,
+                            connectionStatus.Status);
                     }
 
                     if (connectionStatus.DateOccured < refreshPeriod)
@@ -277,18 +299,29 @@ namespace ServerStatusAutomation.Services
                     }
                 }
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Checked Status for {server.HostName} - {server.Game} ({server.GameVersion})");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Checked Status for {server.HostName} - {server.Game} ({server.GameVersion})");
             }
 
-            _Logger.LogMessage(StandardValues.LoggerValues.Info, "Ran Automatic Status Checks");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Ran Automatic Status Checks");
         }
 
         /// <summary>
         /// Raises an alert if an unresolved one is not found.
         /// </summary>
-        private async Task AlertsHandler(List<AlertModel> alerts, ServerModel server, string component, string status)
+        private async Task AlertsHandler(
+            List<AlertModel> alerts,
+            ServerModel server,
+            string component,
+            string status)
         {
-            DiscordService _discordService = new(_Logger, _HTTPClient, SharedSettings);
+            DiscordService _discordService = new(
+                _Logger,
+                _HTTPClient,
+                SharedSettings);
 
             bool alertFound = false;
 
@@ -322,12 +355,16 @@ namespace ServerStatusAutomation.Services
                                 "Alert Registered");
                         }
 
-                        await _discordService.SendNotification(SharedSettings.RecipientId, $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
+                        await _discordService.SendNotification(
+                            SharedSettings.RecipientId,
+                            $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
                     }
 
                     else
                     {
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Existing Alert Found");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            "Existing Alert Found");
                     }
 
                     break;
@@ -336,7 +373,9 @@ namespace ServerStatusAutomation.Services
 
             if (!alertFound)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Debug, "No Alerts Found in API");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    "No Alerts Found in API");
 
                 AlertRequestModel newAlert = new()
                 {
@@ -360,7 +399,9 @@ namespace ServerStatusAutomation.Services
                         "Alert Registered");
                 }
 
-                await _discordService.SendNotification(SharedSettings.RecipientId, $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
+                await _discordService.SendNotification(
+                    SharedSettings.RecipientId,
+                    $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
             }
         }
     }

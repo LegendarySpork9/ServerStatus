@@ -26,11 +26,15 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Sends a message to the given webhook URL.
         /// </summary>
-        public async Task<bool> SendNotification(string recipientId, string message)
+        public async Task<bool> SendNotification(
+            string recipientId,
+            string message)
         {
             if (SharedSettings.SendAlerts)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Sending Notification to Discord");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Sending Notification to Discord");
 
                 bool successfulSend = false;
 
@@ -38,24 +42,41 @@ namespace ServerStatusCommon.Services
                 {
                     string url = SharedSettings.WebhookURL + "?wait=true";
 
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"URL: {url}");
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Recipient: {recipientId}");
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Message: {message}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"URL: {url}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Recipient: {recipientId}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Message: {message}");
 
                     string payload = "{\"content\": \"<@&" + recipientId + "> " + message + "\"}";
 
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Payload: {payload}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Payload: {payload}");
 
-                    HttpContent content = new StringContent(payload, Encoding.UTF8, "application/json");
+                    HttpContent content = new StringContent(
+                        payload,
+                        Encoding.UTF8,
+                        "application/json");
 
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured Http Content");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        "Configured Http Content");
 
-                    HttpRequestMessage request = new(HttpMethod.Post, url)
+                    HttpRequestMessage request = new(
+                        HttpMethod.Post,
+                        url)
                     {
                         Content = content
                     };
 
-                    _Logger.LogMessage(StandardValues.LoggerValues.Debug, "Configured Http Request Message");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        "Configured Http Request Message");
 
                     HttpResponseMessage? response = await _HTTPClient.Send(request);
 
@@ -63,18 +84,28 @@ namespace ServerStatusCommon.Services
                     {
                         successfulSend = true;
 
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Response Code: {response.StatusCode}");
-                        _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Response Message: {response.Content}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Response Code: {response.StatusCode}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Response Message: {response.Content}");
                     }
                 }
 
                 catch (Exception ex)
                 {
-                    _Logger.LogMessage(StandardValues.LoggerValues.Warning, ex.Message);
-                    _Logger.LogMessage(StandardValues.LoggerValues.Error, ex.ToString());
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ex.Message);
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Error,
+                        ex.ToString());
                 }
 
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, "Sent Notification to Discord");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Sent Notification to Discord");
                 return successfulSend;
             }
 
