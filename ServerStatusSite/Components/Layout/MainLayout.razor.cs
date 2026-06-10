@@ -57,17 +57,13 @@ namespace ServerStatusSite.Components.Layout
 
                     else
                     {
-                        Navigation.NavigateTo(
-                            loginUrl,
-                            forceLoad: true);
+                        Navigation.NavigateTo(loginUrl);
                     }
                 }
 
                 catch
                 {
-                    Navigation.NavigateTo(
-                        loginUrl,
-                        forceLoad: true);
+                    Navigation.NavigateTo(loginUrl);
                 }
             }
         }

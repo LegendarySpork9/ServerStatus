@@ -28,7 +28,10 @@ namespace ServerStatusSite.Components.Pages.Alerts
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private AlertInformationModel ReportedAlerts = StandardValues.AlertValues.DefaultAlertInfo;
+        private AlertInformationModel? ReportedAlerts;
+
+        private bool IsLoading;
+
         private Timer RefreshTimer { get; set; } = new();
         private DateTime NextElapse;
         private int PageNumber = 1;
@@ -42,6 +45,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Alerts Page");
 
+            IsLoading = true;
+
             RefreshTimer = new()
             {
                 AutoReset = false
@@ -50,13 +55,15 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             _Logger.LogMessage(StandardValues.LoggerValues.Debug, $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
-            ReportedAlerts = await APIService.GetAlerts(PageNumber);
+            ReportedAlerts = await APIService.GetAlerts(PageNumber) ?? StandardValues.AlertValues.DefaultAlertInfo;
 
             DateTime currentTime = _Clock.UtcNow;
             NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime).AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
+
+            IsLoading = false;
         }
 
         /// <summary>

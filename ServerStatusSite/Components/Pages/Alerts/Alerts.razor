@@ -2,33 +2,42 @@
 
 <PageTitle>Alerts</PageTitle>
 
-<button class="btn btn-primary" @onclick="RegisterAlert">Register Alert</button>
-
-@if (ReportedAlerts?.TotalPageCount > 1)
+@if (IsLoading && ReportedAlerts == null)
 {
-    if (PageNumber > 1)
+    <div class="d-flex justify-content-center py-5">
+        <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else
+{
+    <button class="btn btn-primary" @onclick="RegisterAlert">Register Alert</button>
+
+    @if (ReportedAlerts?.TotalPageCount > 1)
     {
-        if (PageNumber != ReportedAlerts.TotalPageCount)
+        if (PageNumber > 1)
         {
-            <button class="btn btn-primary" style="float:right" @onclick="NextPage">Next Page</button>
-            <button class="btn btn-primary" style="float:right;margin-right:5px" @onclick="PreviousPage">Previous Page</button>
+            if (PageNumber != ReportedAlerts.TotalPageCount)
+            {
+                <button class="btn btn-primary" style="float:right" @onclick="NextPage">Next Page</button>
+                <button class="btn btn-primary" style="float:right;margin-right:5px" @onclick="PreviousPage">Previous Page</button>
+            }
+
+            else
+            {
+                <button class="btn btn-primary" style="float:right;margin-right:5px" @onclick="PreviousPage">Previous Page</button>
+            }
         }
 
         else
         {
-            <button class="btn btn-primary" style="float:right;margin-right:5px" @onclick="PreviousPage">Previous Page</button>
+            <button class="btn btn-primary" style="float:right" @onclick="NextPage">Next Page</button>
         }
     }
 
-    else
-    {
-        <button class="btn btn-primary" style="float:right" @onclick="NextPage">Next Page</button>
-    }
-}
-
-@if (ReportedAlerts?.Entries.Count == 0)
-{
-    if (ReportedAlerts == null)
+    @if (ReportedAlerts.Entries.Count == 0)
     {
         <br />
         <br />
@@ -39,41 +48,34 @@
 
     else
     {
-        <br />
-        <br />
-        <p><em>Loading Alerts...</em></p>
-    }
-}
-
-else
-{
-    <div class="@GetStyle("Data")">
-        <div class="table-responsive">
-            <table class="table" style="@GetStyle()">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Server</th>
-                        <th>Reporter</th>
-                        <th>Component</th>
-                        <th>Component Status</th>
-                        <th>Alert Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var alert in ReportedAlerts.Entries)
-                    {
-                        <tr class="clickable-row" @onclick="() => OpenClick(alert)">
-                            <td>@alert.AlertDate.ToString()</td>
-                            <td>@alert.Server</td>
-                            <td>@alert.Reporter</td>
-                            <td>@alert.Component</td>
-                            <td>@alert.ComponentStatus</td>
-                            <td>@alert.AlertStatus</td>
+        <div class="@GetStyle("Data")">
+            <div class="table-responsive">
+                <table class="table" style="@GetStyle()">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Server</th>
+                            <th>Reporter</th>
+                            <th>Component</th>
+                            <th>Component Status</th>
+                            <th>Alert Status</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var alert in ReportedAlerts.Entries)
+                        {
+                            <tr class="clickable-row" @onclick="() => OpenClick(alert)">
+                                <td>@alert.AlertDate.ToString()</td>
+                                <td>@alert.Server</td>
+                                <td>@alert.Reporter</td>
+                                <td>@alert.Component</td>
+                                <td>@alert.ComponentStatus</td>
+                                <td>@alert.AlertStatus</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    }
 }

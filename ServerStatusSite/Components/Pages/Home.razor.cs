@@ -25,10 +25,12 @@ namespace ServerStatusSite.Components.Pages
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private List<ServerModel> Servers = [];
-        private List<EventModel> PCEvents = [];
-        private List<EventModel> ServerEvents = [];
-        private List<EventModel> ConnectionEvents = [];
+        private List<ServerModel>? Servers;
+        private List<EventModel>? PCEvents;
+        private List<EventModel>? ServerEvents;
+        private List<EventModel>? ConnectionEvents;
+
+        private bool IsLoading;
 
         private Timer RefreshTimer { get; set; } = new();
         private DateTime NextElapse;
@@ -41,6 +43,8 @@ namespace ServerStatusSite.Components.Pages
             TimerFunction _timerFunction = new(_Clock);
 
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Opened Home Page");
+
+            IsLoading = true;
 
             RefreshTimer = new()
             {
@@ -60,6 +64,8 @@ namespace ServerStatusSite.Components.Pages
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
             RefreshTimer.Start();
+
+            IsLoading = false;
         }
 
         /// <summary>

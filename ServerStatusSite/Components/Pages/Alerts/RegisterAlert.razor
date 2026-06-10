@@ -2,52 +2,64 @@
 
 <PageTitle>Register Alert</PageTitle>
 
-<div class="container">
-    <div class="@GetStyle("Form") form-grid">
-        <label>Reporter:</label>
-        <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="DiscordName" />
-
-        <label>Server:</label>
-        <select style="@GetStyle("Input")" @bind="Server">
-            <option value="" disabled selected>Select an option</option>
-            @foreach (string server in ServersNames)
-            {
-                <option value="@server">@server</option>
-            }
-        </select>
-
-        <label>Component:</label>
-        <select style="@GetStyle("Input")" @bind="Component">
-            <option value="" disabled selected>Select an option</option>
-            <option value="PC Status">PC</option>
-            <option value="Server Status">Server</option>
-            <option value="Connection Status">Connection</option>
-        </select>
-
-        <label>Component Status:</label>
-        <select style="@GetStyle("Input")" @bind="ComponentStatus">
-            <option value="" disabled selected>Select an option</option>
-            <option value="Offline">Offline</option>
-            <option value="Unknown">Unknown</option>
-        </select>
-
-        @if (ShowError)
-        {
-            <div class="form-full-row">
-                <label class="register-fail">There is already an alert registered for the given details.</label>
-            </div>
-        }
-
-        <div class="form-full-row">
-            @if (Loading)
-            {
-                <div class="spinner-border text-primary" role="status"></div>
-            }
-
-            else
-            {
-                <button class="btn btn-primary" @onclick="RegisterClick">Register</button>
-            }
+@if (IsLoading && Servers == null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-</div>
+}
+
+else
+{
+    <div class="container">
+        <div class="@GetStyle("Form") form-grid">
+            <label>Reporter:</label>
+            <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="DiscordName" />
+
+            <label>Server:</label>
+            <select style="@GetStyle("Input")" @bind="Server">
+                <option value="" disabled selected>Select an option</option>
+                @foreach (string server in ServersNames)
+                {
+                    <option value="@server">@server</option>
+                }
+            </select>
+
+            <label>Component:</label>
+            <select style="@GetStyle("Input")" @bind="Component">
+                <option value="" disabled selected>Select an option</option>
+                <option value="PC Status">PC</option>
+                <option value="Server Status">Server</option>
+                <option value="Connection Status">Connection</option>
+            </select>
+
+            <label>Component Status:</label>
+            <select style="@GetStyle("Input")" @bind="ComponentStatus">
+                <option value="" disabled selected>Select an option</option>
+                <option value="Offline">Offline</option>
+                <option value="Unknown">Unknown</option>
+            </select>
+
+            @if (ShowError)
+            {
+                <div class="form-full-row">
+                    <label class="register-fail">There is already an alert registered for the given details.</label>
+                </div>
+            }
+
+            <div class="form-full-row">
+                @if (Loading)
+                {
+                    <div class="spinner-border text-primary" role="status"></div>
+                }
+
+                else
+                {
+                    <button class="btn btn-primary" @onclick="RegisterClick">Register</button>
+                }
+            </div>
+        </div>
+    </div>
+}
