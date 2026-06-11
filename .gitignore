@@ -11,3 +11,6 @@
 
 # Development Settings
 **[Aa]ppsettings.Development.json
+
+# Auth Payload
+**[Aa]uthorise.Development.json
