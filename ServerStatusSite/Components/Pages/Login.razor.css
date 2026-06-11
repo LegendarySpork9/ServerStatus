@@ -39,6 +39,7 @@
 
 .login-fail {
     display: block;
+    width: 200px;
     max-width: 100%;
     border: 2px solid red;
     margin: 0 auto 0.5rem;
