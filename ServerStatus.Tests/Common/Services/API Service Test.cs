@@ -14,8 +14,15 @@ namespace ServerStatus.Tests.Common.Services
     {
         private readonly Mock<ILoggerService> _MockLogger = new();
         private readonly Mock<IClock> _MockClock = new();
+        private readonly IRetryService _RetryService;
 
         private readonly DateTime Expires = new(2026, 03, 12, 16, 00, 00, DateTimeKind.Utc);
+
+        // Sets the class's global variables.
+        public APIServiceTest()
+        {
+            _RetryService = new RetryService(_MockLogger.Object);
+        }
 
         /// <summary>
         /// Sets the mocks up for the tests.
@@ -56,7 +63,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object);
+                _MockClock.Object,
+                _RetryService);
             await _apiService.Authorise();
 
             Assert.AreEqual(
@@ -90,7 +98,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -164,7 +173,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -224,7 +234,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -297,7 +308,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -357,7 +369,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -402,7 +415,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -466,7 +480,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -542,7 +557,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -620,7 +636,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -673,7 +690,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };
@@ -760,7 +778,8 @@ namespace ServerStatus.Tests.Common.Services
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
-                _MockClock.Object)
+                _MockClock.Object,
+                _RetryService)
             {
                 ExpiryTime = Expires
             };

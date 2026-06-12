@@ -1,4 +1,4 @@
-﻿// Copyright © - 05/10/2025 - Toby Hunter
+// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
 using ServerStatusCommon.Models.Requests.Create;
@@ -13,19 +13,21 @@ namespace ServerStatusCommon.Services
         private ILoggerService _Logger;
         private readonly IAPIClient _APIClient;
         private readonly IClock _Clock;
-        
+        private readonly IRetryService _RetryService;
+
         public DateTime ExpiryTime { get; set; }
-        private int RetryCount { get; set; } = 0;
 
         // Sets the class's global variables.
         public APIService(
             ILoggerService _logger,
             IAPIClient _apiClient,
-            IClock _clock)
+            IClock _clock,
+            IRetryService _retryService)
         {
             _Logger = _logger;
             _APIClient = _apiClient;
             _Clock = _clock;
+            _RetryService = _retryService;
         }
 
         /// <summary>
@@ -34,6 +36,17 @@ namespace ServerStatusCommon.Services
         public void SetLogger(ILoggerService _logger)
         {
             _Logger = _logger;
+        }
+
+        /// <summary>
+        /// Reauthorises the API client if the token has expired.
+        /// </summary>
+        private async Task ReauthoriseIfExpired()
+        {
+            if (ExpiryTime < _Clock.UtcNow)
+            {
+                await Authorise();
+            }
         }
 
         /// <summary>
@@ -47,7 +60,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                AuthenticationModel? auth = await _APIClient.Authorise();
+                AuthenticationModel? auth = await _RetryService.ExecuteAsync(
+                    () => _APIClient.Authorise(),
+                    result => result != null,
+                    null,
+                    "obtain Bearer token from API");
 
                 if (auth != null)
                 {
@@ -67,27 +84,6 @@ namespace ServerStatusCommon.Services
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         "Obtained Bearer Token from API");
-                }
-
-                if (auth == null)
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await _APIClient.Authorise();
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch users from API");
-                    }
                 }
             }
 
@@ -124,7 +120,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (users, bool success) = await _APIClient.GetUsers();
+                (users, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetUsers(),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch users from API");
 
                 if (success)
                 {
@@ -150,28 +150,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         "Fetched users from API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        users = await GetUsers();
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch users from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -187,7 +165,6 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch users from API");
             }
 
-            RetryCount = 0;
             return users;
         }
 
@@ -207,7 +184,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (List<UserSettingModel> userSettings, bool success) = await _APIClient.GetUserSettings(user.Id);
+                (List<UserSettingModel> userSettings, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetUserSettings(user.Id),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch user settings from API");
 
                 if (success)
                 {
@@ -233,28 +214,6 @@ namespace ServerStatusCommon.Services
                             "Fetched user settings from API");
                     }
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        user = await GetUserSettings(user);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch user settings from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -270,7 +229,6 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch user settings from API");
             }
 
-            RetryCount = 0;
             return user;
         }
 
@@ -292,7 +250,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (servers, bool success) = await _APIClient.GetServers();
+                (servers, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetServers(),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch servers from API");
 
                 if (success)
                 {
@@ -325,28 +287,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         "Fetched servers from API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        servers = await GetServers();
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch servers from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -362,7 +302,6 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch servers from API");
             }
 
-            RetryCount = 0;
             return servers;
         }
 
@@ -389,7 +328,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (serverEvents, bool success) = await _APIClient.GetServerEvents(queryParameters);
+                (serverEvents, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetServerEvents(queryParameters),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch server events from API");
 
                 if (success)
                 {
@@ -439,28 +382,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         "Fetched server statuses from API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        serverEvents = await GetServerEvents(component);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch server events from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -476,7 +397,6 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch server events from API");
             }
 
-            RetryCount = 0;
             return serverEvents;
         }
 
@@ -501,9 +421,13 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (updatedSetting, apiResponse) = await _APIClient.UpdateUserSettings(
-                    userSettingId,
-                    userSetting);
+                (updatedSetting, apiResponse) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.UpdateUserSettings(
+                        userSettingId,
+                        userSetting),
+                    result => result.Item1 != null,
+                    ReauthoriseIfExpired,
+                    $"update setting, {userSettingId}, in API");
 
                 if (updatedSetting != null)
                 {
@@ -520,30 +444,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         $"Updated user setting, {userSettingId}, in API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        (updatedSetting, apiResponse) = await UpdateUserSettings(
-                            userSettingId,
-                            userSetting);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to update setting, {userSettingId}, in API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -559,7 +459,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to update setting, {userSettingId}, in API");
             }
 
-            RetryCount = 0;
             return (
                 updatedSetting,
                 apiResponse);
@@ -586,9 +485,13 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (updatedUser, apiResponse) = await _APIClient.UpdateUser(
-                    userId,
-                    user);
+                (updatedUser, apiResponse) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.UpdateUser(
+                        userId,
+                        user),
+                    result => result.Item1 != null,
+                    ReauthoriseIfExpired,
+                    $"update user, {userId}, in API");
 
                 if (updatedUser != null)
                 {
@@ -610,30 +513,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         $"Updated user, {userId}, in API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        (updatedUser, apiResponse) = await UpdateUser(
-                            userId,
-                            user);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to update user, {userId}, in API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -649,7 +528,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to update user, {userId}, in API");
             }
 
-            RetryCount = 0;
             return (updatedUser, apiResponse);
         }
 
@@ -675,7 +553,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (alerts, success) = await _APIClient.GetAlerts(queryParameters);
+                (alerts, success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetAlerts(queryParameters),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch alerts from API");
 
                 if (success)
                 {
@@ -734,28 +616,6 @@ namespace ServerStatusCommon.Services
                             "Fetched alerts from API");
                     }
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        alerts = await GetAlerts(pageNumber);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            "Failed to fetch alerts from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -771,7 +631,6 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch alerts from API");
             }
 
-            RetryCount = 0;
             return alerts;
         }
 
@@ -794,7 +653,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (alert, success) = await _APIClient.GetAlert(alertId);
+                (alert, success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetAlert(alertId),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    $"fetch alert, {alertId}, from API");
 
                 if (success)
                 {
@@ -849,28 +712,6 @@ namespace ServerStatusCommon.Services
                             $"Fetched alert, {alertId}, from API");
                     }
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        alert = await GetAlert(alertId);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to fetch alert, {alertId}, from API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -886,7 +727,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to fetch alert, {alertId}, from API");
             }
 
-            RetryCount = 0;
             return alert;
         }
 
@@ -911,9 +751,13 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (updatedAlert, apiResponse) = await _APIClient.UpdateAlert(
-                    alertId,
-                    alert);
+                (updatedAlert, apiResponse) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.UpdateAlert(
+                        alertId,
+                        alert),
+                    result => result.Item1 != null,
+                    ReauthoriseIfExpired,
+                    $"update alert, {alertId}, in API");
 
                 if (updatedAlert != null)
                 {
@@ -965,30 +809,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         $"Updated alert, {alertId}, in API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        (updatedAlert, apiResponse) = await UpdateAlert(
-                            alertId,
-                            alert);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to update alert, {alertId}, in API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -1004,7 +824,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to update alert, {alertId}, in API");
             }
 
-            RetryCount = 0;
             return (
                 updatedAlert,
                 apiResponse);
@@ -1029,7 +848,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (createdAlert, apiResponse) = await _APIClient.RegisterAlert(alert);
+                (createdAlert, apiResponse) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.RegisterAlert(alert),
+                    result => result.Item1 != null,
+                    ReauthoriseIfExpired,
+                    $"register alert, {alert.Component} ({alert.ComponentStatus}), in API");
 
                 if (createdAlert != null)
                 {
@@ -1081,28 +904,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         $"Registered alert, {alert.Component} ({alert.ComponentStatus}), in API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        (createdAlert, apiResponse) = await RegisterAlert(alert);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to register alert, {alert.Component} ({alert.ComponentStatus}), in API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -1118,7 +919,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to register alert, {alert.Component} ({alert.ComponentStatus}), in API");
             }
 
-            RetryCount = 0;
             return (
                 createdAlert,
                 apiResponse);
@@ -1133,7 +933,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Registering event, {serverEvent.Component} ({serverEvent.Status}), in API");
 
-            if (ExpiryTime <= _Clock.UtcNow)
+            if (ExpiryTime < _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -1143,7 +943,11 @@ namespace ServerStatusCommon.Services
 
             try
             {
-                (createdEvent, apiResponse) = await _APIClient.RegisterServerEvent(serverEvent);
+                (createdEvent, apiResponse) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.RegisterServerEvent(serverEvent),
+                    result => result.Item1 != null,
+                    ReauthoriseIfExpired,
+                    $"register event, {serverEvent.Component} ({serverEvent.Status}), in API");
 
                 if (createdEvent != null)
                 {
@@ -1189,28 +993,6 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         $"Registered event, {serverEvent.Component} ({serverEvent.Status}), in API");
                 }
-
-                else
-                {
-                    if (RetryCount != 4)
-                    {
-                        RetryCount++;
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Warning,
-                            $"Retry {RetryCount} of 4");
-
-                        await Authorise();
-                        (createdEvent, apiResponse) = await RegisterServerEvent(serverEvent);
-                    }
-
-                    else
-                    {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Info,
-                            $"Failed to register event, {serverEvent.Component} ({serverEvent.Status}), in API");
-                    }
-                }
             }
 
             catch (Exception ex)
@@ -1226,7 +1008,6 @@ namespace ServerStatusCommon.Services
                     $"Failed to register event, {serverEvent.Component} ({serverEvent.Status}), in API");
             }
 
-            RetryCount = 0;
             return (
                 createdEvent,
                 apiResponse);
