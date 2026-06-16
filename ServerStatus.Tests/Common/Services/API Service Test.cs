@@ -14,7 +14,7 @@ namespace ServerStatus.Tests.Common.Services
     {
         private readonly Mock<ILoggerService> _MockLogger = new();
         private readonly Mock<IClock> _MockClock = new();
-        private readonly IRetryService _RetryService;
+        private readonly RetryService _RetryService;
 
         private readonly DateTime Expires = new(2026, 03, 12, 16, 00, 00, DateTimeKind.Utc);
 

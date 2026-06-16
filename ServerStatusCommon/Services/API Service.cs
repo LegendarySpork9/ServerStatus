@@ -13,7 +13,7 @@ namespace ServerStatusCommon.Services
         private ILoggerService _Logger;
         private readonly IAPIClient _APIClient;
         private readonly IClock _Clock;
-        private readonly IRetryService _RetryService;
+        private readonly RetryService _RetryService;
 
         public DateTime ExpiryTime { get; set; }
 
@@ -22,7 +22,7 @@ namespace ServerStatusCommon.Services
             ILoggerService _logger,
             IAPIClient _apiClient,
             IClock _clock,
-            IRetryService _retryService)
+            RetryService _retryService)
         {
             _Logger = _logger;
             _APIClient = _apiClient;

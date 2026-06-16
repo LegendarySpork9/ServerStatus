@@ -54,7 +54,7 @@ namespace ServerStatusAutomation
                 _logger,
                 new FileSystemWrapper(),
                 sharedSettings);
-            IRetryService _retryService = new RetryService(_logger);
+            RetryService _retryService = new RetryService(_logger);
             APIService _apiService = new(
                 _logger,
                 _apiClient,
