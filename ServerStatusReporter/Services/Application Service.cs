@@ -8,7 +8,6 @@ using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
 using ServerStatusReporter.Abstractions;
 using ServerStatusReporter.Models;
-using System.Diagnostics;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
@@ -19,7 +18,9 @@ namespace ServerStatusReporter.Services
         private readonly ILoggerService _Logger;
         private readonly IClock _Clock;
         private readonly ITCPClient _TCPClient;
+        private readonly IProcessService _ProcessService;
         private readonly APIService _APIService;
+        private readonly PidFileService _PidFileService;
         private readonly SharedSettingsModel SharedSettings;
 
         private Timer RefreshTimer;
@@ -30,13 +31,17 @@ namespace ServerStatusReporter.Services
             ILoggerService _logger,
             IClock _clock,
             ITCPClient _tcpClient,
+            IProcessService _processService,
             APIService _apiService,
+            PidFileService pidFileService,
             SharedSettingsModel sharedSettings)
         {
             _Logger = _logger;
             _Clock = _clock;
             _TCPClient = _tcpClient;
+            _ProcessService = _processService;
             _APIService = _apiService;
+            _PidFileService = pidFileService;
             SharedSettings = sharedSettings;
         }
 
@@ -173,7 +178,7 @@ namespace ServerStatusReporter.Services
 
                     if (component == "Server")
                     {
-                        if (ServerRunning(AppSettingsModel.ServerPaths[i]))
+                        if (await ServerRunning(server.Name))
                         {
                             EventRequestModel newEvent = new()
                             {
@@ -200,7 +205,7 @@ namespace ServerStatusReporter.Services
                         {
                             EventRequestModel newEvent = new()
                             {
-                                Component = "PC",
+                                Component = "Server",
                                 Status = "Offline",
                                 ServerId = server.Id,
                                 Name = server.Name,
@@ -342,50 +347,32 @@ namespace ServerStatusReporter.Services
         }
 
         /// <summary>
-        /// Checks if a process is running from the given path.
+        /// Checks if a server is running by reading its PID file and verifying the process.
         /// </summary>
-        private bool ServerRunning(string serverPath)
+        private async Task<bool> ServerRunning(string serverName)
         {
             bool running = false;
 
-            try
-            {
-                foreach (Process process in Process.GetProcesses())
-                {
-                    try
-                    {
-                        if (process.MainModule != null && process.MainModule.FileName.StartsWith(
-                            serverPath,
-                            StringComparison.OrdinalIgnoreCase))
-                        {
-                            running = true;
-                            process.Dispose();
-                            break;
-                        }
-                    }
+            (int processId, DateTime expectedStartTime)? pidData = await _PidFileService.Read(serverName);
 
-                    catch
-                    {
-                        
-                    }
-
-                    process.Dispose();
-                }
-            }
-
-            catch (Exception ex)
+            if (pidData == null)
             {
                 _Logger.LogMessage(
-                    StandardValues.LoggerValues.Warning,
-                    ex.Message);
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Error,
-                    ex.ToString());
+                    StandardValues.LoggerValues.Debug,
+                    $"Server Running: False");
             }
 
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Server Running: {running}");
+            else
+            {
+                running = _ProcessService.IsRunning(
+                    pidData.Value.processId,
+                    pidData.Value.expectedStartTime);
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Server Running: {running}");
+            }
+
             return running;
         }
     }

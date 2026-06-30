@@ -49,7 +49,7 @@ namespace ServerStatusSite
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
-            builder.Services.AddSingleton<IRetryService, RetryService>();
+            builder.Services.AddSingleton<RetryService, RetryService>();
             builder.Services.AddSingleton<APIService>();
             builder.Services.AddScoped<UserModel>();
             builder.Services.AddHttpContextAccessor();

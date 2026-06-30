@@ -4,7 +4,7 @@ using ServerStatusCommon.Converters;
 
 namespace ServerStatusCommon.Services
 {
-    public class RetryService : IRetryService
+    public class RetryService
     {
         private readonly ILoggerService _Logger;
 
