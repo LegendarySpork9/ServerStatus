@@ -22,7 +22,7 @@ namespace ServerStatusReporter.Implementations
         /// </summary>
         public bool IsRunning(
             int processId,
-            DateTime expectedStartTimeUtc)
+            DateTime expectedStartTime)
         {
             bool running = false;
 
@@ -30,7 +30,7 @@ namespace ServerStatusReporter.Implementations
             {
                 using (Process process = Process.GetProcessById(processId))
                 {
-                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTimeUtc;
+                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTime;
                 }
 
                 _Logger.LogMessage(

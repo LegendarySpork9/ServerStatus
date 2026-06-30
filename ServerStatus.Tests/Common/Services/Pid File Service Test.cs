@@ -1,7 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using Moq;
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Services;
+using ServerStatusReporter.Services;
 
 namespace ServerStatus.Tests.Common.Services
 {
@@ -26,11 +26,11 @@ namespace ServerStatus.Tests.Common.Services
                 _mockLogger.Object,
                 _mockFileSystem.Object);
 
-            var result = await _pidFileService.Read("Test Server");
+            (int processId, DateTime expectedStartTime)? result = await _pidFileService.Read("Test Server");
 
             Assert.IsNotNull(result);
             Assert.AreEqual(12345, result.Value.processId);
-            Assert.AreEqual(startTime, result.Value.startTimeUtc);
+            Assert.AreEqual(startTime, result.Value.expectedStartTime);
         }
 
         /// <summary>

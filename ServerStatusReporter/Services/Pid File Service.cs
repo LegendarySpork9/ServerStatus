@@ -2,7 +2,7 @@
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
 
-namespace ServerStatusCommon.Services
+namespace ServerStatusReporter.Services
 {
     public class PidFileService
     {
@@ -26,7 +26,7 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Reads the PID file for the given server and returns the process ID and start time.
         /// </summary>
-        public async Task<(int processId, DateTime startTimeUtc)?> Read(string serverName)
+        public async Task<(int, DateTime)?> Read(string serverName)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -68,7 +68,7 @@ namespace ServerStatusCommon.Services
                     return null;
                 }
 
-                if (!DateTime.TryParse(lines[1].Trim(), null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime startTimeUtc))
+                if (!DateTime.TryParse(lines[1].Trim(), null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime startTime))
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Warning,
@@ -81,7 +81,7 @@ namespace ServerStatusCommon.Services
                     StandardValues.LoggerValues.Debug,
                     $"PID file read for {serverName}: PID {processId}");
 
-                return (processId, startTimeUtc);
+                return (processId, startTime);
             }
 
             catch (Exception ex)

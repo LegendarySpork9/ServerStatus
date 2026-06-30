@@ -353,7 +353,7 @@ namespace ServerStatusReporter.Services
         {
             bool running = false;
 
-            (int processId, DateTime expectedStartTimeUtc)? pidData = await _PidFileService.Read(serverName);
+            (int processId, DateTime expectedStartTime)? pidData = await _PidFileService.Read(serverName);
 
             if (pidData == null)
             {
@@ -366,7 +366,7 @@ namespace ServerStatusReporter.Services
             {
                 running = _ProcessService.IsRunning(
                     pidData.Value.processId,
-                    pidData.Value.expectedStartTimeUtc);
+                    pidData.Value.expectedStartTime);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

@@ -6,6 +6,6 @@ namespace ServerStatusReporter.Abstractions
     /// </summary>
     public interface IProcessService
     {
-        bool IsRunning(int processId, DateTime expectedStartTimeUtc);
+        bool IsRunning(int processId, DateTime expectedStartTime);
     }
 }

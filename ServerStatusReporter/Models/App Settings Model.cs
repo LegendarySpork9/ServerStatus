@@ -11,6 +11,5 @@ namespace ServerStatusReporter.Models
         public static string HostName { get; set; } = ConfigurationManager.AppSettings["HostName"];
         public static string[] Games { get; set; } = ConfigurationManager.AppSettings["Games"].Split(',');
         public static string[] Components { get; set; } = ConfigurationManager.AppSettings["Components"].Split(',');
-        public static string[] ServerPaths { get; set; } = ConfigurationManager.AppSettings["ServerPaths"].Split(',');
     }
 }
