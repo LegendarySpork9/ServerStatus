@@ -37,6 +37,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
         private string DiscordName { get; set;  } = string.Empty;
         private bool ShowError { get; set; } = false;
         private bool Loading { get; set; } = false;
+        private string ErrorMessage { get; set; } = string.Empty;
+        private bool RegisterSuccess { get; set; } = false;
 
         /// <summary>
         /// Loads the servers from the API.
@@ -50,7 +52,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
             IsLoading = true;
 
             Servers = await APIService.GetServers();
-            ServersNames.AddRange(Servers.Select(s => $"{s.Game} ({s.GameVersion})"));
+            ServersNames.AddRange(Servers.Select(s => s.Name));
+            DiscordName = User.Settings.Find(s => s.Name == "DiscordName")?.Value ?? User.Username;
 
             IsLoading = false;
         }
@@ -73,6 +76,10 @@ namespace ServerStatusSite.Components.Pages.Alerts
         /// </summary>
         private async Task RegisterClick()
         {
+            ShowError = false;
+            RegisterSuccess = false;
+            ErrorMessage = string.Empty;
+
             Loading = true;
             StateHasChanged();
 
@@ -115,34 +122,53 @@ namespace ServerStatusSite.Components.Pages.Alerts
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
                         "Alert Registered");
+
+                    if (SharedSettings.RecipientIds.Contains(','))
+                    {
+                        await _discordService.SendNotification(
+                            SharedSettings.RecipientIds.Split(',')[0],
+                            $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                    }
+
+                    else
+                    {
+                        await _discordService.SendNotification(
+                            SharedSettings.RecipientIds,
+                            $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                    }
+
+                    RegisterSuccess = true;
+                }
+
+                else
+                {
+                    ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ErrorMessage);
                 }
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     "Alert Register Complete");
-
-                if (SharedSettings.RecipientIds.Contains(','))
-                {
-                    await _discordService.SendNotification(
-                        SharedSettings.RecipientIds.Split(',')[0],
-                        $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
-                }
-
-                else
-                {
-                    await _discordService.SendNotification(
-                        SharedSettings.RecipientIds,
-                        $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
-                }
-
-                Navigation.NavigateTo("/alerts");
             }
 
             else
             {
                 ShowError = true;
-                Loading = false;
-                StateHasChanged();
+            }
+
+            Loading = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            if (RegisterSuccess)
+            {
+                await Task.Delay(2000).ContinueWith(_ =>
+                {
+                    Navigation.NavigateTo("/alerts");
+                });
             }
         }
     }

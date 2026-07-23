@@ -71,7 +71,7 @@ namespace ServerStatusSite.Converters
             return darkMode switch
             {
                 true => "form-dark",
-                _ => string.Empty
+                _ => "form-light"
             };
         }
 

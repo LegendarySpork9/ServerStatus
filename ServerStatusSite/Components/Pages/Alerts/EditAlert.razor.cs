@@ -29,9 +29,13 @@ namespace ServerStatusSite.Components.Pages.Alerts
         private AlertModel? Alert;
 
         private bool IsLoading;
+        private bool SaveSuccess;
+
+        private string ErrorMessage { get; set; } = string.Empty;
 
         private int AlertId { get; set; } = 0;
         private bool Loading { get; set; } = false;
+        private string AlertStatus { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the data about the given alert.
@@ -62,6 +66,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
             }
 
             Alert = await APIService.GetAlert(AlertId);
+            AlertStatus = Alert.AlertStatus;
 
             IsLoading = false;
         }
@@ -84,6 +89,9 @@ namespace ServerStatusSite.Components.Pages.Alerts
         /// </summary>
         private async Task SaveClick()
         {
+            SaveSuccess = false;
+            ErrorMessage = string.Empty;
+
             Loading = true;
             StateHasChanged();
 
@@ -96,10 +104,19 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 StandardValues.LoggerValues.Info,
                 "Attempting Alert Save");
 
-            AlertUpdateRequestModel alertUpdate = new()
+            AlertUpdateRequestModel? alertUpdate = null;
+
+            if (!string.IsNullOrWhiteSpace(AlertStatus) && AlertStatus != Alert.AlertStatus)
             {
-                Status = Alert.AlertStatus
-            };
+                alertUpdate = new()
+                {
+                    Status = AlertStatus
+                };
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Alert Status: {Alert.AlertStatus} -> {AlertStatus}");
+            }
 
             (AlertModel? alert, ResponseModel? apiResponse) = await APIService.UpdateAlert(
                 AlertId,
@@ -110,29 +127,50 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     "Alert Status Updated");
+
+                SaveSuccess = true;
+
+                SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
+
+                if (SharedSettings.RecipientIds.Contains(','))
+                {
+                    await _discordService.SendNotification(
+                        SharedSettings.RecipientIds.Split(',')[1],
+                        $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
+                }
+
+                else
+                {
+                    await _discordService.SendNotification(
+                        SharedSettings.RecipientIds,
+                        $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
+                }
+            }
+
+            else
+            {
+                ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ErrorMessage);
             }
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Alert Save Complete");
 
-            SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
+            Loading = false;
 
-            if (SharedSettings.RecipientIds.Contains(','))
+            await InvokeAsync(StateHasChanged);
+
+            if (SaveSuccess)
             {
-                await _discordService.SendNotification(
-                    SharedSettings.RecipientIds.Split(',')[1],
-                    $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
+                await Task.Delay(2000).ContinueWith(_ =>
+                {
+                    Navigation.NavigateTo("/alerts");
+                });
             }
-
-            else
-            {
-                await _discordService.SendNotification(
-                    SharedSettings.RecipientIds,
-                    $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
-            }
-
-            Navigation.NavigateTo("/alerts");
         }
     }
 }

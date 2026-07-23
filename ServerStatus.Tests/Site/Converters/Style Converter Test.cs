@@ -122,7 +122,7 @@ namespace ServerSite.Tests.Site.Converters
             string style = StyleConverter.GetFormDarkMode(false);
 
             Assert.AreEqual(
-                string.Empty,
+                "form-light",
                 style);
         }
 

@@ -38,9 +38,10 @@ namespace ServerStatusCommon.Implementations
         /// <summary>
         /// Returns the authentication from the API.
         /// </summary>
-        public async Task<AuthenticationModel?> Authorise()
+        public async Task<(AuthenticationModel?, ResponseModel?)> Authorise()
         {
             AuthenticationModel? auth = null;
+            ResponseModel? apiResponse = null;
 
             try
             {
@@ -97,8 +98,24 @@ namespace ServerStatusCommon.Implementations
                     auth = JsonConvert.DeserializeObject<AuthenticationModel>(response.Content);
                 }
 
+                else if (response.Content != null)
+                {
+                    APIMessageModel? apiMessage = JsonConvert.DeserializeObject<APIMessageModel>(response.Content);
+                    apiResponse = new()
+                    {
+                        StatusCode = response.StatusCode,
+                        Message = apiMessage?.Error ?? apiMessage?.Information ?? "No message returned by the API."
+                    };
+                }
+
                 if (response.ErrorException != null)
                 {
+                    apiResponse = new()
+                    {
+                        StatusCode = System.Net.HttpStatusCode.ServiceUnavailable,
+                        Message = response.ErrorException.Message
+                    };
+
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Warning,
                         $"Response Error: {response.ErrorException.Message}");
@@ -118,7 +135,7 @@ namespace ServerStatusCommon.Implementations
                     ex.ToString());
             }
 
-            return auth;
+            return (auth, apiResponse);
         }
 
         /// <summary>
