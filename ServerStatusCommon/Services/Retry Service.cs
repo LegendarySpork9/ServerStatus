@@ -23,7 +23,7 @@ namespace ServerStatusCommon.Services
             Func<Task>? onBeforeRetry,
             string operationName,
             int maxRetries = 4,
-            int delaySeconds = 30)
+            int delaySeconds = 10)
         {
             T result = default!;
 

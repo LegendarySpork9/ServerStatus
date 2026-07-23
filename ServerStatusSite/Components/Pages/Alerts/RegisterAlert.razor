@@ -30,9 +30,9 @@ else
             <label>Component:</label>
             <select style="@GetStyle("Input")" @bind="Component">
                 <option value="" disabled selected>Select an option</option>
-                <option value="PC Status">PC</option>
-                <option value="Server Status">Server</option>
-                <option value="Connection Status">Connection</option>
+                <option value="PC">PC</option>
+                <option value="Server">Server</option>
+                <option value="Connection">Connection</option>
             </select>
 
             <label>Component Status:</label>
@@ -44,21 +44,27 @@ else
 
             @if (ShowError)
             {
-                <div class="form-full-row">
-                    <label class="register-fail">There is already an alert registered for the given details.</label>
-                </div>
+                <label class="form-fail">There is already an alert registered for the given details.</label>
+            }
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <label class="form-fail">@ErrorMessage</label>
+            }
+
+            @if (RegisterSuccess)
+            {
+                <label class="form-full-row text-success">Registered successfully!</label>
             }
 
             <div class="form-full-row">
-                @if (Loading)
-                {
-                    <div class="spinner-border text-primary" role="status"></div>
-                }
-
-                else
-                {
-                    <button class="btn btn-primary" @onclick="RegisterClick">Register</button>
-                }
+                <button class="btn btn-primary" disabled="@Loading" @onclick="RegisterClick">
+                    @if (Loading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    Register
+                </button>
             </div>
         </div>
     </div>

@@ -20,6 +20,9 @@ namespace ServerStatusSite.Components.Pages
         private UserModel User { get; set; } = default!;
 
         private bool IsLoading;
+        private bool SaveSuccess;
+
+        private string ErrorMessage { get; set; } = string.Empty;
 
         private string Username { get; set; } = string.Empty;
         private string Password { get; set; } = string.Empty;
@@ -77,12 +80,19 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task SaveClick()
         {
+            SaveSuccess = false;
+            ErrorMessage = string.Empty;
+
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Attempting User Save");
 
             Loading = true;
             StateHasChanged();
+
+            ResponseModel? apiResponse = null;
+
+            bool performUserUpdate = false;
 
             UserUpdateRequestModel userUpdate = new();
 
@@ -93,6 +103,8 @@ namespace ServerStatusSite.Components.Pages
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Username: {User.Username} -> {Username}");
+
+                performUserUpdate = true;
             }
 
             if (!string.IsNullOrWhiteSpace(Password) && Password != User.Password)
@@ -102,16 +114,30 @@ namespace ServerStatusSite.Components.Pages
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Password: {User.Password} -> {Password}");
+
+                performUserUpdate = true;
             }
 
-            (UserModel? user, ResponseModel? apiResponse) = await APIService.UpdateUser(
+            if (performUserUpdate)
+            {
+                (UserModel? user, apiResponse) = await APIService.UpdateUser(
                 User.Id,
                 userUpdate);
 
-            if (user != null)
-            {
-                User.Username = user.Username;
-                User.Password = user.Password;
+                if (user != null)
+                {
+                    User.Username = user.Username;
+                    User.Password = user.Password;
+                }
+
+                else
+                {
+                    ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ErrorMessage);
+                }
             }
 
             SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
@@ -131,9 +157,18 @@ namespace ServerStatusSite.Components.Pages
                 {
                     discordSetting.Value = setting.Value;
                 }
+
+                else
+                {
+                    ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ErrorMessage);
+                }
             }
 
-            if (DarkMode != User.DarkMode)
+            if (string.IsNullOrEmpty(ErrorMessage) && DarkMode != User.DarkMode)
             {
                 SettingModel darkModeSetting = User.Settings.First(s => s.Name == "DarkMode");
                 UserSettingUpdateRequestModel settingUpdate = new()
@@ -150,6 +185,20 @@ namespace ServerStatusSite.Components.Pages
                     darkModeSetting.Value = setting.Value;
                     User.DarkMode = bool.Parse(setting.Value);
                 }
+
+                else
+                {
+                    ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ErrorMessage);
+                }
+            }
+
+            if (string.IsNullOrEmpty(ErrorMessage))
+            {
+                SaveSuccess = true;
             }
 
             _Logger.LogMessage(
@@ -157,6 +206,15 @@ namespace ServerStatusSite.Components.Pages
                 "User Save Complete");
 
             Loading = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            await Task.Delay(2000).ContinueWith(_ =>
+            {
+                SaveSuccess = false;
+
+                InvokeAsync(StateHasChanged);
+            });
         }
     }
 }

@@ -58,7 +58,9 @@ namespace ServerStatus.Tests.Common.Services
 
             Mock<IAPIClient> _mockAPIClient = new();
             _mockAPIClient.Setup(api => api.Authorise())
-                .ReturnsAsync(expected);
+                .ReturnsAsync((
+                    expected,
+                    (ResponseModel?)null));
 
             APIService _apiService = new(
                 _MockLogger.Object,

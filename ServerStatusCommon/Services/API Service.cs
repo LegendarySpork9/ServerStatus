@@ -52,17 +52,19 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Gets a bearer token from the API.
         /// </summary>
-        public async Task Authorise()
+        public async Task<ResponseModel?> Authorise()
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Obtaining Bearer token from API");
 
+            ResponseModel? apiResponse = null;
+
             try
             {
-                AuthenticationModel? auth = await _RetryService.ExecuteAsync(
+                (AuthenticationModel? auth, apiResponse) = await _RetryService.ExecuteAsync(
                     () => _APIClient.Authorise(),
-                    result => result != null,
+                    result => result.Item1 != null || result.Item2 != null,
                     null,
                     "obtain Bearer token from API");
 
@@ -95,11 +97,12 @@ namespace ServerStatusCommon.Services
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Failed to Obtain Bearer token from API");
             }
 
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Info,
-                "Obtained Bearer token from API");
+            return apiResponse;
         }
 
         /// <summary>

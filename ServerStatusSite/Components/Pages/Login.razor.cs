@@ -25,8 +25,9 @@ namespace ServerStatusSite.Components.Pages
         private UserModel User { get; set; } = default!;
 
         private string ReturnUrl { get; set; } = "/";
-        private bool ShowError { get; set; } = false;
         private bool Loading { get; set; } = false;
+
+        private string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// Captures the URL the user was trying to access and sets the API _Logger.
@@ -63,6 +64,8 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task LoginClick()
         {
+            ErrorMessage = string.Empty;
+
             Loading = true;
             StateHasChanged();
 
@@ -76,36 +79,69 @@ namespace ServerStatusSite.Components.Pages
                 StandardValues.LoggerValues.Debug,
                 $"Password: {User.Password}");
 
-            await APIService.Authorise();
-            List<UserModel> users = await APIService.GetUsers();
-            UserModel? user = users.Find(c => c.Username == User.Username && c.Password == HashFunction.HashString(User.Password));
+            ResponseModel? apiResponse = await APIService.Authorise();
 
-            if (user != null)
+            if (apiResponse == null)
             {
-                _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Login Successful.");
-                _Logger.ChangeIdentifier($"{user.Username} ({IPAddressFunction.FetchIpAddress(HttpContextAccessor)})");
-                APIService.SetLogger(_Logger);
-                user = await APIService.GetUserSettings(user);
+                List<UserModel> users = await APIService.GetUsers();
 
-                User.Id = user.Id;
-                User.Username = user.Username;
-                User.Password = user.Password;
-                User.Scopes = user.Scopes;
-                User.Settings = user.Settings;
+                if (users.Count == 0)
+                {
+                    ErrorMessage = "Failed to fetch users from the API.";
 
-                await SessionStorage.SetAsync(
-                        "loggedInUser",
-                        User);
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        ErrorMessage);
+                }
 
-                Navigation.NavigateTo(ReturnUrl);
+                else
+                {
+                    UserModel? user = users.Find(c => c.Username == User.Username && c.Password == HashFunction.HashString(User.Password));
+
+                    if (user != null)
+                    {
+                        _Logger.LogMessage(StandardValues.LoggerValues.Info, $"Login Successful.");
+                        _Logger.ChangeIdentifier($"{user.Username} ({IPAddressFunction.FetchIpAddress(HttpContextAccessor)})");
+                        APIService.SetLogger(_Logger);
+                        user = await APIService.GetUserSettings(user);
+
+                        User.Id = user.Id;
+                        User.Username = user.Username;
+                        User.Password = user.Password;
+                        User.Scopes = user.Scopes;
+                        User.Settings = user.Settings;
+
+                        await SessionStorage.SetAsync(
+                                "loggedInUser",
+                                User);
+
+                        Navigation.NavigateTo(ReturnUrl);
+                    }
+
+                    else
+                    {
+                        ErrorMessage = "Your username or password was incorrect.";
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            ErrorMessage);
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            "Login Failed.");
+                    }
+                }
             }
 
             else
             {
+                ErrorMessage = $"API returned {apiResponse.StatusCode} ({apiResponse.Message})";
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ErrorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     "Login Failed.");
-                ShowError = true;
             }
 
             Loading = false;

@@ -12,7 +12,7 @@ namespace ServerStatusCommon.Abstractions
     public interface IAPIClient
     {
         void SetBearerToken(string bearerToken);
-        Task<AuthenticationModel?> Authorise();
+        Task<(AuthenticationModel?, ResponseModel?)> Authorise();
         Task<(List<UserModel>, bool)> GetUsers();
         Task<(List<UserSettingModel>, bool)> GetUserSettings(int userId);
         Task<(List<ServerModel>, bool)> GetServers();

@@ -38,22 +38,30 @@ else
                 <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="Alert.ComponentStatus" />
 
                 <label>Alert Status:</label>
-                <select style="@GetStyle("Input")" @bind="Alert.AlertStatus">
+                <select style="@GetStyle("Input")" @bind="AlertStatus">
                     <option value="Reported">Reported</option>
                     <option value="Investigating">Investigating</option>
                     <option value="Resolved">Resolved</option>
                 </select>
 
-                <div class="form-full-row">
-                    @if (Loading)
-                    {
-                        <div class="spinner-border text-primary" role="status"></div>
-                    }
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <label class="form-fail">@ErrorMessage</label>
+                }
 
-                    else
-                    {
-                        <button class="btn btn-primary" @onclick="SaveClick">Save</button>
-                    }
+                @if (SaveSuccess)
+                {
+                    <label class="form-full-row text-success">Saved successfully!</label>
+                }
+
+                <div class="form-full-row">
+                    <button class="btn btn-primary" disabled="@Loading" @onclick="SaveClick">
+                        @if (Loading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Save
+                    </button>
                 </div>
             </div>
         </div>
