@@ -90,6 +90,9 @@ namespace ServerStatusCommon.Services
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
                             $"Response Message: {response.Content}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            "Sent Notification to Discord");
                     }
                 }
 
@@ -101,11 +104,12 @@ namespace ServerStatusCommon.Services
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Error,
                         ex.ToString());
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to Sent Notification to Discord");
                 }
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    "Sent Notification to Discord");
+                
                 return successfulSend;
             }
 

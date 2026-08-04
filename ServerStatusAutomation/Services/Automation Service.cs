@@ -123,185 +123,112 @@ namespace ServerStatusAutomation.Services
                 "Running Automatic Status Checks");
 
             List<ServerModel> servers = await _APIService.GetServers();
-            List<EventModel> pcStatuses = await _APIService.GetServerEvents("PC");
-            List<EventModel> serverStatuses = await _APIService.GetServerEvents("Server");
-            List<EventModel> connectionStatuses = await _APIService.GetServerEvents("Connection");
+            List<string> components = await _APIService.GetComponents();
+
+            Dictionary<string, List<EventModel>> componentStatuses = [];
+
+            foreach (string component in components)
+            {
+                componentStatuses[component] = await _APIService.GetServerEvents(component);
+            }
+
             AlertInformationModel? alerts = await _APIService.GetAlerts(1);
 
             foreach (ServerModel server in servers)
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Checking Status for {server.HostName} - {server.Game} ({server.GameVersion})");
-
-                EventModel? pcStatus = pcStatuses.Find(c => c.Server.Id == server.Id);
-                EventModel? serverStatus = serverStatuses.Find(c => c.Server.Id == server.Id);
-                EventModel? connectionStatus = connectionStatuses.Find(c => c.Server.Id == server.Id);
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Current PC Status: {pcStatus?.Status ?? StandardValues.MissingValues.Status}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Current Connection Status: {connectionStatus?.Status ?? StandardValues.MissingValues.Status}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Current Server Status: {serverStatus?.Status ?? StandardValues.MissingValues.Status}");
+                    $"Checking Status for {server.Name}");
 
                 DateTime now = _Clock.UtcNow;
-                DateTime refreshPeriod = now.AddMinutes(-SharedSettings.RefreshTime);
+                DateTime refreshPeriod = now.AddMinutes(-server.EventInterval);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Refresh Period: {refreshPeriod} -> {now}");
 
                 DateTime? downtime = null;
+                int? duration = null;
 
                 if (server.Downtime != null)
                 {
-                    TimeSpan time = TimeSpan.Parse(server.Downtime.Time);
-                    downtime = _Clock.UtcNow.Date.Add(time);
+                    DateTime time = DateTime.SpecifyKind(
+                        DateTime.Parse(server.Downtime.Time),
+                        DateTimeKind.Utc);
+
+                    if (time < _Clock.UtcNow)
+                    {
+                        downtime = time.AddDays(1);
+                    }
+
+                    else
+                    {
+                        downtime = time;
+                    }
+
+                    duration = server.Downtime.Duration;
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
-                        $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(10)}");
+                        $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(duration.Value)}");
                 }
 
-                if (pcStatus != null && (pcStatus.DateOccured < refreshPeriod || pcStatus.Status != "Online"))
+                foreach (var (componentName, statuses) in componentStatuses)
                 {
-                    if (pcStatus.Status != "Unknown" && (pcStatus.Status == "Online" || pcStatus.DateOccured < refreshPeriod))
-                    {
-                        pcStatus.Status = "Unknown";
+                    EventModel? status = statuses.Find(c => c.Server.Id == server.Id);
 
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            "Updated PC Status to Unknown");
-                    }
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Current {componentName} Status: {status?.Status ?? "No Status"}");
 
-                    if (downtime == null || (pcStatus.DateOccured < downtime || pcStatus.DateOccured > downtime.Value.AddMinutes(10)))
+                    if (status != null && (status.DateOccured < refreshPeriod || status.Status != "Online"))
                     {
-                        await AlertsHandler(
-                            alerts.Entries,
-                            server,
-                            pcStatus.Component,
-                            pcStatus.Status);
-                    }
-
-                    if (pcStatus.DateOccured < refreshPeriod)
-                    {
-                        EventRequestModel newEvent = new()
+                        if (status.Status != "Unknown" && (status.Status == "Online" || status.DateOccured < refreshPeriod))
                         {
-                            Component = pcStatus.Component,
-                            Status = pcStatus.Status,
-                            ServerId = server.Id,
-                            Name = server.Name,
-                            HostName = server.HostName,
-                            Game = server.Game,
-                            GameVersion = server.GameVersion
-                        };
+                            status.Status = "Unknown";
 
-                        (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                        if (createdEvent != null)
-                        {
                             _Logger.LogMessage(
                                 StandardValues.LoggerValues.Debug,
-                                "Server Event Registered");
+                                $"Updated {componentName} Status to Unknown");
                         }
-                    }
-                }
 
-                if (serverStatus != null && (serverStatus.DateOccured < refreshPeriod || serverStatus.Status != "Online"))
-                {
-                    if (serverStatus.Status != "Unknown" && (serverStatus.Status == "Online" || serverStatus.DateOccured < refreshPeriod))
-                    {
-                        serverStatus.Status = "Unknown";
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            "Updated Server Status to Unknown");
-                    }
-
-                    if (downtime == null || (serverStatus.DateOccured < downtime || serverStatus.DateOccured > downtime.Value.AddMinutes(10)))
-                    {
-                        await AlertsHandler(
-                            alerts.Entries,
-                            server,
-                            serverStatus.Component,
-                            serverStatus.Status);
-                    }
-
-                    if (serverStatus.DateOccured < refreshPeriod)
-                    {
-                        EventRequestModel newEvent = new()
+                        if (downtime == null || (status.DateOccured < downtime || status.DateOccured > downtime.Value.AddMinutes(duration.Value)))
                         {
-                            Component = serverStatus.Component,
-                            Status = serverStatus.Status,
-                            ServerId = server.Id,
-                            Name = server.Name,
-                            HostName = server.HostName,
-                            Game = server.Game,
-                            GameVersion = server.GameVersion
-                        };
-
-                        (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                        if (createdEvent != null)
-                        {
-                            _Logger.LogMessage(
-                                StandardValues.LoggerValues.Debug,
-                                "Server Event Registered");
+                            await AlertsHandler(
+                                alerts?.Entries ?? [],
+                                server,
+                                status.Component,
+                                status.Status);
                         }
-                    }
-                }
 
-                if (connectionStatus != null && (connectionStatus.DateOccured < refreshPeriod || connectionStatus.Status != "Online"))
-                {
-                    if (connectionStatus.Status != "Unknown" && (connectionStatus.Status == "Online" || connectionStatus.DateOccured < refreshPeriod))
-                    {
-                        connectionStatus.Status = "Unknown";
-
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            "Updated Connection Status to Unknown");
-                    }
-
-                    if (downtime == null || (connectionStatus.DateOccured < downtime || connectionStatus.DateOccured > downtime.Value.AddMinutes(10)))
-                    {
-                        await AlertsHandler(
-                            alerts.Entries,
-                            server,
-                            connectionStatus.Component,
-                            connectionStatus.Status);
-                    }
-
-                    if (connectionStatus.DateOccured < refreshPeriod)
-                    {
-                        EventRequestModel newEvent = new()
+                        if (status.DateOccured < refreshPeriod)
                         {
-                            Component = connectionStatus.Component,
-                            Status = connectionStatus.Status,
-                            ServerId = server.Id,
-                            Name = server.Name,
-                            HostName = server.HostName,
-                            Game = server.Game,
-                            GameVersion = server.GameVersion
-                        };
+                            EventRequestModel newEvent = new()
+                            {
+                                Component = status.Component,
+                                Status = status.Status,
+                                ServerId = server.Id,
+                                Name = server.Name,
+                                HostName = server.HostName,
+                                Game = server.Game,
+                                GameVersion = server.GameVersion
+                            };
 
-                        (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
+                            (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
 
-                        if (createdEvent != null)
-                        {
-                            _Logger.LogMessage(
-                                StandardValues.LoggerValues.Debug,
-                                "Server Event Registered");
+                            if (createdEvent != null)
+                            {
+                                _Logger.LogMessage(
+                                    StandardValues.LoggerValues.Debug,
+                                    "Server Event Registered");
+                            }
                         }
                     }
                 }
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Checked Status for {server.HostName} - {server.Game} ({server.GameVersion})");
+                    $"Checked Status for {server.Name}");
             }
 
             _Logger.LogMessage(
@@ -353,11 +280,11 @@ namespace ServerStatusAutomation.Services
                             _Logger.LogMessage(
                                 StandardValues.LoggerValues.Debug,
                                 "Alert Registered");
-                        }
 
-                        await _discordService.SendNotification(
-                            SharedSettings.RecipientId,
-                            $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
+                            await _discordService.SendNotification(
+                                SharedSettings.RecipientId,
+                                $"Automation has reported an issue with the {server.Name} server. {component}: {status}");
+                        }
                     }
 
                     else
@@ -397,11 +324,11 @@ namespace ServerStatusAutomation.Services
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
                         "Alert Registered");
-                }
 
-                await _discordService.SendNotification(
-                    SharedSettings.RecipientId,
-                    $"Automation has reported an issue with the {server.Game} ({server.GameVersion}) server. {component}: {status}");
+                    await _discordService.SendNotification(
+                        SharedSettings.RecipientId,
+                        $"Automation has reported an issue with the {server.Name} server. {component}: {status}");
+                }
             }
         }
     }

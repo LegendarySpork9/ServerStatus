@@ -34,7 +34,6 @@ namespace ServerStatusSite.Components.Pages.Alerts
         private string ErrorMessage { get; set; } = string.Empty;
 
         private int AlertId { get; set; } = 0;
-        private bool Loading { get; set; } = false;
         private string AlertStatus { get; set; } = string.Empty;
 
         /// <summary>
@@ -66,7 +65,11 @@ namespace ServerStatusSite.Components.Pages.Alerts
             }
 
             Alert = await APIService.GetAlert(AlertId);
-            AlertStatus = Alert.AlertStatus;
+            
+            if (Alert != null)
+            {
+                AlertStatus = Alert.AlertStatus;
+            }
 
             IsLoading = false;
         }
@@ -91,8 +94,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
         {
             SaveSuccess = false;
             ErrorMessage = string.Empty;
+            IsLoading = true;
 
-            Loading = true;
             StateHasChanged();
 
             DiscordService _discordService = new(
@@ -160,7 +163,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 StandardValues.LoggerValues.Info,
                 "Alert Save Complete");
 
-            Loading = false;
+            IsLoading = false;
 
             await InvokeAsync(StateHasChanged);
 

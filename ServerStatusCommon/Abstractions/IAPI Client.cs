@@ -24,5 +24,6 @@ namespace ServerStatusCommon.Abstractions
         Task<(AlertModel?, ResponseModel?)> UpdateAlert(int alertId, AlertUpdateRequestModel alert);
         Task<(AlertModel?, ResponseModel?)> RegisterAlert(AlertRequestModel alert);
         Task<(EventModel?, ResponseModel?)> RegisterServerEvent(EventRequestModel newEvent);
+        Task<(List<ComponentModel>, bool)> GetComponents();
     }
 }

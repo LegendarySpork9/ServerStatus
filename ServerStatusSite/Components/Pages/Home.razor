@@ -4,7 +4,7 @@
 <PageTitle>Home</PageTitle>
 
 <div style="@GetStyle()">
-    @if (IsLoading && Servers == null && PCEvents == null && ServerEvents == null && ConnectionEvents == null)
+    @if (IsLoading && Servers == null && ComponentEvents.Count == 0)
     {
         <div class="d-flex justify-content-center py-5">
             <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
@@ -15,7 +15,7 @@
 
     else
     {
-        @if (Servers.Count > 0)
+        @if (Servers != null && Servers.Count > 0 && ComponentEvents.Count > 0)
         {
             @foreach (var server in Servers)
             {
@@ -25,60 +25,27 @@
                         <p>@server.Game @server.GameVersion</p>
                     </div>
                     <div class="status-row">
-                        <div class="status-item">
-                            <div class="status-image-wrapper">
-                                <img src="/Images/Login Background.png" />
+                        @foreach (string component in Components)
+                        {
+                            <div class="status-item">
+                                <div class="status-image-wrapper">
+                                    <img src="/Images/@(component) Icon.png" />
+                                </div>
+                                @{
+                                    EventModel? componentEvent = ComponentEvents.GetValueOrDefault(component)?.Find(e => e.Server.Id == server.Id);
+
+                                    if (componentEvent != null)
+                                    {
+                                        <label>@component Status: <span class="@APIConverter.GetStatusClass(componentEvent.Status)">@componentEvent.Status</span></label>
+                                    }
+
+                                    else
+                                    {
+                                        <label>@component Status: <span class="unknown">Unknown</span></label>
+                                    }
+                                }
                             </div>
-                            @{
-                                EventModel? pcEvent = PCEvents.Find(pc => pc.Server.Id == server.Id);
-
-                                if (pcEvent != null)
-                                {
-                                    <label>PC Status: <span class="@APIConverter.GetStatusClass(pcEvent.Status)">@pcEvent.Status</span></label>
-                                }
-
-                                else
-                                {
-                                    <label>PC Status: <span class="offline">Offline</span></label>
-                                }
-                            }
-                        </div>
-                        <div class="status-item">
-                            <div class="status-image-wrapper">
-                                <img src="/Images/Game Icon.png" />
-                            </div>
-                            @{
-                                EventModel? serverEvent = ServerEvents.Find(pc => pc.Server.Id == server.Id);
-
-                                if (serverEvent != null)
-                                {
-                                    <label>Server Status: <span class="@APIConverter.GetStatusClass(serverEvent.Status)">@serverEvent.Status</span></label>
-                                }
-
-                                else
-                                {
-                                    <label>Server Status: <span class="offline">Offline</span></label>
-                                }
-                            }
-                        </div>
-                        <div class="status-item">
-                            <div class="status-image-wrapper">
-                                <img src="/Images/Connection Icon.png" />
-                            </div>
-                            @{
-                                EventModel? connectionEvent = ConnectionEvents.Find(pc => pc.Server.Id == server.Id);
-
-                                if (connectionEvent != null)
-                                {
-                                    <label>Connection Status: <span class="@APIConverter.GetStatusClass(connectionEvent.Status)">@connectionEvent.Status</span></label>
-                                }
-
-                                else
-                                {
-                                    <label>Connection Status: <span class="offline">Offline</span></label>
-                                }
-                            }
-                        </div>
+                        }
                     </div>
                 </div>
             }
@@ -86,7 +53,7 @@
 
         else
         {
-            <p class="no-servers-message">No active servers registered in API. If this is wrong, please speak with an administrator.</p>
+            <p class="no-servers-message">No active servers or components registered in API. If this is wrong, please speak with an administrator.</p>
         }
     }
 </div>

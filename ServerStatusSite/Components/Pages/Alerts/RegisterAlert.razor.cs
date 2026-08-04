@@ -28,17 +28,18 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
         private List<ServerModel>? Servers;
         private List<string> ServersNames = [];
+        private List<string> ComponentNames = [];
 
         private bool IsLoading;
+        private bool RegisterSuccess;
+        private bool ShowError;
+
+        private string ErrorMessage { get; set; } = string.Empty;
 
         private string Server { get; set; } = string.Empty;
         private string Component { get; set; } = string.Empty;
         private string ComponentStatus { get; set; } = string.Empty;
         private string DiscordName { get; set;  } = string.Empty;
-        private bool ShowError { get; set; } = false;
-        private bool Loading { get; set; } = false;
-        private string ErrorMessage { get; set; } = string.Empty;
-        private bool RegisterSuccess { get; set; } = false;
 
         /// <summary>
         /// Loads the servers from the API.
@@ -52,7 +53,13 @@ namespace ServerStatusSite.Components.Pages.Alerts
             IsLoading = true;
 
             Servers = await APIService.GetServers();
-            ServersNames.AddRange(Servers.Select(s => s.Name));
+            ComponentNames = await APIService.GetComponents();
+
+            if (Servers != null)
+            {
+                ServersNames.AddRange(Servers.Select(s => s.Name));
+            }
+
             DiscordName = User.Settings.Find(s => s.Name == "DiscordName")?.Value ?? User.Username;
 
             IsLoading = false;
@@ -79,87 +86,91 @@ namespace ServerStatusSite.Components.Pages.Alerts
             ShowError = false;
             RegisterSuccess = false;
             ErrorMessage = string.Empty;
+            IsLoading = true;
 
-            Loading = true;
             StateHasChanged();
 
             AlertInformationModel? alerts = await APIService.GetAlerts(1);
-            ServerModel server = Servers.First(s => s.Name == Server);
-            AlertModel? alert = alerts.Entries.Find(c => c.Server.Id == server.Id && c.Component == Component && c.AlertStatus != "Resolved");
 
-            if (alert == null)
+            if (Servers != null && alerts != null)
             {
-                DiscordService _discordService = new(
-                    _Logger,
-                    _HTTPClient,
-                    SharedSettings);
+                ServerModel server = Servers.First(s => s.Name == Server);
+                AlertModel? alert = alerts.Entries.Find(c => c.Server.Id == server.Id && c.Component == Component && c.AlertStatus != "Resolved");
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    "Attempting Alert Register");
-
-                SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
-
-                string[] gameDetails = Server.Split('(');
-
-                AlertRequestModel alertRequest = new()
+                if (alert == null)
                 {
-                    Reporter = discordSetting.Value,
-                    Component = Component,
-                    ComponentStatus = ComponentStatus,
-                    AlertStatus = "Reported",
-                    ServerId = server.Id,
-                    Name = server.Name,
-                    HostName = server.HostName ?? StandardValues.MissingValues.HostName,
-                    Game = server.Game ?? StandardValues.MissingValues.Game,
-                    GameVersion = server.GameVersion ?? StandardValues.MissingValues.GameVersion
-                };
+                    DiscordService _discordService = new(
+                        _Logger,
+                        _HTTPClient,
+                        SharedSettings);
 
-                (AlertModel? newAlert, ResponseModel? apiResponse) = await APIService.RegisterAlert(alertRequest);
-
-                if (newAlert != null)
-                {
                     _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Alert Registered");
+                        StandardValues.LoggerValues.Info,
+                        "Attempting Alert Register");
 
-                    if (SharedSettings.RecipientIds.Contains(','))
+                    SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
+
+                    string[] gameDetails = Server.Split('(');
+
+                    AlertRequestModel alertRequest = new()
                     {
-                        await _discordService.SendNotification(
-                            SharedSettings.RecipientIds.Split(',')[0],
-                            $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                        Reporter = discordSetting.Value,
+                        Component = Component,
+                        ComponentStatus = ComponentStatus,
+                        AlertStatus = "Reported",
+                        ServerId = server.Id,
+                        Name = server.Name,
+                        HostName = server.HostName,
+                        Game = server.Game,
+                        GameVersion = server.GameVersion
+                    };
+
+                    (AlertModel? newAlert, ResponseModel? apiResponse) = await APIService.RegisterAlert(alertRequest);
+
+                    if (newAlert != null)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            "Alert Registered");
+
+                        if (SharedSettings.RecipientIds.Contains(','))
+                        {
+                            await _discordService.SendNotification(
+                                SharedSettings.RecipientIds.Split(',')[0],
+                                $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                        }
+
+                        else
+                        {
+                            await _discordService.SendNotification(
+                                SharedSettings.RecipientIds,
+                                $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                        }
+
+                        RegisterSuccess = true;
                     }
 
                     else
                     {
-                        await _discordService.SendNotification(
-                            SharedSettings.RecipientIds,
-                            $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
+                        ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            ErrorMessage);
                     }
 
-                    RegisterSuccess = true;
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Alert Register Complete");
                 }
 
                 else
                 {
-                    ErrorMessage = $"API returned {apiResponse?.StatusCode} ({apiResponse?.Message})";
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Warning,
-                        ErrorMessage);
+                    ShowError = true;
                 }
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    "Alert Register Complete");
             }
 
-            else
-            {
-                ShowError = true;
-            }
-
-            Loading = false;
+            IsLoading = false;
 
             await InvokeAsync(StateHasChanged);
 

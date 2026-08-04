@@ -32,6 +32,10 @@ namespace ServerStatusReporter.Services
                 StandardValues.LoggerValues.Debug,
                 $"Reading PID file for {serverName}");
 
+            int processId = 0;
+            DateTime startTime = default;
+            bool proceed = true;
+
             try
             {
                 string filePath = Path.Combine(
@@ -44,44 +48,56 @@ namespace ServerStatusReporter.Services
                         StandardValues.LoggerValues.Debug,
                         $"PID file not found for {serverName}");
 
-                    return null;
+                    proceed = false;
                 }
 
-                string content = await _FileSystem.ReadAllText(filePath);
-                string[] lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                if (proceed)
+                {
+                    string content = await _FileSystem.ReadAllText(filePath);
+                    string[] lines = content.Split(
+                        '\n',
+                        StringSplitOptions.RemoveEmptyEntries);
 
-                if (lines.Length < 2)
+                    if (lines.Length < 2)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            $"PID file for {serverName} is malformed");
+
+                        proceed = false;
+                    }
+
+                    if (proceed && !int.TryParse(
+                        lines[0].Trim(),
+                        out processId))
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            $"PID file for {serverName} contains an invalid process ID");
+
+                        proceed = false;
+                    }
+
+                    if (proceed && !DateTime.TryParse(
+                        lines[1].Trim(),
+                        null,
+                        System.Globalization.DateTimeStyles.RoundtripKind,
+                        out startTime))
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            $"PID file for {serverName} contains an invalid start time");
+
+                        proceed = false;
+                    }
+                }
+
+                if (proceed)
                 {
                     _Logger.LogMessage(
-                        StandardValues.LoggerValues.Warning,
-                        $"PID file for {serverName} is malformed");
-
-                    return null;
+                        StandardValues.LoggerValues.Debug,
+                        $"PID file read for {serverName}: PID {processId}");
                 }
-
-                if (!int.TryParse(lines[0].Trim(), out int processId))
-                {
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Warning,
-                        $"PID file for {serverName} contains an invalid process ID");
-
-                    return null;
-                }
-
-                if (!DateTime.TryParse(lines[1].Trim(), null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime startTime))
-                {
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Warning,
-                        $"PID file for {serverName} contains an invalid start time");
-
-                    return null;
-                }
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"PID file read for {serverName}: PID {processId}");
-
-                return (processId, startTime);
             }
 
             catch (Exception ex)
@@ -93,8 +109,12 @@ namespace ServerStatusReporter.Services
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
 
-                return null;
+                proceed = false;
             }
+
+            return proceed
+                ? (processId, startTime)
+                : null;
         }
     }
 }

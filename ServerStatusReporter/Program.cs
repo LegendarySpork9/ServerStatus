@@ -45,10 +45,7 @@ namespace ServerStatusReporter
                 $"Refresh Time: {sharedSettings.RefreshTime}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Host Name: {AppSettingsModel.HostName}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Games: {string.Join(',', AppSettingsModel.Games)}");
+                $"Servers: {string.Join(',', AppSettingsModel.Servers)}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 $"Components: {string.Join(',', AppSettingsModel.Components)}");
@@ -60,7 +57,7 @@ namespace ServerStatusReporter
                 _logger,
                 _fileSystem,
                 sharedSettings);
-            RetryService _retryService = new RetryService(_logger);
+            RetryService _retryService = new(_logger);
             APIService _apiService = new(
                 _logger,
                 _apiClient,

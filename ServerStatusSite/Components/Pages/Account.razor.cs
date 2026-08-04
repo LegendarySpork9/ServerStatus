@@ -28,7 +28,6 @@ namespace ServerStatusSite.Components.Pages
         private string Password { get; set; } = string.Empty;
         private string DiscordName { get; set; } = string.Empty;
         private bool DarkMode { get; set; }
-        private bool Loading { get; set; } = false;
 
         /// <summary>
         /// Loads the user data of the logged in user.
@@ -82,12 +81,12 @@ namespace ServerStatusSite.Components.Pages
         {
             SaveSuccess = false;
             ErrorMessage = string.Empty;
+            IsLoading = true;
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Attempting User Save");
 
-            Loading = true;
             StateHasChanged();
 
             ResponseModel? apiResponse = null;
@@ -205,7 +204,7 @@ namespace ServerStatusSite.Components.Pages
                 StandardValues.LoggerValues.Info,
                 "User Save Complete");
 
-            Loading = false;
+            IsLoading = false;
 
             await InvokeAsync(StateHasChanged);
 

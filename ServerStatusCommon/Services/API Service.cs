@@ -236,6 +236,66 @@ namespace ServerStatusCommon.Services
         }
 
         /// <summary>
+        /// Gets a list of component names from the API.
+        /// </summary>
+        public async Task<List<string>> GetComponents()
+        {
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Fetching components from API");
+
+            if (ExpiryTime < _Clock.UtcNow)
+            {
+                await Authorise();
+            }
+
+            List<string> components = [];
+
+            try
+            {
+                (List<ComponentModel> componentModels, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetComponents(),
+                    result => result.Item2,
+                    ReauthoriseIfExpired,
+                    "fetch components from API");
+
+                if (success)
+                {
+                    foreach (ComponentModel component in componentModels)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Component Id: {component.Id}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Component Name: {component.Name}");
+                    }
+
+                    components = componentModels.Select(c => c.Name).ToList();
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Fetched components from API");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Failed to fetch components from API");
+            }
+
+            return components;
+        }
+
+        /// <summary>
         /// Gets a list of active servers.
         /// </summary>
         public async Task<List<ServerModel>> GetServers()
@@ -283,7 +343,7 @@ namespace ServerStatusCommon.Services
                             $"Connection: {server.Connection.IPAddress}:{server.Connection.Port}");
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
-                            $"Downtime: {server.Downtime?.Time ?? "No Downtime"}");
+                            $"Downtime: {server.Downtime?.Time ?? "No Downtime"} ({server.Downtime?.Duration.ToString() ?? "0"})");
                     }
 
                     _Logger.LogMessage(

@@ -29,8 +29,12 @@ namespace ServerStatus.Tests.Common.Services
             (int processId, DateTime expectedStartTime)? result = await _pidFileService.Read("Test Server");
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(12345, result.Value.processId);
-            Assert.AreEqual(startTime, result.Value.expectedStartTime);
+            Assert.AreEqual(
+                12345,
+                result.Value.processId);
+            Assert.AreEqual(
+                startTime,
+                result.Value.expectedStartTime);
         }
 
         /// <summary>
