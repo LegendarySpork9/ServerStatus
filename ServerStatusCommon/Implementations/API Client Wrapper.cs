@@ -1156,6 +1156,94 @@ namespace ServerStatusCommon.Implementations
         }
 
         /// <summary>
+        /// Returns a list of components from the API.
+        /// </summary>
+        public async Task<(List<ComponentModel>, bool)> GetComponents()
+        {
+            List<ComponentModel> components = [];
+            bool success = false;
+
+            try
+            {
+                string url = BuildURL("/configuration/component");
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"URL: {url}");
+
+                RestClient client = new(url);
+                client.AddDefaultHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    "Configured Rest Client");
+
+                RestRequest request = new()
+                {
+                    Method = Method.Get
+                };
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    "Configured Rest Request");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    "Sending Request");
+
+                RestResponse response = await client.ExecuteAsync(request);
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Response Code: {response.StatusCode}");
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Response Message: {response.Content ?? "No Response Content"}");
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != null)
+                {
+                    ComponentInformationModel? componentInfo = JsonConvert.DeserializeObject<ComponentInformationModel>(response.Content);
+
+                    if (componentInfo != null)
+                    {
+                        components = componentInfo.Entries;
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Components Returned: {components.Count}");
+
+                        success = true;
+                    }
+                }
+
+                if (response.ErrorException != null)
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        $"Response Error: {response.ErrorException.Message}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        $"Response Stack Trace: {response.ErrorException.StackTrace}");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
+            }
+
+            return (
+                components,
+                success);
+        }
+
+        /// <summary>
         /// Returns the API url.
         /// </summary>
         private string BuildURL(

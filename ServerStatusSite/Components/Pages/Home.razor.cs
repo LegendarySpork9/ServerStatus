@@ -26,9 +26,8 @@ namespace ServerStatusSite.Components.Pages
         private UserModel User { get; set; } = default!;
 
         private List<ServerModel>? Servers;
-        private List<EventModel>? PCEvents;
-        private List<EventModel>? ServerEvents;
-        private List<EventModel>? ConnectionEvents;
+        private List<string> Components = [];
+        private readonly Dictionary<string, List<EventModel>> ComponentEvents = [];
 
         private bool IsLoading;
 
@@ -59,9 +58,12 @@ namespace ServerStatusSite.Components.Pages
                 $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
             Servers = await APIService.GetServers();
-            PCEvents = await APIService.GetServerEvents("PC");
-            ServerEvents = await APIService.GetServerEvents("Server");
-            ConnectionEvents = await APIService.GetServerEvents("Connection");
+            Components = await APIService.GetComponents();
+
+            foreach (string component in Components)
+            {
+                ComponentEvents[component] = await APIService.GetServerEvents(component);
+            }
 
             DateTime currentTime = _Clock.UtcNow;
             NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)

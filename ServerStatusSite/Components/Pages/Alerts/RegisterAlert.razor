@@ -2,7 +2,7 @@
 
 <PageTitle>Register Alert</PageTitle>
 
-@if (IsLoading && Servers == null)
+@if (IsLoading && Servers == null && ComponentNames.Count == 0)
 {
     <div class="d-flex justify-content-center py-5">
         <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
@@ -13,59 +13,73 @@
 
 else
 {
-    <div class="container">
-        <div class="@GetStyle("Form") form-grid">
-            <label>Reporter:</label>
-            <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="DiscordName" />
+    @if (Servers == null)
+    {
+        <div class="alert alert-warning">No servers found, unable to raise an alert without servers registered in the API.</div>
+    }
 
-            <label>Server:</label>
-            <select style="@GetStyle("Input")" @bind="Server">
-                <option value="" disabled selected>Select an option</option>
-                @foreach (string server in ServersNames)
-                {
-                    <option value="@server">@server</option>
-                }
-            </select>
+    else if (ComponentNames.Count == 0)
+    {
+        <div class="alert alert-warning">No components found, unable to raise an alert without components registered in the API.</div>
+    }
 
-            <label>Component:</label>
-            <select style="@GetStyle("Input")" @bind="Component">
-                <option value="" disabled selected>Select an option</option>
-                <option value="PC">PC</option>
-                <option value="Server">Server</option>
-                <option value="Connection">Connection</option>
-            </select>
+    else
+    {
+        <div class="container">
+            <div class="@GetStyle("Form") form-grid">
+                <label>Reporter:</label>
+                <input type="text" style="@GetStyle("Input")" readonly="readonly" @bind="DiscordName" />
 
-            <label>Component Status:</label>
-            <select style="@GetStyle("Input")" @bind="ComponentStatus">
-                <option value="" disabled selected>Select an option</option>
-                <option value="Offline">Offline</option>
-                <option value="Unknown">Unknown</option>
-            </select>
-
-            @if (ShowError)
-            {
-                <label class="form-fail">There is already an alert registered for the given details.</label>
-            }
-
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <label class="form-fail">@ErrorMessage</label>
-            }
-
-            @if (RegisterSuccess)
-            {
-                <label class="form-full-row text-success">Registered successfully!</label>
-            }
-
-            <div class="form-full-row">
-                <button class="btn btn-primary" disabled="@Loading" @onclick="RegisterClick">
-                    @if (Loading)
+                <label>Server:</label>
+                <select style="@GetStyle("Input")" @bind="Server">
+                    <option value="" disabled selected>Select an option</option>
+                    @foreach (string server in ServersNames)
                     {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <option value="@server">@server</option>
                     }
-                    Register
-                </button>
+                </select>
+
+                <label>Component:</label>
+                <select style="@GetStyle("Input")" @bind="Component">
+                    <option value="" disabled selected>Select an option</option>
+                    @foreach (string component in ComponentNames)
+                    {
+                        <option value="@component">@component</option>
+                    }
+                </select>
+
+                <label>Component Status:</label>
+                <select style="@GetStyle("Input")" @bind="ComponentStatus">
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+
+                @if (ShowError)
+                {
+                    <label class="form-fail">There is already an alert registered for the given details.</label>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <label class="form-fail">@ErrorMessage</label>
+                }
+
+                @if (RegisterSuccess)
+                {
+                    <label class="form-full-row text-success">Registered successfully!</label>
+                }
+
+                <div class="form-full-row">
+                    <button class="btn btn-primary" disabled="@IsLoading" @onclick="RegisterClick">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Register
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    }
 }

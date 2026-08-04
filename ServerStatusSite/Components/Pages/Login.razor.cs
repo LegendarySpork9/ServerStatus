@@ -24,10 +24,11 @@ namespace ServerStatusSite.Components.Pages
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private string ReturnUrl { get; set; } = "/";
         private bool Loading { get; set; } = false;
 
         private string ErrorMessage { get; set; } = string.Empty;
+
+        private string ReturnUrl { get; set; } = "/";
 
         /// <summary>
         /// Captures the URL the user was trying to access and sets the API _Logger.

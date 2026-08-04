@@ -750,6 +750,54 @@ namespace ServerStatus.Tests.Common.Services
         }
 
         /// <summary>
+        /// Checks whether the GetComponents method works as expected.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetComponents()
+        {
+            List<ComponentModel> expected =
+            [
+                new()
+                {
+                    Id = 1,
+                    Name = "PC"
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "Game"
+                }
+            ];
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetComponents())
+                .ReturnsAsync((
+                    expected,
+                    true));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<string> actual = await _apiService.GetComponents();
+
+            Assert.AreEqual(
+                2,
+                actual.Count);
+            Assert.AreEqual(
+                expected[0].Name,
+                actual[0]);
+            Assert.AreEqual(
+                expected[1].Name,
+                actual[1]);
+        }
+
+        /// <summary>
         /// Checks whether the RegisterServerEvent method works as expected.
         /// </summary>
         [TestMethod]

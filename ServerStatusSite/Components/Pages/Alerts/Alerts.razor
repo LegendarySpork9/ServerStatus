@@ -37,7 +37,7 @@ else
         }
     }
 
-    @if (ReportedAlerts.Entries.Count == 0)
+    @if (ReportedAlerts == null || ReportedAlerts.Entries.Count == 0)
     {
         <br />
         <br />

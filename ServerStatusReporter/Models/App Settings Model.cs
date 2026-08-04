@@ -8,8 +8,7 @@ namespace ServerStatusReporter.Models
     /// </summary>
     public static class AppSettingsModel
     {
-        public static string HostName { get; set; } = ConfigurationManager.AppSettings["HostName"];
-        public static string[] Games { get; set; } = ConfigurationManager.AppSettings["Games"].Split(',');
+        public static string[] Servers { get; set; } = ConfigurationManager.AppSettings["Servers"].Split(',');
         public static string[] Components { get; set; } = ConfigurationManager.AppSettings["Components"].Split(',');
     }
 }

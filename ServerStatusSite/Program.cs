@@ -24,7 +24,7 @@ namespace ServerStatusSite
                 StandardValues.LoggerValues.Info,
                 "Starting Website");
 
-            var builder = WebApplication.CreateBuilder(args);
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -58,7 +58,7 @@ namespace ServerStatusSite
                 StandardValues.LoggerValues.Debug,
                 "Configured Services");
 
-            var app = builder.Build();
+            WebApplication app = builder.Build();
 
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
