@@ -271,7 +271,8 @@ namespace ServerStatusCommon.Services
                             $"Component Name: {component.Name}");
                     }
 
-                    components = componentModels.Select(c => c.Name).ToList();
+                    components = [.. componentModels.Where(c => !c.IsDeleted)
+                        .Select(c => c.Name)];
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
