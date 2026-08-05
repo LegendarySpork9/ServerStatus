@@ -1,15 +1,22 @@
 ﻿.clickable-row {
     cursor: pointer;
+    transition: 0.3s;
+}
+
+.clickable-row:hover {
+    transform: scale(1.025);
 }
 
 .table-responsive {
     overflow-x: auto;
+    display: flex;
+    justify-content: center;
 }
 
 /* Light Mode CSS*/
 
 table {
-    width: 100%;
+    width: auto;
     border-collapse: separate;
     border-spacing: 0 5px;
 }
