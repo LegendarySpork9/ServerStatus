@@ -13,13 +13,13 @@ namespace ServerStatusCommon.Abstractions
     {
         void SetBearerToken(string bearerToken);
         Task<(AuthenticationModel?, ResponseModel?)> Authorise();
-        Task<(List<UserModel>, bool)> GetUsers();
+        Task<(PagedResponseModel<UserModel>?, bool)> GetUsers(List<KeyValuePair<string, object>> queryParameters);
         Task<(List<UserSettingModel>, bool)> GetUserSettings(int userId);
-        Task<(List<ServerModel>, bool)> GetServers();
+        Task<(PagedResponseModel<ServerModel>?, bool)> GetServers(List<KeyValuePair<string, object>> queryParameters);
         Task<(List<EventModel>, bool)> GetServerEvents(List<KeyValuePair<string, object>> queryParameters);
         Task<(SettingModel?, ResponseModel?)> UpdateUserSettings(int userSettingId, UserSettingUpdateRequestModel userSetting);
         Task<(UserModel?, ResponseModel?)> UpdateUser(int userId, UserUpdateRequestModel user);
-        Task<(AlertInformationModel?, bool)> GetAlerts(List<KeyValuePair<string, object>> queryParameters);
+        Task<(PagedResponseModel<AlertModel>?, bool)> GetAlerts(List<KeyValuePair<string, object>> queryParameters);
         Task<(AlertModel?, bool)> GetAlert(int alertId);
         Task<(AlertModel?, ResponseModel?)> UpdateAlert(int alertId, AlertUpdateRequestModel alert);
         Task<(AlertModel?, ResponseModel?)> RegisterAlert(AlertRequestModel alert);

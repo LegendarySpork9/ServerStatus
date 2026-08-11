@@ -84,7 +84,7 @@ namespace ServerStatusSite.Components.Pages
 
             if (apiResponse == null)
             {
-                List<UserModel> users = await APIService.GetUsers();
+                List<UserModel> users = await APIService.GetUsers(User.Username);
 
                 if (users.Count == 0)
                 {

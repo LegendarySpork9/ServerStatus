@@ -50,6 +50,20 @@ namespace ServerStatus.Tests.Common.Converters
                 actual);
         }
 
+        /// <summary>
+        /// Checks whether the GetQuery method returns the correct output for the given value.
+        /// </summary>
+        [TestMethod]
+        public void TestGetQueryUser()
+        {
+            string expected = "?includeDeleted=false";
+            string actual = APIConverter.GetQuery("/user");
+
+            Assert.AreEqual(
+                expected,
+                actual);
+        }
+
         #endregion
 
         #region GetStatusClass

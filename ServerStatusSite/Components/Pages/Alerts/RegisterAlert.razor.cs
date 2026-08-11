@@ -90,7 +90,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             StateHasChanged();
 
-            AlertInformationModel? alerts = await APIService.GetAlerts(1);
+            PagedResponseModel<AlertModel>? alerts = await APIService.GetAlerts(1);
 
             if (Servers != null && alerts != null)
             {

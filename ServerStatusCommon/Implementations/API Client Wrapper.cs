@@ -141,14 +141,16 @@ namespace ServerStatusCommon.Implementations
         /// <summary>
         /// Returns a list of users from the API.
         /// </summary>
-        public async Task<(List<UserModel>, bool)> GetUsers()
+        public async Task<(PagedResponseModel<UserModel>?, bool)> GetUsers(List<KeyValuePair<string, object>> queryParameters)
         {
-            List<UserModel> users = [];
+            PagedResponseModel<UserModel>? users = null;
             bool success = false;
 
             try
             {
-                string url = BuildURL("/user");
+                string url = BuildURL(
+                    "/user",
+                    queryParameters: queryParameters);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -186,13 +188,16 @@ namespace ServerStatusCommon.Implementations
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != null)
                 {
-                    users = JsonConvert.DeserializeObject<List<UserModel>>(response.Content) ?? [];
+                    users = JsonConvert.DeserializeObject<PagedResponseModel<UserModel>>(response.Content);
 
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        $"Users Returned: {users.Count}");
+                    if (users != null)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Users Returned: {users.EntryCount}");
 
-                    success = true;
+                        success = true;
+                    }
                 }
 
                 if (response.ErrorException != null)
@@ -309,14 +314,16 @@ namespace ServerStatusCommon.Implementations
         /// <summary>
         /// Returns a list of servers from the API.
         /// </summary>
-        public async Task<(List<ServerModel>, bool)> GetServers()
+        public async Task<(PagedResponseModel<ServerModel>?, bool)> GetServers(List<KeyValuePair<string, object>> queryParameters)
         {
-            List<ServerModel> servers = [];
+            PagedResponseModel<ServerModel>? servers = null;
             bool success = false;
 
             try
             {
-                string url = BuildURL("/serverstatus/serverinformation");
+                string url = BuildURL(
+                    "/serverstatus/serverinformation",
+                    queryParameters: queryParameters);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -354,13 +361,16 @@ namespace ServerStatusCommon.Implementations
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != null)
                 {
-                    servers = JsonConvert.DeserializeObject<List<ServerModel>>(response.Content) ?? [];
+                    servers = JsonConvert.DeserializeObject<PagedResponseModel<ServerModel>>(response.Content);
 
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        $"Servers Returned: {servers.Count}");
+                    if (servers != null)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Servers Returned: {servers.EntryCount}");
 
-                    success = true;
+                        success = true;
+                    }
                 }
 
                 if (response.ErrorException != null)
@@ -685,9 +695,9 @@ namespace ServerStatusCommon.Implementations
         /// <summary>
         /// Returns a list of alerts from the API.
         /// </summary>
-        public async Task<(AlertInformationModel?, bool)> GetAlerts(List<KeyValuePair<string, object>> queryParameters)
+        public async Task<(PagedResponseModel<AlertModel>?, bool)> GetAlerts(List<KeyValuePair<string, object>> queryParameters)
         {
-            AlertInformationModel? alerts = null;
+            PagedResponseModel<AlertModel>? alerts = null;
             bool success = false;
 
             try
@@ -732,7 +742,7 @@ namespace ServerStatusCommon.Implementations
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != null)
                 {
-                    alerts = JsonConvert.DeserializeObject<AlertInformationModel>(response.Content);
+                    alerts = JsonConvert.DeserializeObject<PagedResponseModel<AlertModel>>(response.Content);
 
                     if (alerts != null)
                     {
@@ -1283,9 +1293,7 @@ namespace ServerStatusCommon.Implementations
                 {
                     foreach (KeyValuePair<string, object> queryParameter in queryParameters)
                     {
-                        query = query.Replace(
-                            $"{queryParameter.Key}",
-                            $"{queryParameter.Value}");
+                        query += $"&{queryParameter.Key}={queryParameter.Value}";
                     }
                 }
             }
