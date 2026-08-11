@@ -27,6 +27,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
         private UserModel User { get; set; } = default!;
 
         private AlertModel? Alert;
+        private List<ServerModel>? Servers;
 
         private bool IsLoading;
         private bool SaveSuccess;
@@ -65,7 +66,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
             }
 
             Alert = await APIService.GetAlert(AlertId);
-            
+            Servers = await APIService.GetServers();
+
             if (Alert != null)
             {
                 AlertStatus = Alert.AlertStatus;
@@ -134,18 +136,13 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 SaveSuccess = true;
 
                 SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
+                ServerModel? server = Servers?.FirstOrDefault(s => s.Id == Alert.Server.Id);
 
-                if (SharedSettings.RecipientIds.Contains(','))
+                if (server != null)
                 {
                     await _discordService.SendNotification(
-                        SharedSettings.RecipientIds.Split(',')[1],
-                        $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
-                }
-
-                else
-                {
-                    await _discordService.SendNotification(
-                        SharedSettings.RecipientIds,
+                        server.WebhookURL,
+                        server.RecipientId,
                         $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
                 }
             }

@@ -58,7 +58,7 @@ namespace ServerStatus.Tests.Common.Functions
             SharedSettingsModel expectedSharedSettings = new()
             {
                 WebhookURL = "https://thisisatest.com/",
-                RecipientId = "test",
+                RecipientId = 123456789,
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",
                 AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json",

@@ -16,6 +16,8 @@ namespace ServerStatusCommon.Models.Responses
         public required ConnectionModel Connection { get; set; }
         public required DowntimeModel? Downtime { get; set; }
         public required int EventInterval { get; set; }
+        public required string WebhookURL { get; set; }
+        public required long RecipientId { get; set; }
         public required bool IsActive { get; set; }
     }
 }

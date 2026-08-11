@@ -282,6 +282,7 @@ namespace ServerStatusAutomation.Services
                                 "Alert Registered");
 
                             await _discordService.SendNotification(
+                                server.WebhookURL,
                                 SharedSettings.RecipientId,
                                 $"Automation has reported an issue with the {server.Name} server. {component}: {status}");
                         }
@@ -326,6 +327,7 @@ namespace ServerStatusAutomation.Services
                         "Alert Registered");
 
                     await _discordService.SendNotification(
+                        server.WebhookURL,
                         SharedSettings.RecipientId,
                         $"Automation has reported an issue with the {server.Name} server. {component}: {status}");
                 }
