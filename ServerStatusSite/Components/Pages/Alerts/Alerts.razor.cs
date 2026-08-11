@@ -28,13 +28,16 @@ namespace ServerStatusSite.Components.Pages.Alerts
         [Inject]
         private UserModel User { get; set; } = default!;
 
-        private AlertInformationModel? ReportedAlerts;
+        private PagedResponseModel<AlertModel>? ReportedAlerts;
+        private List<ServerModel>? Servers;
+        private List<string> ServerNames = [];
 
         private bool IsLoading;
 
         private Timer RefreshTimer { get; set; } = new();
         private DateTime NextElapse;
         private int PageNumber = 1;
+        private string SelectedServer { get; set; } = string.Empty;
 
         /// <summary>
         /// Configures the timer and loads the alerts from the API.
@@ -59,6 +62,13 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 StandardValues.LoggerValues.Debug,
                 $"Timer Duration: {SharedSettings.RefreshTime} minutes");
 
+            Servers = await APIService.GetServers();
+
+            if (Servers != null)
+            {
+                ServerNames.AddRange(Servers.Select(s => s.Name));
+            }
+
             ReportedAlerts = await APIService.GetAlerts(PageNumber) ?? StandardValues.AlertValues.DefaultAlertInfo;
 
             DateTime currentTime = _Clock.UtcNow;
@@ -79,6 +89,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
             return component switch
             {
                 "Data" => StyleConverter.GetTableRowDarkMode(User.DarkMode),
+                "Input" => StyleConverter.GetInputDarkMode(User.DarkMode),
                 _ => StyleConverter.GetTableDarkMode(User.DarkMode)
             };
         }
@@ -98,7 +109,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
         {
             PageNumber--;
 
-            ReportedAlerts = await APIService.GetAlerts(PageNumber);
+            string? serverName = string.IsNullOrEmpty(SelectedServer) ? null : SelectedServer;
+            ReportedAlerts = await APIService.GetAlerts(PageNumber, serverName);
         }
 
         /// <summary>
@@ -108,7 +120,20 @@ namespace ServerStatusSite.Components.Pages.Alerts
         {
             PageNumber++;
 
-            ReportedAlerts = await APIService.GetAlerts(PageNumber);
+            string? serverName = string.IsNullOrEmpty(SelectedServer) ? null : SelectedServer;
+            ReportedAlerts = await APIService.GetAlerts(PageNumber, serverName);
+        }
+
+        /// <summary>
+        /// Reloads the alerts when the server filter changes.
+        /// </summary>
+        private async Task ServerFilterChanged(ChangeEventArgs e)
+        {
+            SelectedServer = e.Value?.ToString() ?? string.Empty;
+            PageNumber = 1;
+
+            string? serverName = string.IsNullOrEmpty(SelectedServer) ? null : SelectedServer;
+            ReportedAlerts = await APIService.GetAlerts(PageNumber, serverName);
         }
 
         /// <summary>
@@ -136,7 +161,9 @@ namespace ServerStatusSite.Components.Pages.Alerts
             try
             {
                 NextElapse = NextElapse.AddMinutes(SharedSettings.RefreshTime);
-                ReportedAlerts = await APIService.GetAlerts(PageNumber);
+
+                string? serverName = string.IsNullOrEmpty(SelectedServer) ? null : SelectedServer;
+                ReportedAlerts = await APIService.GetAlerts(PageNumber, serverName);
 
                 await InvokeAsync(StateHasChanged);
 

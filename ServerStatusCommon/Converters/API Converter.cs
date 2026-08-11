@@ -10,6 +10,7 @@ namespace ServerStatusCommon.Converters
         {
             return endpoint switch
             {
+                "/user" => "?includeDeleted=false",
                 "/usersettings" => "?application=Server Status Site",
                 "/serverstatus/serverinformation" => "?isActive=true",
                 _ => string.Empty

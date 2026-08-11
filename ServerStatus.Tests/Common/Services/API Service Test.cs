@@ -80,19 +80,27 @@ namespace ServerStatus.Tests.Common.Services
         [TestMethod]
         public async Task TestGetUsers()
         {
-            List<UserModel> expected =
-            [
-                new()
-                {
-                    Id = 1,
-                    Username = "Test",
-                    Password = "HashedString",
-                    Scopes = ["User"]
-                }
-            ];
+            PagedResponseModel<UserModel> expected = new()
+            {
+                Entries =
+                [
+                    new()
+                    {
+                        Id = 1,
+                        Username = "Test",
+                        Password = "HashedString",
+                        Scopes = ["User"]
+                    }
+                ],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 25,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
 
             Mock<IAPIClient> _mockAPIClient = new();
-            _mockAPIClient.Setup(api => api.GetUsers())
+            _mockAPIClient.Setup(api => api.GetUsers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((
                     expected,
                     true));
@@ -112,13 +120,69 @@ namespace ServerStatus.Tests.Common.Services
                 1,
                 actual.Count);
             Assert.AreEqual(
-                expected[0].Id,
+                expected.Entries[0].Id,
                 actual[0].Id);
             Assert.AreEqual(
-                expected[0].Username,
+                expected.Entries[0].Username,
                 actual[0].Username);
             Assert.AreEqual(
-                expected[0].Password,
+                expected.Entries[0].Password,
+                actual[0].Password);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUsers method works as expected when filtered by username.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetFilteredUsers()
+        {
+            PagedResponseModel<UserModel> expected = new()
+            {
+                Entries =
+                [
+                    new()
+                    {
+                        Id = 1,
+                        Username = "Test",
+                        Password = "HashedString",
+                        Scopes = ["User"]
+                    }
+                ],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 25,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUsers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    expected,
+                    true));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<UserModel> actual = await _apiService.GetUsers("Test");
+
+            Assert.AreEqual(
+                1,
+                actual.Count);
+            Assert.AreEqual(
+                expected.Entries[0].Id,
+                actual[0].Id);
+            Assert.AreEqual(
+                expected.Entries[0].Username,
+                actual[0].Username);
+            Assert.AreEqual(
+                expected.Entries[0].Password,
                 actual[0].Password);
         }
 
@@ -207,30 +271,38 @@ namespace ServerStatus.Tests.Common.Services
         [TestMethod]
         public async Task TestGetServers()
         {
-            List<ServerModel> expected =
-            [
-                new()
-                {
-                    Id = 1,
-                    Name = "LocalHost",
-                    HostName = "LocalHost",
-                    Game = "Minecraft",
-                    GameVersion = "1.7.10",
-                    Connection = new()
+            PagedResponseModel<ServerModel> expected = new()
+            {
+                Entries =
+                [
+                    new()
                     {
-                        IPAddress = "127.0.0.1",
-                        Port = 25565
-                    },
-                    Downtime = null,
-                    EventInterval = 60,
-                    WebhookURL = "https://discord.com/api/webhooks/test",
-                    RecipientId = 123456789,
-                    IsActive = true
-                }
-            ];
+                        Id = 1,
+                        Name = "LocalHost",
+                        HostName = "LocalHost",
+                        Game = "Minecraft",
+                        GameVersion = "1.7.10",
+                        Connection = new()
+                        {
+                            IPAddress = "127.0.0.1",
+                            Port = 25565
+                        },
+                        Downtime = null,
+                        EventInterval = 60,
+                        WebhookURL = "https://discord.com/api/webhooks/test",
+                        RecipientId = 123456789,
+                        IsActive = true
+                    }
+                ],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 200,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
 
             Mock<IAPIClient> _mockAPIClient = new();
-            _mockAPIClient.Setup(api => api.GetServers())
+            _mockAPIClient.Setup(api => api.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((
                     expected,
                     true));
@@ -247,34 +319,34 @@ namespace ServerStatus.Tests.Common.Services
             List<ServerModel> actual = await _apiService.GetServers();
 
             Assert.AreEqual(
-                expected[0].Id,
+                expected.Entries[0].Id,
                 actual[0].Id);
             Assert.AreEqual(
-                expected[0].Name,
+                expected.Entries[0].Name,
                 actual[0].Name);
             Assert.AreEqual(
-                expected[0].HostName,
+                expected.Entries[0].HostName,
                 actual[0].HostName);
             Assert.AreEqual(
-                expected[0].Game,
+                expected.Entries[0].Game,
                 actual[0].Game);
             Assert.AreEqual(
-                expected[0].GameVersion,
+                expected.Entries[0].GameVersion,
                 actual[0].GameVersion);
             Assert.AreEqual(
-                expected[0].Connection.IPAddress,
+                expected.Entries[0].Connection.IPAddress,
                 actual[0].Connection.IPAddress);
             Assert.AreEqual(
-                expected[0].Connection.Port,
+                expected.Entries[0].Connection.Port,
                 actual[0].Connection.Port);
             Assert.AreEqual(
-                expected[0].Downtime,
+                expected.Entries[0].Downtime,
                 actual[0].Downtime);
             Assert.AreEqual(
-                expected[0].EventInterval,
+                expected.Entries[0].EventInterval,
                 actual[0].EventInterval);
             Assert.AreEqual(
-                expected[0].IsActive,
+                expected.Entries[0].IsActive,
                 actual[0].IsActive);
         }
 
@@ -446,7 +518,7 @@ namespace ServerStatus.Tests.Common.Services
         [TestMethod]
         public async Task TestGetAlerts()
         {
-            AlertInformationModel expected = new()
+            PagedResponseModel<AlertModel> expected = new()
             {
                 Entries =
                 [
@@ -490,7 +562,95 @@ namespace ServerStatus.Tests.Common.Services
                 ExpiryTime = Expires
             };
 
-            AlertInformationModel? actual = await _apiService.GetAlerts(1);
+            PagedResponseModel<AlertModel>? actual = await _apiService.GetAlerts(1);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(
+                expected.Entries[0].Id,
+                actual.Entries[0].Id);
+            Assert.AreEqual(
+                expected.Entries[0].Reporter,
+                actual.Entries[0].Reporter);
+            Assert.AreEqual(
+                expected.Entries[0].Component,
+                actual.Entries[0].Component);
+            Assert.AreEqual(
+                expected.Entries[0].ComponentStatus,
+                actual.Entries[0].ComponentStatus);
+            Assert.AreEqual(
+                expected.Entries[0].AlertStatus,
+                actual.Entries[0].AlertStatus);
+            Assert.AreEqual(
+                expected.Entries[0].AlertDate,
+                actual.Entries[0].AlertDate);
+            Assert.AreEqual(
+                expected.Entries[0].Server.Id,
+                actual.Entries[0].Server.Id);
+            Assert.AreEqual(
+                expected.Entries[0].Server.Name,
+                actual.Entries[0].Server.Name);
+            Assert.AreEqual(
+                expected.Entries[0].Server.HostName,
+                actual.Entries[0].Server.HostName);
+            Assert.AreEqual(
+                expected.Entries[0].Server.Game,
+                actual.Entries[0].Server.Game);
+            Assert.AreEqual(
+                expected.Entries[0].Server.GameVersion,
+                actual.Entries[0].Server.GameVersion);
+        }
+
+        /// <summary>
+        /// Checks whether the GetAlerts method works as expected when filtered by server name.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetFilteredAlerts()
+        {
+            PagedResponseModel<AlertModel> expected = new()
+            {
+                Entries =
+                [
+                    new()
+                    {
+                        Id = 1,
+                        Reporter = "UnitTester",
+                        Component = "component",
+                        ComponentStatus = "Offline",
+                        AlertStatus = "Reported",
+                        AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
+                        Server = new()
+                        {
+                            Id = 1,
+                            Name = "LocalHost",
+                            HostName = "LocalHost",
+                            Game = "Minecraft",
+                            GameVersion = "1.7.10"
+                        }
+                    }
+                ],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 25,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    expected,
+                    true));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            PagedResponseModel<AlertModel>? actual = await _apiService.GetAlerts(1, "LocalHost");
 
             Assert.IsNotNull(actual);
             Assert.AreEqual(

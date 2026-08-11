@@ -167,7 +167,7 @@ Services are registered in `Program.cs`:
 | Home | `/` | MainLayout | Server status dashboard with auto-refresh |
 | Login | `/login` | BlankLayout | Username and password authentication |
 | Account | `/account` | MainLayout | User preferences (dark mode, Discord name, credentials) |
-| Alerts | `/alerts` | MainLayout | Paginated alert list with admin editing |
+| Alerts | `/alerts` | MainLayout | Paginated alert list with server name filtering and admin editing |
 | Register Alert | `/registeralert` | MainLayout | Report a new server alert |
 | Edit Alert | `/editalert` | MainLayout | Update alert status (admin only) |
 | Error | `/Error` | - | Error display page |
@@ -249,7 +249,7 @@ A console application that detects missed or outdated status events and raises a
 
 ### Site Authentication
 
-- Username and password login
+- Username and password login with server-side username filtering
 - Passwords hashed with **SHA512** before comparison
 - Session managed via Blazor's `ProtectedSessionStorage` (encrypted browser session)
 - IP address logged for all requests (supports Cloudflare CF-Connecting-IP and X-Forwarded-For headers)

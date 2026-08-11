@@ -67,7 +67,7 @@ namespace ServerStatusCommon.Converters
                     GameVersion = ""
                 }
             };
-            public static readonly AlertInformationModel DefaultAlertInfo = new()
+            public static readonly PagedResponseModel<AlertModel> DefaultAlertInfo = new()
             {
                 Entries = [DefaultAlert],
                 EntryCount = 1,

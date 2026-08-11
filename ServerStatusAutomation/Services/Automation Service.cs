@@ -132,7 +132,7 @@ namespace ServerStatusAutomation.Services
                 componentStatuses[component] = await _APIService.GetServerEvents(component);
             }
 
-            AlertInformationModel? alerts = await _APIService.GetAlerts(1);
+            PagedResponseModel<AlertModel>? alerts = await _APIService.GetAlerts(1);
 
             foreach (ServerModel server in servers)
             {

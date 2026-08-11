@@ -1,12 +1,12 @@
-﻿// Copyright © - Unpublished - Toby Hunter
+// Copyright © - Unpublished - Toby Hunter
 namespace ServerStatusCommon.Models.Responses
 {
     /// <summary>
-    /// Stores the alert API response.
+    /// Stores the paged API response.
     /// </summary>
-    public class AlertInformationModel
+    public class PagedResponseModel<T>
     {
-        public required List<AlertModel> Entries { get; set; }
+        public required List<T> Entries { get; set; }
         public required int EntryCount { get; set; }
         public required int PageNumber { get; set; }
         public required int PageSize { get; set; }

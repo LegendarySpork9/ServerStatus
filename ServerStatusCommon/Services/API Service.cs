@@ -108,7 +108,7 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Gets a list of the users from the API.
         /// </summary>
-        public async Task<List<UserModel>> GetUsers()
+        public async Task<List<UserModel>> GetUsers(string? username = null)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -121,16 +121,25 @@ namespace ServerStatusCommon.Services
 
             List<UserModel> users = [];
 
+            List<KeyValuePair<string, object>> queryParameters = [];
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                queryParameters.Add(new("username", username));
+            }
+
             try
             {
-                (users, bool success) = await _RetryService.ExecuteAsync(
-                    () => _APIClient.GetUsers(),
+                (PagedResponseModel<UserModel>? userInfo, bool success) = await _RetryService.ExecuteAsync(
+                    () => _APIClient.GetUsers(queryParameters),
                     result => result.Item2,
                     ReauthoriseIfExpired,
                     "fetch users from API");
 
-                if (success)
+                if (success && userInfo != null)
                 {
+                    users = userInfo.Entries;
+
                     foreach (UserModel user in users)
                     {
                         _Logger.LogMessage(
@@ -311,52 +320,80 @@ namespace ServerStatusCommon.Services
             }
 
             List<ServerModel> servers = [];
+            bool nextPage = true;
+            int pageNumber = 1;
 
             try
             {
-                (servers, bool success) = await _RetryService.ExecuteAsync(
-                    () => _APIClient.GetServers(),
-                    result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch servers from API");
-
-                if (success)
+                while (nextPage)
                 {
-                    foreach (ServerModel server in servers)
+                    List<KeyValuePair<string, object>> queryParameters =
+                    [
+                        new("pageSize", 200),
+                        new("pageNumber", pageNumber)
+                    ];
+
+                    (PagedResponseModel<ServerModel>? serverInfo, bool success) = await _RetryService.ExecuteAsync(
+                        () => _APIClient.GetServers(queryParameters),
+                        result => result.Item2,
+                        ReauthoriseIfExpired,
+                        "fetch servers from API");
+
+                    if (success && serverInfo != null && serverInfo.EntryCount > 0)
                     {
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Server Id: {server.Id}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Server Name: {server.Name}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Host Name: {server.HostName}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Game: {server.Game}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Game Version: {server.GameVersion}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Connection: {server.Connection.IPAddress}:{server.Connection.Port}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Webhook URL: {server.WebhookURL}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Recipient Id: {server.RecipientId}");
-                        _Logger.LogMessage(
-                            StandardValues.LoggerValues.Debug,
-                            $"Downtime: {server.Downtime?.Time ?? "No Downtime"} ({server.Downtime?.Duration.ToString() ?? "0"})");
+                        servers.AddRange(serverInfo.Entries);
+
+                        if (pageNumber < serverInfo.TotalPageCount)
+                        {
+                            pageNumber++;
+                        }
+
+                        else
+                        {
+                            nextPage = false;
+                        }
                     }
 
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Info,
-                        "Fetched servers from API");
+                    else
+                    {
+                        nextPage = false;
+                    }
                 }
+
+                foreach (ServerModel server in servers)
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Server Id: {server.Id}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Server Name: {server.Name}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Host Name: {server.HostName}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Game: {server.Game}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Game Version: {server.GameVersion}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Connection: {server.Connection.IPAddress}:{server.Connection.Port}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Webhook URL: {server.WebhookURL}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Recipient Id: {server.RecipientId}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Downtime: {server.Downtime?.Time ?? "No Downtime"} ({server.Downtime?.Duration.ToString() ?? "0"})");
+                }
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    "Fetched servers from API");
             }
 
             catch (Exception ex)
@@ -604,7 +641,9 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Gets the alerts on a given page.
         /// </summary>
-        public async Task<AlertInformationModel?> GetAlerts(int pageNumber)
+        public async Task<PagedResponseModel<AlertModel>?> GetAlerts(
+            int pageNumber,
+            string? serverName = null)
         {
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Fetching alerts from API");
 
@@ -613,13 +652,18 @@ namespace ServerStatusCommon.Services
                 await Authorise();
             }
 
-            AlertInformationModel? alerts = null;
+            PagedResponseModel<AlertModel>? alerts = null;
             bool success;
 
             List<KeyValuePair<string, object>> queryParameters =
             [
                 new("pageNumber", pageNumber)
             ];
+
+            if (!string.IsNullOrEmpty(serverName))
+            {
+                queryParameters.Add(new("serverName", serverName));
+            }
 
             try
             {
