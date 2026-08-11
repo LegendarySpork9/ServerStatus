@@ -8,8 +8,7 @@ namespace ServerStatusCommon.Models
     {
         public string Domain { get; set; }
         public string WebhookURL { get; set; }
-        public string RecipientId { get; set; }
-        public string RecipientIds { get; set; }
+        public long RecipientId { get; set; }
         public bool SendAlerts { get; set; }
         public string BaseURL { get; set; }
         public string Credentials { get; set; }

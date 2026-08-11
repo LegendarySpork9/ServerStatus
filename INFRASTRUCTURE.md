@@ -106,7 +106,7 @@ The common library provides shared abstractions, services, models, and utilities
 | Service | Responsibility |
 |---|---|
 | `APIService` | Token-authenticated API operations with automatic reauthorisation and retry logic |
-| `DiscordService` | Discord webhook notifications for alert escalation |
+| `DiscordService` | Discord webhook notifications for alert escalation with per-server channel targeting |
 | `LoggerService` | Internal log4net adapter with contextual identifier prefixing |
 | `RetryService` | Generic async retry mechanism with configurable attempts and delays |
 
@@ -215,7 +215,7 @@ A console application that detects missed or outdated status events and raises a
 - Creates alerts for offline or unknown components
 - Skips duplicate alerts if an unresolved alert already exists
 - Respects scheduled downtime windows to avoid false positives
-- Sends Discord notifications when new alerts are created
+- Sends Discord notifications to the server's configured webhook channel when new alerts are created
 
 ## Monitoring Pipeline
 
@@ -225,8 +225,9 @@ A console application that detects missed or outdated status events and raises a
 2. Reporter sends status events to the **API** at each refresh interval
 3. **ServerStatusAutomation** periodically queries the API for all server events
 4. Automation detects missing or outdated events and raises alerts
-5. Automation sends **Discord notifications** for new alerts
+5. Automation sends **Discord notifications** to each server's configured webhook channel
 6. **ServerStatusSite** displays server status and alerts to users via the API
+7. When alerts are created or updated via the site, **Discord notifications** are sent to the affected server's webhook channel
 
 ### Status Values
 
@@ -279,7 +280,6 @@ A console application that detects missed or outdated status events and raises a
   "AppSettings": {
     "Domain": "<application domain>",
     "WebhookURL": "<Discord webhook URL>",
-    "RecipientIds": "<comma-separated Discord recipient IDs>",
     "SendAlerts": false,
     "BaseURL": "<API base URL>",
     "Credentials": "<Base64-encoded Basic auth>",
@@ -308,7 +308,7 @@ A console application that detects missed or outdated status events and raises a
 ```xml
 <appSettings>
   <add key="WebhookURL" value="<Discord webhook URL>" />
-  <add key="RecipientId" value="<Discord recipient ID>" />
+  <add key="RecipientId" value="<Discord recipient ID (long)>" />
   <add key="SendAlerts" value="<true|false>" />
   <add key="BaseURL" value="<API base URL>" />
   <add key="Credentials" value="<Base64-encoded Basic auth>" />
@@ -324,9 +324,8 @@ All three applications load configuration into a `SharedSettingsModel` with the 
 | Property | Purpose |
 |---|---|
 | `Domain` | Application domain |
-| `WebhookURL` | Discord webhook URL for notifications |
-| `RecipientId` | Primary Discord recipient ID |
-| `RecipientIds` | Multiple Discord recipient IDs |
+| `WebhookURL` | Discord webhook URL (legacy, per-server URLs are now used from the API) |
+| `RecipientId` | Discord recipient ID (long) for automated alerts |
 | `SendAlerts` | Whether to send Discord alerts |
 | `BaseURL` | API base URL |
 | `Credentials` | Base64-encoded Basic auth credentials |
@@ -391,9 +390,11 @@ Log entries are prefixed with a contextual identifier:
 
 ### Discord
 
-- **Integration:** Webhook notifications
+- **Integration:** Webhook notifications with per-server channel targeting
 - **Used by:** ServerStatusSite (alert creation/updates) and ServerStatusAutomation (automated alerts)
 - **Message format:** Role/user mentions via `<@&recipientId>`
+- **Webhook URL:** Stored per server in the API, allowing each server's alerts to be sent to a dedicated Discord channel
+- **Recipient ID:** For new alerts (automated and user-raised), the recipient ID comes from application settings. For alert updates, the recipient ID comes from the server record in the API
 - **Controlled by:** `SendAlerts` configuration flag
 
 ## CI/CD

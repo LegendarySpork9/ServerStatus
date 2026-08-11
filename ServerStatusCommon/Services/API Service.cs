@@ -344,6 +344,12 @@ namespace ServerStatusCommon.Services
                             $"Connection: {server.Connection.IPAddress}:{server.Connection.Port}");
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
+                            $"Webhook URL: {server.WebhookURL}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Recipient Id: {server.RecipientId}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
                             $"Downtime: {server.Downtime?.Time ?? "No Downtime"} ({server.Downtime?.Duration.ToString() ?? "0"})");
                     }
 

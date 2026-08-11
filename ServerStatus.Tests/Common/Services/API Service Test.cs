@@ -223,6 +223,8 @@ namespace ServerStatus.Tests.Common.Services
                     },
                     Downtime = null,
                     EventInterval = 60,
+                    WebhookURL = "https://discord.com/api/webhooks/test",
+                    RecipientId = 123456789,
                     IsActive = true
                 }
             ];

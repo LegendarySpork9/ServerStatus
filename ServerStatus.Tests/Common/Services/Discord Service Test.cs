@@ -19,7 +19,7 @@ namespace ServerStatus.Tests.Common.Services
             {
                 SendAlerts = true,
                 WebhookURL = "This is a webhook",
-                RecipientId = "4f84bf84bf84b8f74bf7348fb4"
+                RecipientId = 123456789
             };
 
             HttpResponseMessage response = new()
@@ -38,6 +38,7 @@ namespace ServerStatus.Tests.Common.Services
                 sharedSettings);
 
             bool successfulSend = await _discordService.SendNotification(
+                sharedSettings.WebhookURL,
                 sharedSettings.RecipientId,
                 "This is a message from a unit test.");
 

@@ -27,7 +27,8 @@ namespace ServerStatusCommon.Services
         /// Sends a message to the given webhook URL.
         /// </summary>
         public async Task<bool> SendNotification(
-            string recipientId,
+            string webhookURL,
+            long recipientId,
             string message)
         {
             if (SharedSettings.SendAlerts)
@@ -40,7 +41,7 @@ namespace ServerStatusCommon.Services
 
                 try
                 {
-                    string url = SharedSettings.WebhookURL + "?wait=true";
+                    string url = webhookURL + "?wait=true";
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,

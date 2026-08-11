@@ -133,19 +133,10 @@ namespace ServerStatusSite.Components.Pages.Alerts
                             StandardValues.LoggerValues.Debug,
                             "Alert Registered");
 
-                        if (SharedSettings.RecipientIds.Contains(','))
-                        {
-                            await _discordService.SendNotification(
-                                SharedSettings.RecipientIds.Split(',')[0],
-                                $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
-                        }
-
-                        else
-                        {
-                            await _discordService.SendNotification(
-                                SharedSettings.RecipientIds,
-                                $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
-                        }
+                        await _discordService.SendNotification(
+                            server.WebhookURL,
+                            SharedSettings.RecipientId,
+                            $"{discordSetting.Value} has reported an issue with the {Server} server. {Component}: {ComponentStatus}");
 
                         RegisterSuccess = true;
                     }
