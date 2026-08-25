@@ -34,7 +34,7 @@ ServerStatus/
 +-- ServerStatusCommon/                 # Shared class library
 |   +-- Abstractions/                   # Interface definitions
 |   +-- Converters/                     # API and standard value converters
-|   +-- Functions/                      # Shared settings loader and timer functions
+|   +-- Functions/                      # Shared settings loader, timer, and URL builder functions
 |   +-- Implementations/               # Interface implementations (wrappers)
 |   +-- Models/                         # Data models
 |   |   +-- Requests/                   # API request models
@@ -49,11 +49,19 @@ ServerStatus/
 |   |   +-- Layout/                     # Main layout and navigation
 |   |   +-- Pages/                      # Application pages
 |   |       +-- Alerts/                 # Alert management pages
+|   +-- Abstractions/                   # Site-specific interface definitions
 |   +-- Converters/                     # Style and theme converters
-|   +-- Functions/                      # Hashing and IP address functions
+|   +-- Functions/                      # Hashing, IP address, and webhook auth functions
+|   +-- Implementations/               # Site-specific interface implementations (wrappers)
+|   +-- Models/                         # Site-specific data models
+|   |   +-- Requests/                   # Backup Tool API request models
+|   |   +-- Responses/                  # Backup Tool API response models
+|   |       +-- Related/                # Nested response models
 |   +-- Properties/                     # Launch settings and publish profiles
+|   +-- Services/                       # Site-specific services
+|   +-- Webhooks/                       # Webhook receiver endpoints
 |   +-- Content/                        # Static assets (favicon)
-|   +-- wwwroot/                        # Static web assets (CSS, images)
+|   +-- wwwroot/                        # Static web assets (CSS, images, JS)
 +-- ServerStatusReporter/               # Console application (data collector)
 |   +-- Abstractions/                   # Reporter-specific interfaces
 |   +-- Implementations/               # Reporter-specific wrappers
@@ -116,6 +124,7 @@ The common library provides shared abstractions, services, models, and utilities
 |---|---|
 | `SharedSettingsLoader` | Loads App.config files and maps appSettings to `SharedSettingsModel` via reflection |
 | `TimerFunction` | Calculates timer intervals from current time to a target elapse time |
+| `URLBuilderFunction` | Builds API URLs from a base URL, endpoint, entity ID, and query parameters. Used by both `APIClientWrapper` and `BackupToolAPIClientWrapper` |
 
 #### Shared Converters
 
@@ -137,13 +146,17 @@ Services are registered in `Program.cs`:
 | Registration | Lifetime | Purpose |
 |---|---|---|
 | `SharedSettingsModel` | Singleton | Application configuration |
+| `BackupToolSettingsModel` | Singleton | Backup Tool API configuration (per-server credentials) |
 | `ILoggerService` | Singleton | Logging |
 | `IClock` | Singleton | Time operations |
 | `IFileSystem` | Singleton | File system access |
-| `IAPIClient` | Singleton | API communication |
+| `IAPIClient` | Singleton | API communication (Hunter Industries API) |
 | `IHTTPClient` | Singleton | HTTP requests |
 | `RetryService` | Singleton | Retry logic |
-| `APIService` | Singleton | API operations |
+| `APIService` | Singleton | Hunter Industries API operations |
+| `IBackupToolAPIClient` | Singleton | API communication (Backup Tool API) |
+| `BackupToolAPIService` | Singleton | Backup Tool API operations with retry logic |
+| `LogStreamService` | Singleton | Webhook-to-component event bus for real-time log streaming |
 | `UserModel` | Scoped | Current user session |
 | `IHttpContextAccessor` | Scoped | HTTP context access |
 
@@ -153,12 +166,26 @@ Services are registered in `Program.cs`:
 |---|---|
 | `HashFunction` | SHA512 password hashing |
 | `IPAddressFunction` | Client IP extraction from CF-Connecting-IP, X-Forwarded-For, or connection |
+| `WebhookAuthValidationFunction` | HMAC-SHA256 signature validation for incoming webhook requests |
 
 #### Site-Specific Converters
 
 | Converter | Responsibility |
 |---|---|
 | `StyleConverter` | Generates CSS styles for dark mode theming across all UI components |
+
+#### Site-Specific Services
+
+| Service | Responsibility |
+|---|---|
+| `LogStreamService` | Singleton event bus that routes incoming webhook log payloads to subscribed Blazor components by server name |
+| `BackupToolApiService` | HTTP client for the Server Backup Tool API — fetches live/archived logs, registers/unregisters webhooks. Uses per-server Basic Auth credentials from configuration |
+
+#### Webhook Endpoints
+
+| Endpoint | Route | Purpose |
+|---|---|---|
+| `LogWebhookController` | `POST /webhooks/webhook` | Receives log payloads from the Backup Tool API. Validates HMAC-SHA256 signature, then publishes logs to subscribers via `LogStreamService` |
 
 #### Pages
 
@@ -170,6 +197,7 @@ Services are registered in `Program.cs`:
 | Alerts | `/alerts` | MainLayout | Paginated alert list with server name filtering and admin editing |
 | Register Alert | `/registeralert` | MainLayout | Report a new server alert |
 | Edit Alert | `/editalert` | MainLayout | Update alert status (admin only) |
+| Server Logs | `/serverlogs` | MainLayout | Live and archived log viewer with real-time webhook updates |
 | Error | `/Error` | - | Error display page |
 
 ### ServerStatusReporter (Data Collector)
@@ -285,6 +313,17 @@ A console application that detects missed or outdated status events and raises a
     "Credentials": "<Base64-encoded Basic auth>",
     "AuthPayloadLocation": "<path to Authorise.json>",
     "RefreshTime": 5
+  },
+  "BackupToolApi": {
+    "ApiUrlTemplate": "<URL template with {0} for server name>",
+    "WebhookSecret": "<shared HMAC-SHA256 secret>",
+    "SiteBaseUrl": "<public URL of this site>",
+    "Servers": {
+      "<ServerName>": {
+        "ClientId": "<Basic auth client ID>",
+        "ClientSecret": "<Basic auth client secret>"
+      }
+    }
   }
 }
 ```
@@ -387,6 +426,17 @@ Log entries are prefixed with a contextual identifier:
   - Server events (create, query by component)
   - Alerts (create, update, paginated query)
   - Users and user settings (CRUD)
+
+### Server Backup Tool API
+
+- **Integration:** Live and archived log retrieval with real-time webhook streaming
+- **Used by:** ServerStatusSite (Server Logs page)
+- **Protocol:** REST over HTTPS with Basic Auth (per-server credentials)
+- **Endpoints called:** `GET /logs` (paginated live logs), `GET /logs/archived` (archive list), `GET /logs/archived/{file}` (archived logs), `POST /webhooks` (register webhook), `DELETE /webhooks/{id}` (unregister webhook)
+- **Webhook receiver:** `POST /webhooks/webhook` on the Site, authenticated via HMAC-SHA256 signature in `X-Webhook-Secret` header
+- **Real-time flow:** Backup Tool pushes new logs to the Site's webhook endpoint → `LogStreamService` routes them to active Blazor components → Blazor Server pushes UI updates over its existing SignalR connection
+- **Rendering:** `<Virtualize>` component renders only visible log entries (~30-50 DOM elements regardless of list size)
+- **Reverse infinite scroll:** Initial fetch loads the most recent logs; scrolling up triggers loading of older logs via JS interop scroll detection
 
 ### Discord
 

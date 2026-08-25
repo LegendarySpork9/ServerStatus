@@ -162,6 +162,13 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Info,
                         "Fetched users from API");
                 }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to fetch users from API");
+                }
             }
 
             catch (Exception ex)
@@ -226,6 +233,13 @@ namespace ServerStatusCommon.Services
                             "Fetched user settings from API");
                     }
                 }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to fetch user settings from API");
+                }
             }
 
             catch (Exception ex)
@@ -286,6 +300,13 @@ namespace ServerStatusCommon.Services
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         "Fetched components from API");
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to fetch components from API");
                 }
             }
 
@@ -357,6 +378,10 @@ namespace ServerStatusCommon.Services
                     else
                     {
                         nextPage = false;
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            "Failed to fetch servers from API");
                     }
                 }
 
@@ -488,6 +513,13 @@ namespace ServerStatusCommon.Services
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         "Fetched server statuses from API");
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to fetch server events from API");
                 }
             }
 
@@ -730,6 +762,13 @@ namespace ServerStatusCommon.Services
                             "Fetched alerts from API");
                     }
                 }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        "Failed to fetch alerts from API");
+                }
             }
 
             catch (Exception ex)
@@ -825,6 +864,13 @@ namespace ServerStatusCommon.Services
                             StandardValues.LoggerValues.Info,
                             $"Fetched alert, {alertId}, from API");
                     }
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Failed to fetch alert, {alertId}, from API");
                 }
             }
 

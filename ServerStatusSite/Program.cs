@@ -5,7 +5,11 @@ using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
+using ServerStatusSite.Abstractions;
 using ServerStatusSite.Components;
+using ServerStatusSite.Implementations;
+using ServerStatusSite.Models;
+using ServerStatusSite.Services;
 
 namespace ServerStatusSite
 {
@@ -51,6 +55,25 @@ namespace ServerStatusSite
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
             builder.Services.AddSingleton<RetryService, RetryService>();
             builder.Services.AddSingleton<APIService>();
+
+            BackupToolSettingsModel backupToolSettings = new()
+            {
+                ApiUrlTemplate = string.Empty,
+                WebhookSecret = string.Empty,
+                SiteBaseUrl = string.Empty
+            };
+
+            builder.Configuration.Bind(
+                "BackupToolApi",
+                backupToolSettings);
+
+            builder.Services.AddSingleton(backupToolSettings);
+            builder.Services.AddSingleton<LogStreamService>();
+            builder.Services.AddSingleton<IBackupToolAPIClient, BackupToolAPIClientWrapper>();
+            builder.Services.AddSingleton<BackupToolAPIService>();
+
+            builder.Services.AddControllers();
+
             builder.Services.AddScoped<UserModel>();
             builder.Services.AddHttpContextAccessor();
 
@@ -87,6 +110,12 @@ namespace ServerStatusSite
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Configured Antiforgery");
+
+            app.MapControllers();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Mapped API Controllers");
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

@@ -1,0 +1,137 @@
+@page "/serverlogs"
+
+<PageTitle>Server Logs</PageTitle>
+
+@if (IsLoading && Servers == null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else
+{
+    @if (Servers == null || Servers.Count == 0)
+    {
+        <div class="alert alert-warning">No active servers found.</div>
+    }
+
+    else
+    {
+        <div class="container">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Server:</label>
+                    <select style="@GetStyle("Input")" @onchange="ServerChanged">
+                        <option value="" disabled selected>Select a server</option>
+                        @foreach (string server in ServerNames)
+                        {
+                            <option value="@server">@server</option>
+                        }
+                    </select>
+                </div>
+
+                @if (!string.IsNullOrEmpty(SelectedServer))
+                {
+                    <div class="filter-group">
+                        <label>Log Source:</label>
+                        <select style="@GetStyle("Input")" @onchange="LogSourceChanged">
+                            <option value="" disabled selected>Select a source</option>
+                            <option value="Live">Live Logs</option>
+                            <option value="Archived">Archived Logs</option>
+                        </select>
+                    </div>
+                }
+
+                @if (SelectedLogSource == "Live")
+                {
+                    <div class="filter-group">
+                        <label>Log Type:</label>
+                        <select style="@GetStyle("Input")" @onchange="LogTypeChanged">
+                            <option value="All" selected>All</option>
+                            <option value="Tool">Tool</option>
+                            <option value="Server">Server</option>
+                        </select>
+                    </div>
+                }
+
+                @if (SelectedLogSource == "Archived")
+                {
+                    <div class="filter-group">
+                        <label>Archive:</label>
+                        <select style="@GetStyle("Input")" @onchange="ArchiveFileChanged" disabled="@(ArchiveFiles.Count == 0)">
+                            @if (ArchiveFiles.Count == 0)
+                            {
+                                <option value="" disabled selected>No archives available</option>
+                            }
+                            else
+                            {
+                                <option value="" disabled selected>Select an archive</option>
+                                @foreach (var archive in ArchiveFiles)
+                                {
+                                    <option value="@archive.FileName">@archive.FileName (@archive.CreatedAt.ToString("yyyy-MM-dd"))</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+
+            <div class="console-window" @ref="ConsoleRef">
+                @if (IsFetchingOlder)
+                {
+                    <div class="loading-older">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Loading older logs...
+                    </div>
+                }
+
+                @if (IsFetchingLogs)
+                {
+                    <div class="d-flex justify-content-center py-5">
+                        <div class="spinner-border text-light" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+
+                else if (LogEntries.Count > 0)
+                {
+                    <Virtualize
+                        Items="LogEntries"
+                        Context="log"
+                        ItemSize="24"
+                    >
+                        <div class="log-entry log-@log.Level.ToLower()">
+                            <span class="log-timestamp">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            <span class="log-level">[@log.Level]</span>
+                            <span class="log-type">[@log.Type]</span>
+                            <span class="log-message">@log.Message</span>
+                        </div>
+                    </Virtualize>
+                }
+
+                else if (!string.IsNullOrEmpty(SelectedLogSource))
+                {
+                    <div class="no-logs">No logs to display.</div>
+                }
+            </div>
+
+            <div class="status-bar" style="@GetStyle("StatusBar")">
+                <span>@LogEntries.Count log(s)</span>
+
+                @if (IsWebhookActive)
+                {
+                    <span class="status-live">● Live</span>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <span class="status-error">@ErrorMessage</span>
+                }
+            </div>
+        </div>
+    }
+}

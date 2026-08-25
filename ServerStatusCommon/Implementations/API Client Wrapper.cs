@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Requests.Update;
@@ -45,7 +46,9 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL("/auth/token");
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
+                    "/auth/token");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -148,7 +151,8 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/user",
                     queryParameters: queryParameters);
 
@@ -236,9 +240,10 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/usersettings",
-                    userId);
+                    entityId: userId);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -321,7 +326,8 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/serverstatus/serverinformation",
                     queryParameters: queryParameters);
 
@@ -409,7 +415,8 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/serverstatus/serverevent",
                     queryParameters: queryParameters);
 
@@ -496,9 +503,10 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/usersettings",
-                    userSettingId,
+                    entityId: userSettingId,
                     ignoreQuery: true);
 
                 _Logger.LogMessage(
@@ -600,9 +608,10 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/user",
-                    userId,
+                    entityId: userId,
                     ignoreQuery: true);
 
                 _Logger.LogMessage(
@@ -702,7 +711,8 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/serverstatus/serveralert",
                     queryParameters: queryParameters);
 
@@ -790,9 +800,10 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/serverstatus/serveralert",
-                    alertId);
+                    entityId: alertId);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -876,9 +887,10 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL(
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
                     "/serverstatus/serveralert",
-                    alertId);
+                    entityId: alertId);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -977,7 +989,9 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL("/serverstatus/serveralert");
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
+                    "/serverstatus/serveralert");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1076,7 +1090,9 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL("/serverstatus/serverevent");
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
+                    "/serverstatus/serverevent");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1175,7 +1191,9 @@ namespace ServerStatusCommon.Implementations
 
             try
             {
-                string url = BuildURL("/configuration/component");
+                string url = URLBuilderFunction.BuildURL(
+                    SharedSettings.BaseURL,
+                    "/configuration/component");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1251,59 +1269,6 @@ namespace ServerStatusCommon.Implementations
             return (
                 components,
                 success);
-        }
-
-        /// <summary>
-        /// Returns the API url.
-        /// </summary>
-        private string BuildURL(
-            string endpoint,
-            object? entityId = null,
-            List<KeyValuePair<string, object>>? queryParameters = null,
-            bool ignoreQuery = false)
-        {
-            string url = $"{SharedSettings.BaseURL}{endpoint}";
-            string query = APIConverter.GetQuery(endpoint);
-
-            if (entityId != null)
-            {
-                url += $"/{entityId}";
-            }
-
-            if (queryParameters != null && queryParameters.Count > 0)
-            {
-                if (string.IsNullOrEmpty(query))
-                {
-                    query = "?";
-
-                    for (int x = 0; x < queryParameters.Count; x++)
-                    {
-                        KeyValuePair<string, object> queryParameter = queryParameters[x];
-
-                        query += $"{queryParameter.Key}={queryParameter.Value}";
-
-                        if (x != (queryParameters.Count - 1))
-                        {
-                            query += "&";
-                        }
-                    }
-                }
-
-                else
-                {
-                    foreach (KeyValuePair<string, object> queryParameter in queryParameters)
-                    {
-                        query += $"&{queryParameter.Key}={queryParameter.Value}";
-                    }
-                }
-            }
-
-            if (!ignoreQuery)
-            {
-                url += query;
-            }
-
-            return url;
         }
     }
 }
