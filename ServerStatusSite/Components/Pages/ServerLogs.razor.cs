@@ -44,6 +44,7 @@ namespace ServerStatusSite.Components.Pages
         private bool IsFetchingOlder;
         private bool IsWebhookActive;
         private bool ScrollDetectionInitialised;
+        private bool ScrollAfterRender;
 
         private string SelectedServer = string.Empty;
         private string SelectedLogSource = string.Empty;
@@ -129,6 +130,15 @@ namespace ServerStatusSite.Components.Pages
                         StandardValues.LoggerValues.Warning,
                         $"Failed to initialise scroll detection: {ex.Message}");
                 }
+            }
+
+            if (ScrollAfterRender && JsModule != null)
+            {
+                ScrollAfterRender = false;
+
+                await JsModule.InvokeVoidAsync(
+                    "scrollToBottomIfNeeded",
+                    ConsoleRef);
             }
         }
 
@@ -390,6 +400,7 @@ namespace ServerStatusSite.Components.Pages
                 LogLock.Release();
             }
 
+            ScrollAfterRender = true;
             await InvokeAsync(StateHasChanged);
         }
 
