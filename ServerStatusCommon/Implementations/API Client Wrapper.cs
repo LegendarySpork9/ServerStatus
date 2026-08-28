@@ -204,6 +204,11 @@ namespace ServerStatusCommon.Implementations
                     }
                 }
 
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    success = true;
+                }
+
                 if (response.ErrorException != null)
                 {
                     _Logger.LogMessage(
@@ -287,6 +292,11 @@ namespace ServerStatusCommon.Implementations
                         StandardValues.LoggerValues.Debug,
                         $"User Settings Returned: {userSettings.Select(us => us.Settings.Count).Sum()}");
 
+                    success = true;
+                }
+
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
                     success = true;
                 }
 
@@ -379,6 +389,11 @@ namespace ServerStatusCommon.Implementations
                     }
                 }
 
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    success = true;
+                }
+
                 if (response.ErrorException != null)
                 {
                     _Logger.LogMessage(
@@ -462,6 +477,11 @@ namespace ServerStatusCommon.Implementations
                         StandardValues.LoggerValues.Debug,
                         $"Server Events Returned: {serverEvents.Count}");
 
+                    success = true;
+                }
+
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
                     success = true;
                 }
 
@@ -762,6 +782,11 @@ namespace ServerStatusCommon.Implementations
 
                         success = true;
                     }
+                }
+
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    success = true;
                 }
 
                 if (response.ErrorException != null)
@@ -1243,6 +1268,11 @@ namespace ServerStatusCommon.Implementations
 
                         success = true;
                     }
+                }
+
+                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    success = true;
                 }
 
                 if (response.ErrorException != null)

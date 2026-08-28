@@ -94,6 +94,11 @@ namespace ServerStatusSite.Implementations
                         }
                     }
 
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        success = true;
+                    }
+
                     if (response.ErrorException != null)
                     {
                         _Logger.LogMessage(
@@ -185,6 +190,11 @@ namespace ServerStatusSite.Implementations
 
                             success = true;
                         }
+                    }
+
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        success = true;
                     }
 
                     if (response.ErrorException != null)
@@ -281,6 +291,11 @@ namespace ServerStatusSite.Implementations
 
                             success = true;
                         }
+                    }
+
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        success = true;
                     }
 
                     if (response.ErrorException != null)
@@ -509,7 +524,7 @@ namespace ServerStatusSite.Implementations
         /// Returns the base URL for the given server's Backup Tool API.
         /// </summary>
         private string GetBaseUrl(string serverName) => string.Format(
-            Settings.ApiUrlTemplate,
+            Settings.APIURLTemplate,
             serverName);
 
         /// <summary>
