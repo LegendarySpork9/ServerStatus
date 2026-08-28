@@ -1,8 +1,18 @@
+let isLoading = false;
+let hasMore = true;
+
 export function initScrollDetection(element, dotNetHelper) {
-    element.addEventListener('scroll', () => {
-        if (element.scrollTop < 200) {
-            dotNetHelper.invokeMethodAsync('OnScrollNearTop');
+    isLoading = false;
+    hasMore = true;
+
+    element.addEventListener('scroll', async () => {
+        if (!hasMore || isLoading || element.scrollTop >= 200) {
+            return;
         }
+
+        isLoading = true;
+        hasMore = await dotNetHelper.invokeMethodAsync('OnScrollNearTop');
+        isLoading = false;
     });
 }
 

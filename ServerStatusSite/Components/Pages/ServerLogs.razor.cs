@@ -397,11 +397,11 @@ namespace ServerStatusSite.Components.Pages
         /// Called by JavaScript when the user scrolls near the top of the console.
         /// </summary>
         [JSInvokable]
-        public async Task OnScrollNearTop()
+        public async Task<bool> OnScrollNearTop()
         {
             if (IsFetchingOlder || NextAfterCursor == null)
             {
-                return;
+                return NextAfterCursor != null;
             }
 
             IsFetchingOlder = true;
@@ -452,6 +452,8 @@ namespace ServerStatusSite.Components.Pages
 
             IsFetchingOlder = false;
             await InvokeAsync(StateHasChanged);
+
+            return NextAfterCursor != null;
         }
 
         /// <summary>
