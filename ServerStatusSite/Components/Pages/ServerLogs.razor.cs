@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
 using ServerStatusCommon.Models.Responses;
+using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
 using ServerStatusSite.Converters;
 using ServerStatusSite.Models;
@@ -29,7 +30,10 @@ namespace ServerStatusSite.Components.Pages
         private BackupToolSettingsModel BackupToolSettings { get; set; } = default!;
         [Inject]
         private UserModel User { get; set; } = default!;
+        [Inject]
+        private NavigationManager Navigation { get; set; } = default!;
 
+        private bool IsAuthorised;
         private List<ServerModel>? Servers;
         private List<string> ServerNames = [];
         private List<ArchivedLogFileModel> ArchiveFiles = [];
@@ -61,6 +65,23 @@ namespace ServerStatusSite.Components.Pages
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Opened Server Logs Page");
+
+            SettingModel? adminSetting = User.Settings.FirstOrDefault(s => s.Name == "IsAdmin");
+            IsAuthorised = adminSetting != null && bool.TryParse(
+                adminSetting.Value,
+                out bool isAdmin) && isAdmin;
+
+            if (!IsAuthorised)
+            {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    "Unauthorised Access Attempt to Server Logs Page");
+
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/");
+
+                return;
+            }
 
             IsLoading = true;
 

@@ -2,7 +2,12 @@
 
 <PageTitle>Server Logs</PageTitle>
 
-@if (IsLoading && Servers == null)
+@if (!IsAuthorised)
+{
+    <div class="alert alert-danger">You are not authorised to access this page.</div>
+}
+
+else if (IsLoading && Servers == null)
 {
     <div class="d-flex justify-content-center py-5">
         <div class="@StyleConverter.GetLoadingDarkMode(User.DarkMode)" role="status">
