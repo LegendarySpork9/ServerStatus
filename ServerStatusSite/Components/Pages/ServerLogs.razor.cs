@@ -148,19 +148,6 @@ namespace ServerStatusSite.Components.Pages
         }
 
         /// <summary>
-        /// Returns the CSS to change the page to dark mode.
-        /// </summary>
-        private string GetStyle(string? component = null)
-        {
-            return component switch
-            {
-                "Input" => StyleConverter.GetInputDarkMode(User.DarkMode),
-                "StatusBar" => StyleConverter.GetTableDarkMode(User.DarkMode),
-                _ => string.Empty
-            };
-        }
-
-        /// <summary>
         /// Handles the server dropdown change.
         /// </summary>
         private async Task ServerChanged(ChangeEventArgs e)

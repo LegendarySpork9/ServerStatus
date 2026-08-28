@@ -29,7 +29,7 @@ else
             <div class="filter-row">
                 <div class="filter-group">
                     <label>Server:</label>
-                    <select style="@GetStyle("Input")" @onchange="ServerChanged">
+                    <select style="@StyleConverter.GetInputDarkMode(User.DarkMode)" @onchange="ServerChanged">
                         <option value="" disabled selected>Select a server</option>
                         @foreach (string server in ServerNames)
                         {
@@ -42,7 +42,7 @@ else
                 {
                     <div class="filter-group">
                         <label>Log Source:</label>
-                        <select style="@GetStyle("Input")" @onchange="LogSourceChanged">
+                        <select style="@StyleConverter.GetInputDarkMode(User.DarkMode)" @onchange="LogSourceChanged">
                             <option value="" disabled selected>Select a source</option>
                             <option value="Live">Live Logs</option>
                             <option value="Archived">Archived Logs</option>
@@ -54,7 +54,7 @@ else
                 {
                     <div class="filter-group">
                         <label>Log Type:</label>
-                        <select style="@GetStyle("Input")" @onchange="LogTypeChanged">
+                        <select style="@StyleConverter.GetInputDarkMode(User.DarkMode)" @onchange="LogTypeChanged">
                             <option value="All" selected>All</option>
                             <option value="Tool">Tool</option>
                             <option value="Server">Server</option>
@@ -66,7 +66,7 @@ else
                 {
                     <div class="filter-group">
                         <label>Archive:</label>
-                        <select style="@GetStyle("Input")" @onchange="ArchiveFileChanged" disabled="@(ArchiveFiles.Count == 0)">
+                        <select style="@StyleConverter.GetInputDarkMode(User.DarkMode)" @onchange="ArchiveFileChanged" disabled="@(ArchiveFiles.Count == 0)">
                             @if (ArchiveFiles.Count == 0)
                             {
                                 <option value="" disabled selected>No archives available</option>
@@ -145,7 +145,7 @@ else
                 }
             </div>
 
-            <div class="status-bar" style="@GetStyle("StatusBar")">
+            <div class="status-bar" style="@StyleConverter.GetTableDarkMode(User.DarkMode)">
                 <span>@LogEntries.Count log(s)</span>
 
                 @if (IsWebhookActive)

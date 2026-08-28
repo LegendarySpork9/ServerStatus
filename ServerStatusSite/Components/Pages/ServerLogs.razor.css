@@ -99,7 +99,8 @@
 }
 
 .command-divider {
-    border-top: 1px solid #444;
+    height: 1px;
+    background-color: #444;
     margin-top: 0.25rem;
 }
 
@@ -110,18 +111,23 @@
 }
 
 .command-target {
-    background: #2d2d2d;
-    border: 1px solid #444;
-    border-radius: 0.25rem;
-    color: #d4d4d4;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: #858585;
     font-family: Consolas, 'Courier New', monospace;
     font-size: 0.8125rem;
-    padding: 0.125rem 0.25rem;
-    margin-right: 0.5rem;
+    padding: 0;
+    margin-right: 0.25rem;
+    cursor: pointer;
 }
 
     .command-target:disabled {
         opacity: 0.5;
+        cursor: default;
     }
 
 .command-prompt {
