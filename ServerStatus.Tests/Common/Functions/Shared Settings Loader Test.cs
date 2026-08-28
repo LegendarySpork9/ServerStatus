@@ -57,7 +57,6 @@ namespace ServerStatus.Tests.Common.Functions
         {
             SharedSettingsModel expectedSharedSettings = new()
             {
-                WebhookURL = "https://thisisatest.com/",
                 RecipientId = 123456789,
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",

@@ -313,7 +313,7 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task RegisterWebhook(int afterId)
         {
-            string webhookUrl = $"{BackupToolSettings.SiteBaseUrl}/webhooks/serverlogs";
+            string webhookUrl = $"{BackupToolSettings.SiteBaseURL}/webhooks/serverlogs";
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,

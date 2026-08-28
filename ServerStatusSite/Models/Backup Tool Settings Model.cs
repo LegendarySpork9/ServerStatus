@@ -6,9 +6,9 @@ namespace ServerStatusSite.Models
     /// </summary>
     public class BackupToolSettingsModel
     {
-        public required string ApiUrlTemplate { get; set; }
+        public required string APIURLTemplate { get; set; }
         public required string WebhookSecret { get; set; }
-        public required string SiteBaseUrl { get; set; }
+        public required string SiteBaseURL { get; set; }
         public Dictionary<string, ServerCredentialsModel> Servers { get; set; } = [];
     }
 }

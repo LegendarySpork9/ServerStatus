@@ -43,38 +43,31 @@ namespace ServerStatusSite
                 "AppSettings",
                 sharedSettings);
 
+            BackupToolSettingsModel backupToolSettings = builder.Configuration.GetSection("BackupToolAPI")
+                .Get<BackupToolSettingsModel>()!;
+
+            builder.Services.AddSingleton(backupToolSettings);
+
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Loaded Configuration");
 
             builder.Services.AddSingleton(sharedSettings);
+            builder.Services.AddSingleton(backupToolSettings);
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
-            builder.Services.AddSingleton<RetryService, RetryService>();
-            builder.Services.AddSingleton<APIService>();
-
-            BackupToolSettingsModel backupToolSettings = new()
-            {
-                ApiUrlTemplate = string.Empty,
-                WebhookSecret = string.Empty,
-                SiteBaseUrl = string.Empty
-            };
-
-            builder.Configuration.Bind(
-                "BackupToolApi",
-                backupToolSettings);
-
-            builder.Services.AddSingleton(backupToolSettings);
-            builder.Services.AddSingleton<LogStreamService>();
             builder.Services.AddSingleton<IBackupToolAPIClient, BackupToolAPIClientWrapper>();
+            builder.Services.AddSingleton<RetryService>();
+            builder.Services.AddSingleton<APIService>();
+            builder.Services.AddSingleton<LogStreamService>();
             builder.Services.AddSingleton<BackupToolAPIService>();
+            builder.Services.AddScoped<UserModel>();
 
             builder.Services.AddControllers();
 
-            builder.Services.AddScoped<UserModel>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

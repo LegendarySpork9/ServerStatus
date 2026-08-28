@@ -18,7 +18,6 @@ namespace ServerStatus.Tests.Common.Services
             SharedSettingsModel sharedSettings = new()
             {
                 SendAlerts = true,
-                WebhookURL = "This is a webhook",
                 RecipientId = 123456789
             };
 
@@ -38,7 +37,7 @@ namespace ServerStatus.Tests.Common.Services
                 sharedSettings);
 
             bool successfulSend = await _discordService.SendNotification(
-                sharedSettings.WebhookURL,
+                "This is a webhook",
                 sharedSettings.RecipientId,
                 "This is a message from a unit test.");
 
