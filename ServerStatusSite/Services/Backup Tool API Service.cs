@@ -4,6 +4,7 @@ using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
 using ServerStatusCommon.Services;
 using ServerStatusSite.Abstractions;
+using ServerStatusSite.Models.Requests;
 using ServerStatusSite.Models.Responses;
 using ServerStatusSite.Models.Responses.Related;
 
@@ -382,6 +383,60 @@ namespace ServerStatusSite.Services
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Failed to unregister webhook, {webhookId}, from Backup Tool API for {serverName}");
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// Sends a command to the Backup Tool API for a given server.
+        /// </summary>
+        public async Task<bool> SendCommand(
+            string serverName,
+            CommandRequestModel command)
+        {
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                $"Sending command to Backup Tool API for {serverName}");
+
+            bool success = false;
+
+            try
+            {
+                (success, _) = await _RetryService.ExecuteAsync(
+                    () => _BackupToolAPIClient.SendCommand(
+                        serverName,
+                        command),
+                    result => result.Item1,
+                    null,
+                    $"send command to Backup Tool API for {serverName}");
+
+                if (success)
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Sent command to Backup Tool API for {serverName}");
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Failed to send command to Backup Tool API for {serverName}");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Warning,
+                    ex.Message);
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Error,
+                    ex.ToString());
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Failed to send command to Backup Tool API for {serverName}");
             }
 
             return success;

@@ -122,6 +122,27 @@ else
                 {
                     <div class="no-logs">No logs to display.</div>
                 }
+
+                @if (IsWebhookActive)
+                {
+                    <div class="command-divider"></div>
+                    <div class="command-row">
+                        <select class="command-target"
+                                @bind="SelectedCommandTarget"
+                                disabled="@IsSendingCommand">
+                            <option value="Server">Server</option>
+                            <option value="Tool">Tool</option>
+                        </select>
+                        <span class="command-prompt">&gt;</span>
+                        <input type="text"
+                               class="command-input"
+                               placeholder="Enter command..."
+                               @bind="CommandText"
+                               @bind:event="oninput"
+                               @onkeydown="OnCommandKeyDown"
+                               disabled="@IsSendingCommand" />
+                    </div>
+                }
             </div>
 
             <div class="status-bar" style="@GetStyle("StatusBar")">

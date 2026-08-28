@@ -1,4 +1,5 @@
 // Copyright © - Unpublished - Toby Hunter
+using ServerStatusSite.Models.Requests;
 using ServerStatusSite.Models.Responses;
 
 namespace ServerStatusSite.Abstractions
@@ -13,5 +14,6 @@ namespace ServerStatusSite.Abstractions
         Task<(ArchivedLogsResponseModel?, bool)> GetArchivedLogs(string serverName, string fileName);
         Task<(WebhookRegistrationResponseModel?, bool)> RegisterWebhook(string serverName, string body);
         Task<(bool, bool)> UnregisterWebhook(string serverName, string webhookId);
+        Task<(bool, bool)> SendCommand(string serverName, CommandRequestModel command);
     }
 }

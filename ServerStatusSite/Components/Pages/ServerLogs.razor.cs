@@ -1,5 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
@@ -8,6 +9,7 @@ using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
 using ServerStatusSite.Converters;
 using ServerStatusSite.Models;
+using ServerStatusSite.Models.Requests;
 using ServerStatusSite.Models.Responses;
 using ServerStatusSite.Models.Responses.Related;
 using ServerStatusSite.Services;
@@ -51,6 +53,9 @@ namespace ServerStatusSite.Components.Pages
         private string SelectedLogType = "All";
         private string SelectedArchiveFile = string.Empty;
         private string? WebhookRegistrationId;
+        private bool IsSendingCommand;
+        private string CommandText = string.Empty;
+        private string SelectedCommandTarget = "Server";
         private string ErrorMessage = string.Empty;
         private int? NextAfterCursor;
         private ElementReference ConsoleRef;
@@ -465,6 +470,36 @@ namespace ServerStatusSite.Components.Pages
             await InvokeAsync(StateHasChanged);
 
             return NextAfterCursor != null;
+        }
+
+        /// <summary>
+        /// Handles key presses in the command input.
+        /// </summary>
+        private async Task OnCommandKeyDown(KeyboardEventArgs e)
+        {
+            if (e.Key != "Enter" || string.IsNullOrWhiteSpace(CommandText) || IsSendingCommand)
+            {
+                return;
+            }
+
+            IsSendingCommand = true;
+
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                $"Sending Command ({SelectedCommandTarget}): {CommandText.Trim()}");
+
+            CommandRequestModel command = new()
+            {
+                Target = SelectedCommandTarget,
+                Command = CommandText.Trim()
+            };
+
+            await BackupToolApi.SendCommand(
+                SelectedServer,
+                command);
+
+            CommandText = string.Empty;
+            IsSendingCommand = false;
         }
 
         /// <summary>
