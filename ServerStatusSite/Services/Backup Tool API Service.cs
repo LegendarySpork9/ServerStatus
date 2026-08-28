@@ -280,6 +280,7 @@ namespace ServerStatusSite.Services
             string body = JsonConvert.SerializeObject(new
             {
                 url = webhookUrl,
+                serverName,
                 logType = type,
                 logLevel = level,
                 afterId
