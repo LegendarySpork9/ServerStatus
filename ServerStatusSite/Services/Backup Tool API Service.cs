@@ -34,7 +34,7 @@ namespace ServerStatusSite.Services
             string serverName,
             string type = "All",
             string level = "All",
-            int limit = 5000,
+            int limit = 500,
             int afterId = 0)
         {
             _Logger.LogMessage(
