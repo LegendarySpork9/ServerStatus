@@ -47,6 +47,7 @@ namespace ServerStatusSite.Components.Pages
         private bool IsWebhookActive;
         private bool ScrollDetectionInitialised;
         private bool ScrollAfterRender;
+        private bool PreserveScrollAfterRender;
 
         private string SelectedServer = string.Empty;
         private string SelectedLogSource = string.Empty;
@@ -143,6 +144,15 @@ namespace ServerStatusSite.Components.Pages
 
                 await JsModule.InvokeVoidAsync(
                     "scrollToBottomIfNeeded",
+                    ConsoleRef);
+            }
+
+            if (PreserveScrollAfterRender && JsModule != null)
+            {
+                PreserveScrollAfterRender = false;
+
+                await JsModule.InvokeVoidAsync(
+                    "restoreScrollPosition",
                     ConsoleRef);
             }
         }
@@ -423,6 +433,13 @@ namespace ServerStatusSite.Components.Pages
             {
                 List<LogEntryModel> olderLogs = [.. response.Logs.OrderBy(l => l.Id)];
 
+                if (JsModule != null)
+                {
+                    await JsModule.InvokeVoidAsync(
+                        "captureScrollHeight",
+                        ConsoleRef);
+                }
+
                 await LogLock.WaitAsync();
 
                 try
@@ -438,6 +455,7 @@ namespace ServerStatusSite.Components.Pages
                 }
 
                 NextAfterCursor = response.NextAfter;
+                PreserveScrollAfterRender = true;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -487,6 +505,13 @@ namespace ServerStatusSite.Components.Pages
 
             CommandText = string.Empty;
             IsSendingCommand = false;
+
+            if (JsModule != null)
+            {
+                await JsModule.InvokeVoidAsync(
+                    "scrollToBottom",
+                    ConsoleRef);
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 let isLoading = false;
 let hasMore = true;
 let isAtBottom = true;
+let savedScrollHeight = 0;
 
 export function initScrollDetection(element, dotNetHelper) {
     isLoading = false;
@@ -29,4 +30,12 @@ export function scrollToBottomIfNeeded(element) {
     if (isAtBottom) {
         element.scrollTop = element.scrollHeight;
     }
+}
+
+export function captureScrollHeight(element) {
+    savedScrollHeight = element.scrollHeight;
+}
+
+export function restoreScrollPosition(element) {
+    element.scrollTop += element.scrollHeight - savedScrollHeight;
 }
