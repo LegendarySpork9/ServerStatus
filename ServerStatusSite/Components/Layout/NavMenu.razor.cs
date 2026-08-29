@@ -10,6 +10,10 @@ namespace ServerStatusSite.Components.Layout
         [Inject]
         private UserModel User { get; set; } = default!;
 
+        private bool IsAdmin => bool.TryParse(
+            User.Settings.FirstOrDefault(s => s.Name == "IsAdmin")?.Value,
+            out bool result) && result;
+
         /// <summary>
         /// Subscribes the layout to the DarkMode event.
         /// </summary>

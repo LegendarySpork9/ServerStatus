@@ -32,9 +32,6 @@ namespace ServerStatusAutomation
                 "Configuring Application");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Webhook URL: {sharedSettings.WebhookURL}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
                 $"Recipient Id: {sharedSettings.RecipientId}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,

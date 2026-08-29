@@ -7,7 +7,6 @@ namespace ServerStatusCommon.Models
     public class SharedSettingsModel
     {
         public string Domain { get; set; }
-        public string WebhookURL { get; set; }
         public long RecipientId { get; set; }
         public bool SendAlerts { get; set; }
         public string BaseURL { get; set; }

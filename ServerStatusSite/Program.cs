@@ -5,7 +5,11 @@ using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
+using ServerStatusSite.Abstractions;
 using ServerStatusSite.Components;
+using ServerStatusSite.Implementations;
+using ServerStatusSite.Models;
+using ServerStatusSite.Services;
 
 namespace ServerStatusSite
 {
@@ -39,19 +43,31 @@ namespace ServerStatusSite
                 "AppSettings",
                 sharedSettings);
 
+            BackupToolSettingsModel backupToolSettings = builder.Configuration.GetSection("BackupToolAPI")
+                .Get<BackupToolSettingsModel>()!;
+
+            builder.Services.AddSingleton(backupToolSettings);
+
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Loaded Configuration");
 
             builder.Services.AddSingleton(sharedSettings);
+            builder.Services.AddSingleton(backupToolSettings);
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
-            builder.Services.AddSingleton<RetryService, RetryService>();
+            builder.Services.AddSingleton<IBackupToolAPIClient, BackupToolAPIClientWrapper>();
+            builder.Services.AddSingleton<RetryService>();
             builder.Services.AddSingleton<APIService>();
+            builder.Services.AddSingleton<LogStreamService>();
+            builder.Services.AddSingleton<BackupToolAPIService>();
             builder.Services.AddScoped<UserModel>();
+
+            builder.Services.AddControllers();
+
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(
@@ -87,6 +103,12 @@ namespace ServerStatusSite
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Configured Antiforgery");
+
+            app.MapControllers();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Mapped API Controllers");
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
