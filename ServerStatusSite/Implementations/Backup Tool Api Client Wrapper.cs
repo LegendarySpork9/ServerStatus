@@ -1,4 +1,4 @@
-// Copyright © - Unpublished - Toby Hunter
+﻿// Copyright © - Unpublished - Toby Hunter
 using Newtonsoft.Json;
 using RestSharp;
 using ServerStatusCommon.Abstractions;
@@ -15,14 +15,17 @@ namespace ServerStatusSite.Implementations
     public class BackupToolAPIClientWrapper : IBackupToolAPIClient
     {
         private readonly ILoggerService _Logger;
+        private readonly IRestClientWrapper _RestClient;
         private readonly BackupToolSettingsModel Settings;
 
         // Sets the class's global variables.
         public BackupToolAPIClientWrapper(
             ILoggerService _logger,
+            IRestClientWrapper _restClient,
             BackupToolSettingsModel settings)
         {
             _Logger = _logger;
+            _RestClient = _restClient;
             Settings = settings;
         }
 
@@ -51,19 +54,14 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     RestRequest request = new()
                     {
                         Method = Method.Get
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -72,7 +70,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -149,19 +149,14 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     RestRequest request = new()
                     {
                         Method = Method.Get
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -170,7 +165,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -250,19 +247,14 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     RestRequest request = new()
                     {
                         Method = Method.Get
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -271,7 +263,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -350,22 +344,17 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-                    client.AddDefaultHeader(
-                        "Accept",
-                        "application/json");
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     RestRequest request = new()
                     {
                         Method = Method.Post
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
+                    request.AddHeader(
+                        "Accept",
+                        "application/json");
                     request.AddParameter(
                         "application/json",
                         body,
@@ -381,7 +370,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -455,19 +446,14 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     RestRequest request = new()
                     {
                         Method = Method.Delete
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -476,7 +462,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -544,17 +532,6 @@ namespace ServerStatusSite.Implementations
 
                 if (credentials != null)
                 {
-                    RestClient client = new(url);
-                    client.AddDefaultHeader(
-                        "Authorization",
-                        credentials);
-                    client.AddDefaultHeader(
-                        "Accept",
-                        "application/json");
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        "Configured Rest Client");
 
                     string body = JsonConvert.SerializeObject(command);
 
@@ -562,6 +539,12 @@ namespace ServerStatusSite.Implementations
                     {
                         Method = Method.Post
                     };
+                    request.AddHeader(
+                        "Authorization",
+                        credentials);
+                    request.AddHeader(
+                        "Accept",
+                        "application/json");
                     request.AddParameter(
                         "application/json",
                         body,
@@ -577,7 +560,9 @@ namespace ServerStatusSite.Implementations
                         StandardValues.LoggerValues.Debug,
                         "Sending Request");
 
-                    RestResponse response = await client.ExecuteAsync(request);
+                    RestResponse response = await _RestClient.ExecuteAsync(
+                        url,
+                        request);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -646,8 +631,6 @@ namespace ServerStatusSite.Implementations
                     StandardValues.LoggerValues.Warning,
                     $"No credentials configured for server: {serverName}");
             }
-
-            
 
             return credentials;
         }

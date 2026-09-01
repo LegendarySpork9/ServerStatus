@@ -4,7 +4,7 @@ using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using System.Configuration;
 
-namespace ServerStatus.PersistenceTests.Functions
+namespace ServerStatus.PersistenceTests.Common.Functions
 {
     [TestClass]
     public class SharedSettingsLoaderTest

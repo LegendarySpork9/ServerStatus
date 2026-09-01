@@ -1,7 +1,7 @@
 // Copyright © - 31/08/2026 - Toby Hunter
 using ServerStatusCommon.Implementations;
 
-namespace ServerStatus.PersistenceTests.Implementations
+namespace ServerStatus.PersistenceTests.Common.Implementations
 {
     [TestClass]
     public class FileSystemWrapperTest

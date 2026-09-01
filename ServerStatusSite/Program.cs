@@ -57,6 +57,7 @@ namespace ServerStatusSite
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddSingleton<IRestClientWrapper, RestClientWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
             builder.Services.AddSingleton<IBackupToolAPIClient, BackupToolAPIClientWrapper>();
