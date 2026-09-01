@@ -1,4 +1,4 @@
-// Copyright © - 31/08/2026 - Toby Hunter
+// Copyright © - Unpublished - Toby Hunter
 using Moq;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Models;
