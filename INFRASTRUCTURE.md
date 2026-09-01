@@ -24,8 +24,7 @@ Server Status is a self-hosted monitoring suite for tracking the status of local
 | Test SDK | Microsoft.NET.Test.Sdk | 17.12.0 |
 | Mocking | Moq | 4.20.72 |
 | Assertions | FluentAssertions | 8.3.0 |
-| Code Coverage | Microsoft.Testing.Extensions.CodeCoverage | 17.12.6 |
-| Test Reporting | Microsoft.Testing.Extensions.TrxReport | 1.4.3 |
+| Code Coverage | coverlet.collector | 6.0.2 |
 
 ## Solution Structure
 
@@ -69,16 +68,19 @@ ServerStatus/
 |   +-- Services/                       # Reporter application and PID services
 +-- ServerStatusAutomation/             # Console application (alert automation)
 |   +-- Services/                       # Automation service
-+-- ServerStatus.Tests/                 # Unit test project
-|   +-- Common/                         # Tests for ServerStatusCommon
-|   |   +-- Converters/                 # Converter tests
-|   |   +-- Functions/                  # Function tests
-|   |   +-- Services/                   # Service tests
-|   +-- Mocks/                          # Mock data
-|   |   +-- Configs/                    # Mock configuration files
-|   +-- Site/                           # Tests for ServerStatusSite
-|       +-- Converters/                 # Style converter tests
-|       +-- Functions/                  # Hash and IP function tests
++-- Tests/
+|   +-- ServerStatus.UnitTests/         # Unit tests — converters, functions, helpers only
+|   |   +-- Common/Converters/          # API converter tests
+|   |   +-- Common/Functions/           # Timer and URL builder function tests
+|   |   +-- Site/Converters/            # Style converter tests
+|   |   +-- Site/Functions/             # Hash, IP address, and webhook auth function tests
+|   +-- ServerStatus.PersistenceTests/  # Persistence tests — file I/O, implementations
+|   |   +-- Common/Functions/           # Shared settings loader tests (real config files)
+|   |   +-- Common/Implementations/    # File system wrapper and clock tests
+|   |   +-- Common/Services/            # PID file service tests
+|   +-- ServerStatus.IntegrationTests/  # Integration tests — service orchestration
+|   |   +-- Common/Services/            # API and Discord service tests
+|   |   +-- Site/Services/              # Backup Tool API and log stream service tests
 +-- .github/workflows/                  # CI/CD pipeline definitions
 ```
 
@@ -456,7 +458,7 @@ All workflows run on `windows-latest` using .NET 8.0.x SDK.
 | Workflow | Trigger | Steps |
 |---|---|---|
 | **CI on Commit** (`Commit.yml`) | Push to any branch | Checkout, Restore, Build (Release) |
-| **CI on Pull Request** (`Pull Request.yml`) | PR to any branch | Checkout, Restore, Build (Release), Run Tests, Publish all three applications, Upload timestamped artefacts |
+| **CI on Pull Request** (`Pull Request.yml`) | PR to any branch | Checkout, Restore, Build (Release), Run Tests with Coverage (`dotnet test --collect:"XPlat Code Coverage"`), Generate Coverage Report, Post Coverage Status, Upload Coverage Artifact, Publish all three applications, Upload timestamped artefacts |
 | **Check for Linked Issue** (`PR Linked Issue.yml`) | PR opened/edited/reopened/synchronised | Verifies PR has linked GitHub issues via description, comments, or Development section |
 
 ### Pull Request Artefacts
@@ -474,6 +476,15 @@ The PR workflow publishes and uploads build artefacts for all three applications
 - **SDK:** .NET 8.0.x
 - **Configuration:** Release
 - **Test Runner:** `dotnet test` (MSTest with method-level parallelisation)
+
+### Code Coverage
+
+- **Collector:** XPlat Code Coverage (via `coverlet.collector`)
+- **Configuration:** `coverlet.runsettings` in solution root
+- **Report Generator:** `dotnet-reportgenerator-globaltool`
+- **Report Formats:** Cobertura, JsonSummary
+- **Exclusions:** Program entry points (Site, Reporter, Automation), Models, generated code
+- **CI Integration:** Coverage percentage posted to PR status and uploaded as artifact
 
 ## Hosting Requirements
 

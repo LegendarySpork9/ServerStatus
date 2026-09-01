@@ -47,9 +47,11 @@ namespace ServerStatusAutomation
                 $"Refresh Time: {sharedSettings.RefreshTime}");
 
             IClock _clock = new SystemClockProvider();
+            IRestClientWrapper _restClient = new RestClientWrapper();
             APIClientWrapper _apiClient = new(
                 _logger,
                 new FileSystemWrapper(),
+                _restClient,
                 sharedSettings);
             RetryService _retryService = new(_logger);
             APIService _apiService = new(

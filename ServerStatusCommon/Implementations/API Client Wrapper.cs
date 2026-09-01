@@ -16,6 +16,7 @@ namespace ServerStatusCommon.Implementations
     {
         private readonly ILoggerService _Logger;
         private readonly IFileSystem _FileSystem;
+        private readonly IRestClientWrapper _RestClient;
         private readonly SharedSettingsModel SharedSettings;
 
         private string? BearerToken;
@@ -24,10 +25,12 @@ namespace ServerStatusCommon.Implementations
         public APIClientWrapper(
             ILoggerService _logger,
             IFileSystem _fileSystem,
+            IRestClientWrapper _restClient,
             SharedSettingsModel sharedSettings)
         {
             _Logger = _logger;
             _FileSystem = _fileSystem;
+            _RestClient = _restClient;
             SharedSettings = sharedSettings;
         }
 
@@ -54,24 +57,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    SharedSettings.Credentials);
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = await _FileSystem.ReadAllText(SharedSettings.AuthPayloadLocation);
 
                 RestRequest request = new()
                 {
                     Method = Method.Post
                 };
+                request.AddHeader(
+                    "Authorization",
+                    SharedSettings.Credentials);
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -87,7 +84,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -160,19 +159,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -181,7 +174,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -254,19 +249,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -275,7 +264,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -345,19 +336,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -366,7 +351,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -439,19 +426,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -460,7 +441,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -533,24 +516,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = JsonConvert.SerializeObject(userSetting);
 
                 RestRequest request = new()
                 {
                     Method = Method.Patch
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -566,7 +543,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -638,24 +617,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = JsonConvert.SerializeObject(user);
 
                 RestRequest request = new()
                 {
                     Method = Method.Patch
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -671,7 +644,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -740,19 +715,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -761,7 +730,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -834,19 +805,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -855,7 +820,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -921,24 +888,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = JsonConvert.SerializeObject(alert);
 
                 RestRequest request = new()
                 {
                     Method = Method.Patch
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -954,7 +915,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1022,24 +985,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = JsonConvert.SerializeObject(alert);
 
                 RestRequest request = new()
                 {
                     Method = Method.Post
                 };
+                request.AddHeader(
+                    "Authorization",
+                    SharedSettings.Credentials);
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -1055,7 +1012,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1123,24 +1082,18 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-                client.AddDefaultHeader(
-                    "Accept",
-                    "application/json");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 string body = JsonConvert.SerializeObject(newEvent);
 
                 RestRequest request = new()
                 {
                     Method = Method.Post
                 };
+                request.AddHeader(
+                    "Authorization",
+                    SharedSettings.Credentials);
+                request.AddHeader(
+                    "Accept",
+                    "application/json");
                 request.AddParameter(
                     "application/json",
                     body,
@@ -1156,7 +1109,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1224,19 +1179,13 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {BearerToken}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
                 };
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {BearerToken}");
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -1245,7 +1194,9 @@ namespace ServerStatusCommon.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

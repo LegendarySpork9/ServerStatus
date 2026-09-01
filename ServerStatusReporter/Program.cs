@@ -53,9 +53,11 @@ namespace ServerStatusReporter
             IClock _clock = new SystemClockProvider();
             IFileSystem _fileSystem = new FileSystemWrapper();
             IProcessService _processService = new ProcessServiceWrapper(_logger);
+            IRestClientWrapper _restClient = new RestClientWrapper();
             APIClientWrapper _apiClient = new(
                 _logger,
                 _fileSystem,
+                _restClient,
                 sharedSettings);
             RetryService _retryService = new(_logger);
             APIService _apiService = new(

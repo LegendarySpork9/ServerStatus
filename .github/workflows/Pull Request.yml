@@ -5,6 +5,9 @@ on:
     branches:
       - '**'
 
+permissions:
+  statuses: write
+
 jobs:
   build-and-test:
     runs-on: windows-latest
@@ -24,8 +27,44 @@ jobs:
     - name: Build solution
       run: dotnet build --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
+    - name: Run tests with coverage
+      run: dotnet test --configuration Release --no-restore --verbosity normal --settings coverlet.runsettings --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+    - name: Install ReportGenerator
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+    - name: Generate coverage report
+      run: reportgenerator -reports:"./TestResults/**/coverage.cobertura.xml" -targetdir:"./TestResults/CoverageReport" -reporttypes:"Cobertura;JsonSummary"
+
+    - name: Post coverage status
+      if: github.event_name == 'pull_request'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        COVERAGE=$(python3 -c "
+        import json
+        with open('./TestResults/CoverageReport/Summary.json') as f:
+            data = json.load(f)
+        print(round(data['summary']['linecoverage'], 1))
+        ")
+
+        echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
+
+        echo "### Code Coverage" >> "$GITHUB_STEP_SUMMARY"
+        echo "Line coverage: **${COVERAGE}%**" >> "$GITHUB_STEP_SUMMARY"
+
+        gh api repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          -f state="success" \
+          -f context="code-coverage" \
+          -f description="Line coverage: ${COVERAGE}%" \
+          -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./TestResults/CoverageReport/
 
     - name: Publish Site
       run: >
