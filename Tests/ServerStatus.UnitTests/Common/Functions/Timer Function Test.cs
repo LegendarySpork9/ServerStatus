@@ -3,7 +3,7 @@ using Moq;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Functions;
 
-namespace ServerStatus.Tests.Common.Functions
+namespace ServerStatus.UnitTests.Common.Functions
 {
     [TestClass]
     public class TimerFunctionTest

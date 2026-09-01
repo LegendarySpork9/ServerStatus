@@ -3,7 +3,7 @@ using ServerStatusSite.Functions;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ServerStatus.Tests.Site.Functions
+namespace ServerStatus.UnitTests.Site.Functions
 {
     [TestClass]
     public class WebhookAuthValidationFunctionTest
@@ -23,6 +23,9 @@ namespace ServerStatus.Tests.Site.Functions
             return Convert.ToHexString(hash).ToLower();
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns true for a valid HMAC-SHA256 signature.
+        /// </summary>
         [TestMethod]
         public void TestValidSignature_ReturnsTrue()
         {
@@ -37,6 +40,9 @@ namespace ServerStatus.Tests.Site.Functions
             Assert.IsTrue(result);
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns false for an invalid signature.
+        /// </summary>
         [TestMethod]
         public void TestInvalidSignature_ReturnsFalse()
         {
@@ -50,6 +56,9 @@ namespace ServerStatus.Tests.Site.Functions
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns false when the wrong secret is used.
+        /// </summary>
         [TestMethod]
         public void TestWrongSecret_ReturnsFalse()
         {
@@ -64,6 +73,9 @@ namespace ServerStatus.Tests.Site.Functions
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns false when the signature is null.
+        /// </summary>
         [TestMethod]
         public void TestNullSignature_ReturnsFalse()
         {
@@ -75,6 +87,9 @@ namespace ServerStatus.Tests.Site.Functions
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns false when the signature is empty.
+        /// </summary>
         [TestMethod]
         public void TestEmptySignature_ReturnsFalse()
         {
@@ -86,6 +101,9 @@ namespace ServerStatus.Tests.Site.Functions
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Checks whether the ValidateSignature method returns false when the body has been tampered with.
+        /// </summary>
         [TestMethod]
         public void TestTamperedBody_ReturnsFalse()
         {

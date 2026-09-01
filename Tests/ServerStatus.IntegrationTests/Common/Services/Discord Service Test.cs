@@ -4,7 +4,7 @@ using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Services;
 
-namespace ServerStatus.Tests.Common.Services
+namespace ServerStatus.IntegrationTests.Common.Services
 {
     [TestClass]
     public class DiscordServiceTest

@@ -1,7 +1,7 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Converters;
 
-namespace ServerStatus.Tests.Common.Converters
+namespace ServerStatus.UnitTests.Common.Converters
 {
     [TestClass]
     public class APIConverterTest

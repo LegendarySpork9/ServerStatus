@@ -2,7 +2,7 @@
 using ServerStatusSite.Functions;
 using Microsoft.AspNetCore.Http;
 
-namespace ServerStatus.Tests.Site.Functions
+namespace ServerStatus.UnitTests.Site.Functions
 {
     [TestClass]
     public class IPAddressFunctionTest

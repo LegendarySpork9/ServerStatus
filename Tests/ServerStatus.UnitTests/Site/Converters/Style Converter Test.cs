@@ -1,11 +1,14 @@
-﻿// Copyright © - 05/10/2025 - Toby Hunter
+// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusSite.Converters;
 
-namespace ServerSite.Tests.Site.Converters
+namespace ServerStatus.UnitTests.Site.Converters
 {
     [TestClass]
     public class StyleConverterTest
     {
+        /// <summary>
+        /// Checks whether the GetTopBarDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestTopBarDarkModeTrue()
         {
@@ -16,6 +19,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTopBarDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestTopBarDarkModeFalse()
         {
@@ -26,6 +32,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTopNavLinkDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestTopNavLinkDarkModeTrue()
         {
@@ -36,6 +45,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTopNavLinkDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestTopNavLinkDarkModeFalse()
         {
@@ -46,6 +58,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetBodyDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestBodyDarkModeTrue()
         {
@@ -56,6 +71,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetBodyDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestBodyDarkModeFalse()
         {
@@ -66,6 +84,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetNavMenuDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestNavMenuDarkModeTrue()
         {
@@ -76,6 +97,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetNavMenuDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestNavMenuDarkModeFalse()
         {
@@ -86,6 +110,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTableDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestTableDarkModeTrue()
         {
@@ -96,6 +123,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTableDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestTableDarkModeFalse()
         {
@@ -106,6 +136,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetFormDarkMode method returns the dark mode class when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestFormDarkModeTrue()
         {
@@ -116,6 +149,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetFormDarkMode method returns the light mode class when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestFormDarkModeFalse()
         {
@@ -126,6 +162,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetInputDarkMode method returns the expected style when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestInputDarkModeTrue()
         {
@@ -136,6 +175,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetInputDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestInputDarkModeFalse()
         {
@@ -146,6 +188,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTableRowDarkMode method returns the dark mode class when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestTableRowDarkModeTrue()
         {
@@ -156,6 +201,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetTableRowDarkMode method returns an empty string when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestTableRowDarkModeFalse()
         {
@@ -166,6 +214,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetLoadingDarkMode method returns the light spinner class when dark mode is enabled.
+        /// </summary>
         [TestMethod]
         public void TestLoadingDarkModeTrue()
         {
@@ -176,6 +227,9 @@ namespace ServerSite.Tests.Site.Converters
                 style);
         }
 
+        /// <summary>
+        /// Checks whether the GetLoadingDarkMode method returns the default spinner class when dark mode is disabled.
+        /// </summary>
         [TestMethod]
         public void TestLoadingDarkModeFalse()
         {

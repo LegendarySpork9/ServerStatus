@@ -3,7 +3,7 @@ using Moq;
 using ServerStatusCommon.Abstractions;
 using ServerStatusReporter.Services;
 
-namespace ServerStatus.Tests.Common.Services
+namespace ServerStatus.PersistenceTests.Services
 {
     [TestClass]
     public class PidFileServiceTest

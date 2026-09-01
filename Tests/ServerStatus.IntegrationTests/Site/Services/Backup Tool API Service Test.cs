@@ -5,10 +5,9 @@ using ServerStatusCommon.Services;
 using ServerStatusSite.Abstractions;
 using ServerStatusSite.Models.Requests;
 using ServerStatusSite.Models.Responses;
-using ServerStatusSite.Models.Responses.Related;
 using ServerStatusSite.Services;
 
-namespace ServerStatus.Tests.Site.Services
+namespace ServerStatus.IntegrationTests.Site.Services
 {
     [TestClass]
     public class BackupToolAPIServiceTest
@@ -21,6 +20,9 @@ namespace ServerStatus.Tests.Site.Services
             _RetryService = new RetryService(_MockLogger.Object);
         }
 
+        /// <summary>
+        /// Checks whether the SendCommand method returns true when the command is sent successfully.
+        /// </summary>
         [TestMethod]
         public async Task TestSendCommand_ReturnsTrue_WhenSuccessful()
         {
@@ -48,6 +50,9 @@ namespace ServerStatus.Tests.Site.Services
             Assert.IsTrue(result);
         }
 
+        /// <summary>
+        /// Checks whether the SendCommand method returns false when the command fails.
+        /// </summary>
         [TestMethod]
         public async Task TestSendCommand_ReturnsFalse_WhenFailed()
         {
@@ -75,6 +80,9 @@ namespace ServerStatus.Tests.Site.Services
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Checks whether the GetLogs method returns the expected logs when successful.
+        /// </summary>
         [TestMethod]
         public async Task TestGetLogs_ReturnsLogs_WhenSuccessful()
         {
@@ -114,6 +122,9 @@ namespace ServerStatus.Tests.Site.Services
                 result.Logs.Count);
         }
 
+        /// <summary>
+        /// Checks whether the GetLogs method returns null when the request fails.
+        /// </summary>
         [TestMethod]
         public async Task TestGetLogs_ReturnsNull_WhenFailed()
         {
@@ -133,6 +144,9 @@ namespace ServerStatus.Tests.Site.Services
             Assert.IsNull(result);
         }
 
+        /// <summary>
+        /// Checks whether the GetLogArchives method returns the expected archives when successful.
+        /// </summary>
         [TestMethod]
         public async Task TestGetLogArchives_ReturnsArchives_WhenSuccessful()
         {
@@ -167,6 +181,9 @@ namespace ServerStatus.Tests.Site.Services
                 result.Archives.Count);
         }
 
+        /// <summary>
+        /// Checks whether the RegisterWebhook method returns the expected registration when successful.
+        /// </summary>
         [TestMethod]
         public async Task TestRegisterWebhook_ReturnsRegistration_WhenSuccessful()
         {
@@ -197,6 +214,9 @@ namespace ServerStatus.Tests.Site.Services
                 result.Id);
         }
 
+        /// <summary>
+        /// Checks whether the UnregisterWebhook method returns true when successful.
+        /// </summary>
         [TestMethod]
         public async Task TestUnregisterWebhook_ReturnsTrue_WhenSuccessful()
         {
@@ -218,6 +238,9 @@ namespace ServerStatus.Tests.Site.Services
             Assert.IsTrue(result);
         }
 
+        /// <summary>
+        /// Checks whether the UnregisterWebhook method returns false when the request fails.
+        /// </summary>
         [TestMethod]
         public async Task TestUnregisterWebhook_ReturnsFalse_WhenFailed()
         {

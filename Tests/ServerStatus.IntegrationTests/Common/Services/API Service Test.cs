@@ -7,7 +7,7 @@ using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
 
-namespace ServerStatus.Tests.Common.Services
+namespace ServerStatus.IntegrationTests.Common.Services
 {
     [TestClass]
     public class APIServiceTest

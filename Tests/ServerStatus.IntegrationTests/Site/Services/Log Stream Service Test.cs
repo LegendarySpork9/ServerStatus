@@ -2,11 +2,14 @@
 using ServerStatusSite.Models.Responses.Related;
 using ServerStatusSite.Services;
 
-namespace ServerStatus.Tests.Site.Services
+namespace ServerStatus.IntegrationTests.Site.Services
 {
     [TestClass]
     public class LogStreamServiceTest
     {
+        /// <summary>
+        /// Checks whether the Publish method invokes the subscribed handler.
+        /// </summary>
         [TestMethod]
         public async Task TestPublish_InvokesSubscribedHandler()
         {
@@ -43,6 +46,9 @@ namespace ServerStatus.Tests.Site.Services
                 received.Count);
         }
 
+        /// <summary>
+        /// Checks whether the Publish method does not invoke handlers for a different server.
+        /// </summary>
         [TestMethod]
         public async Task TestPublish_DoesNotInvokeDifferentServer()
         {
@@ -64,6 +70,9 @@ namespace ServerStatus.Tests.Site.Services
             Assert.IsFalse(invoked);
         }
 
+        /// <summary>
+        /// Checks whether the Unsubscribe method removes the handler so it is no longer invoked.
+        /// </summary>
         [TestMethod]
         public async Task TestUnsubscribe_RemovesHandler()
         {
@@ -101,6 +110,9 @@ namespace ServerStatus.Tests.Site.Services
                 callCount);
         }
 
+        /// <summary>
+        /// Checks whether the Publish method invokes multiple subscribed handlers.
+        /// </summary>
         [TestMethod]
         public async Task TestPublish_InvokesMultipleHandlers()
         {
@@ -132,6 +144,9 @@ namespace ServerStatus.Tests.Site.Services
                 callCount);
         }
 
+        /// <summary>
+        /// Checks whether the Publish method matches server names in a case-insensitive manner.
+        /// </summary>
         [TestMethod]
         public async Task TestPublish_IsCaseInsensitive()
         {

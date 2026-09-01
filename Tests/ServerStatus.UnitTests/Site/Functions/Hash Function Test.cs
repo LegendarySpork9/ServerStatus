@@ -1,7 +1,7 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusSite.Functions;
 
-namespace ServerStatus.Tests.Site.Functions
+namespace ServerStatus.UnitTests.Site.Functions
 {
     [TestClass]
     public class HashFunctionTest
