@@ -32,7 +32,8 @@ Server Status is a self-hosted monitoring suite for tracking the status of local
 ServerStatus/
 +-- ServerStatusCommon/                 # Shared class library
 |   +-- Abstractions/                   # Interface definitions
-|   +-- Converters/                     # API and standard value converters
+|   +-- Converters/                     # API converters
+|   +-- Values/                         # Standard value constants and defaults
 |   +-- Functions/                      # Shared settings loader, timer, and URL builder functions
 |   +-- Implementations/               # Interface implementations (wrappers)
 |   +-- Models/                         # Data models
@@ -133,6 +134,11 @@ The common library provides shared abstractions, services, models, and utilities
 | Converter | Responsibility |
 |---|---|
 | `APIConverter` | Maps API endpoints to query parameters and status values to CSS classes |
+
+#### Shared Values
+
+| Value Class | Responsibility |
+|---|---|
 | `StandardValues` | Constants for log levels, default settings, alert defaults, and missing value placeholders |
 
 ### ServerStatusSite (Web Application)

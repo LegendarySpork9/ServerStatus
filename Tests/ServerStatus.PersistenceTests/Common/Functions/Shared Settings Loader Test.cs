@@ -99,5 +99,46 @@ namespace ServerStatus.PersistenceTests.Common.Functions
 
             result.Should().BeEquivalentTo(expectedSharedSettings);
         }
+        /// <summary>
+        /// Checks the LoadSettingsFromConfig method handles an invalid value without throwing.
+        /// </summary>
+        [TestMethod]
+        public void TestLoadSettingsFromConfigInvalidValue()
+        {
+            SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
+                Path.GetFullPath(Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "..",
+                    "..",
+                    "..")),
+                @"Mocks\Configs\InvalidTest.config")));
+
+            Assert.AreEqual(
+                "https://localhost/api",
+                result.BaseURL);
+            Assert.AreEqual(
+                0,
+                result.RefreshTime);
+        }
+
+        /// <summary>
+        /// Checks the LoadSettingsFromConfig method ignores properties not present in the config.
+        /// </summary>
+        [TestMethod]
+        public void TestLoadSettingsFromConfigMissingProperties()
+        {
+            SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
+                Path.GetFullPath(Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "..",
+                    "..",
+                    "..")),
+                @"Mocks\Configs\Test.config")));
+
+            Assert.IsNull(result.BaseURL);
+            Assert.AreEqual(
+                0,
+                result.RefreshTime);
+        }
     }
 }
