@@ -95,7 +95,7 @@ namespace ServerStatusSite.Components.Pages
 
             if (Servers != null)
             {
-                ServerNames.AddRange(Servers.Where(s => s.IsActive)
+                ServerNames.AddRange(Servers.Where(s => s.IsActive && BackupToolSettings.Servers.ContainsKey(s.Name))
                     .Select(s => s.Name));
             }
 

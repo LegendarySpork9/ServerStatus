@@ -152,6 +152,7 @@ Services are registered in `Program.cs`:
 | `ILoggerService` | Singleton | Logging |
 | `IClock` | Singleton | Time operations |
 | `IFileSystem` | Singleton | File system access |
+| `IExtendedFileSystem` | Singleton | Extended file system with write operations (extends `IFileSystem`) |
 | `IAPIClient` | Singleton | API communication (Hunter Industries API) |
 | `IHTTPClient` | Singleton | HTTP requests |
 | `RetryService` | Singleton | Retry logic |
@@ -200,6 +201,7 @@ Services are registered in `Program.cs`:
 | Register Alert | `/registeralert` | MainLayout | Report a new server alert |
 | Edit Alert | `/editalert` | MainLayout | Update alert status (admin only) |
 | Server Logs | `/serverlogs` | MainLayout | Live and archived log viewer with real-time webhook updates |
+| Configuration | `/configuration` | MainLayout | Admin-only page for managing Backup Tool API server credentials and webhook secret |
 | Error | `/Error` | - | Error display page |
 
 ### ServerStatusReporter (Data Collector)
@@ -294,7 +296,7 @@ A console application that detects missed or outdated status events and raises a
 ### User Roles
 
 - Standard users can view status and report alerts
-- Admin users (`IsAdmin` setting) can edit alert statuses
+- Admin users (`IsAdmin` setting) can edit alert statuses, view server logs, and manage Backup Tool API configuration
 
 ### Web Security
 
