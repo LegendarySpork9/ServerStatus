@@ -1,5 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Components;
@@ -102,12 +103,15 @@ namespace ServerStatusSite.Components.Pages
                 "Generating Webhook Secret");
 
             byte[] randomBytes = RandomNumberGenerator.GetBytes(32);
-            byte[] hash = SHA256.HashData(randomBytes);
-            string secret = Convert.ToHexString(hash)
+            string rawSecret = Convert.ToHexString(randomBytes)
                 .ToLowerInvariant();
 
-            GeneratedSecret = secret;
-            BackupToolSettings.WebhookSecret = secret;
+            byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(rawSecret));
+            string encryptedSecret = Convert.ToHexString(hash)
+                .ToLowerInvariant();
+
+            GeneratedSecret = rawSecret;
+            BackupToolSettings.WebhookSecret = encryptedSecret;
 
             await PersistSettings();
 

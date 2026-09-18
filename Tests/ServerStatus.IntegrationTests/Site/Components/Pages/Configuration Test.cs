@@ -308,6 +308,16 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                 64,
                 settings.WebhookSecret.Length);
             Assert.IsTrue(cut.Markup.Contains("Copy"));
+
+            AngleSharp.Dom.IElement input = cut.Find("input[readonly]");
+            string displayedValue = input.GetAttribute("value") ?? string.Empty;
+
+            Assert.AreEqual(
+                64,
+                displayedValue.Length);
+            Assert.AreNotEqual(
+                settings.WebhookSecret,
+                displayedValue);
         }
 
         /// <summary>
