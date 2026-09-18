@@ -225,7 +225,7 @@ A console application that runs on each monitored machine. It periodically check
 
 | Service | Responsibility |
 |---|---|
-| `ApplicationService` | Periodic monitoring orchestrator with configurable timer |
+| `ApplicationService` | Periodic monitoring orchestrator with configurable timer. Checks existing events before registering to avoid duplicates within the server's event interval |
 | `PidFileService` | Reads PID files to identify tracked server processes |
 
 #### Monitoring Components
@@ -347,7 +347,7 @@ A console application that detects missed or outdated status events and raises a
   <add key="AuthPayloadLocation" value="<path to Authorise.json>" />
   <add key="RefreshTime" value="<interval in minutes>" />
   <add key="HostName" value="<machine hostname>" />
-  <add key="Games" value="<comma-separated game names>" />
+  <add key="Servers" value="<comma-separated server names>" />
   <add key="Components" value="<comma-separated component names>" />
 </appSettings>
 ```
@@ -441,6 +441,7 @@ Log entries are prefixed with a contextual identifier:
 
 - **Integration:** Live and archived log retrieval with real-time webhook streaming
 - **Used by:** ServerStatusSite (Server Logs page)
+- **URL construction:** Server names are normalised for URL construction (spaces removed, lowercased) to produce valid subdomains
 - **Protocol:** REST over HTTPS with Basic Auth (per-server credentials)
 - **Endpoints called:** `GET /logs` (paginated live logs), `GET /logs/archived` (archive list), `GET /logs/archived/{file}` (archived logs), `POST /webhooks` (register webhook), `DELETE /webhooks/{id}` (unregister webhook)
 - **Webhook receiver:** `POST /webhooks/webhook` on the Site, authenticated via HMAC-SHA256 signature in `X-Webhook-Secret` header

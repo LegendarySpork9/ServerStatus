@@ -609,7 +609,10 @@ namespace ServerStatusSite.Implementations
         /// </summary>
         private string GetBaseUrl(string serverName) => string.Format(
             Settings.APIURLTemplate,
-            serverName);
+            serverName.Replace(
+                    " ",
+                    "")
+                .ToLower());
 
         /// <summary>
         /// Returns the Basic Auth credentials for the given server.
