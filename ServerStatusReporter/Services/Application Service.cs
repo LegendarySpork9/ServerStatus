@@ -1,6 +1,7 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
@@ -136,6 +137,13 @@ namespace ServerStatusReporter.Services
 
             List<ServerModel> servers = await _APIService.GetServers();
 
+            Dictionary<string, List<EventModel>> componentStatuses = [];
+
+            foreach (string component in AppSettingsModel.Components)
+            {
+                componentStatuses[component] = await _APIService.GetServerEvents(component);
+            }
+
             for (int i = 0; i < AppSettingsModel.Servers.Length; i++)
             {
                 ServerModel? server = servers.Find(c => c.Name == AppSettingsModel.Servers[i]);
@@ -154,35 +162,19 @@ namespace ServerStatusReporter.Services
 
                         if (component == "PC")
                         {
-                            EventRequestModel newEvent = new()
-                            {
-                                Component = "PC",
-                                Status = "Online",
-                                ServerId = server.Id,
-                                Name = server.Name,
-                                HostName = server.HostName,
-                                Game = server.Game,
-                                GameVersion = server.GameVersion
-                            };
+                            string determinedStatus = "Online";
 
-                            (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                            if (createdEvent != null)
-                            {
-                                _Logger.LogMessage(
-                                    StandardValues.LoggerValues.Debug,
-                                    "Server Event Registered");
-                            }
-                        }
-
-                        if (component == "Server")
-                        {
-                            if (await ServerRunning(server.Name))
+                            if (!ShouldSkipRegistration(
+                                componentStatuses,
+                                "PC",
+                                server.Id,
+                                determinedStatus,
+                                server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
-                                    Component = "Server",
-                                    Status = "Online",
+                                    Component = "PC",
+                                    Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
                                     HostName = server.HostName,
@@ -199,13 +191,23 @@ namespace ServerStatusReporter.Services
                                         "Server Event Registered");
                                 }
                             }
+                        }
 
-                            else
+                        if (component == "Server")
+                        {
+                            string determinedStatus = await ServerRunning(server.Name) ? "Online" : "Offline";
+
+                            if (!ShouldSkipRegistration(
+                                componentStatuses,
+                                "Server",
+                                server.Id,
+                                determinedStatus,
+                                server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
                                     Component = "Server",
-                                    Status = "Offline",
+                                    Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
                                     HostName = server.HostName,
@@ -237,58 +239,24 @@ namespace ServerStatusReporter.Services
                                 server.Connection.IPAddress,
                                 server.Connection.Port);
 
-                            if (pingStatus == "Success")
+                            string determinedStatus = pingStatus switch
+                            {
+                                "Success" => "Online",
+                                "Failed" => "Offline",
+                                _ => "Unknown"
+                            };
+
+                            if (!ShouldSkipRegistration(
+                                componentStatuses,
+                                "Connection",
+                                server.Id,
+                                determinedStatus,
+                                server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
                                     Component = "Connection",
-                                    Status = "Online",
-                                    ServerId = server.Id,
-                                    Name = server.Name,
-                                    HostName = server.HostName,
-                                    Game = server.Game,
-                                    GameVersion = server.GameVersion
-                                };
-
-                                (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                                if (createdEvent != null)
-                                {
-                                    _Logger.LogMessage(
-                                        StandardValues.LoggerValues.Debug,
-                                        "Server Event Registered");
-                                }
-                            }
-
-                            else if (pingStatus == "Failed")
-                            {
-                                EventRequestModel newEvent = new()
-                                {
-                                    Component = "Connection",
-                                    Status = "Offline",
-                                    ServerId = server.Id,
-                                    Name = server.Name,
-                                    HostName = server.HostName,
-                                    Game = server.Game,
-                                    GameVersion = server.GameVersion
-                                };
-
-                                (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                                if (createdEvent != null)
-                                {
-                                    _Logger.LogMessage(
-                                        StandardValues.LoggerValues.Debug,
-                                        "Server Event Registered");
-                                }
-                            }
-
-                            else
-                            {
-                                EventRequestModel newEvent = new()
-                                {
-                                    Component = "Connection",
-                                    Status = "Unknown",
+                                    Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
                                     HostName = server.HostName,
@@ -354,6 +322,42 @@ namespace ServerStatusReporter.Services
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Determines whether to skip registering an event based on existing events.
+        /// </summary>
+        private bool ShouldSkipRegistration(
+            Dictionary<string, List<EventModel>> componentStatuses,
+            string component,
+            int serverId,
+            string status,
+            int eventInterval)
+        {
+            bool skipRegistration = false;
+
+            if (componentStatuses.TryGetValue(
+                component,
+                out List<EventModel>? statuses))
+            {
+                EventModel? existingEvent = statuses.Find(c => c.Server.Id == serverId);
+
+                if (existingEvent != null)
+                {
+                    DateTime refreshPeriod = _Clock.UtcNow.AddMinutes(-eventInterval);
+
+                    if (existingEvent.DateOccured >= refreshPeriod && existingEvent.Status == status)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Skipping {component} event registration - recent event with same status exists");
+
+                        skipRegistration = true;
+                    }
+                }
+            }
+
+            return skipRegistration;
         }
 
         /// <summary>

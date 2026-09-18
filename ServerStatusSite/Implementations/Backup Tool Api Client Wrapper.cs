@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusSite.Abstractions;
 using ServerStatusSite.Models;
@@ -608,7 +609,10 @@ namespace ServerStatusSite.Implementations
         /// </summary>
         private string GetBaseUrl(string serverName) => string.Format(
             Settings.APIURLTemplate,
-            serverName);
+            serverName.Replace(
+                    " ",
+                    "")
+                .ToLower());
 
         /// <summary>
         /// Returns the Basic Auth credentials for the given server.

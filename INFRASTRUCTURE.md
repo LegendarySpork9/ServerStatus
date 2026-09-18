@@ -32,7 +32,8 @@ Server Status is a self-hosted monitoring suite for tracking the status of local
 ServerStatus/
 +-- ServerStatusCommon/                 # Shared class library
 |   +-- Abstractions/                   # Interface definitions
-|   +-- Converters/                     # API and standard value converters
+|   +-- Converters/                     # API converters
+|   +-- Values/                         # Standard value constants and defaults
 |   +-- Functions/                      # Shared settings loader, timer, and URL builder functions
 |   +-- Implementations/               # Interface implementations (wrappers)
 |   +-- Models/                         # Data models
@@ -133,6 +134,11 @@ The common library provides shared abstractions, services, models, and utilities
 | Converter | Responsibility |
 |---|---|
 | `APIConverter` | Maps API endpoints to query parameters and status values to CSS classes |
+
+#### Shared Values
+
+| Value Class | Responsibility |
+|---|---|
 | `StandardValues` | Constants for log levels, default settings, alert defaults, and missing value placeholders |
 
 ### ServerStatusSite (Web Application)
@@ -152,6 +158,7 @@ Services are registered in `Program.cs`:
 | `ILoggerService` | Singleton | Logging |
 | `IClock` | Singleton | Time operations |
 | `IFileSystem` | Singleton | File system access |
+| `IExtendedFileSystem` | Singleton | Extended file system with write operations (extends `IFileSystem`) |
 | `IAPIClient` | Singleton | API communication (Hunter Industries API) |
 | `IHTTPClient` | Singleton | HTTP requests |
 | `RetryService` | Singleton | Retry logic |
@@ -200,6 +207,7 @@ Services are registered in `Program.cs`:
 | Register Alert | `/registeralert` | MainLayout | Report a new server alert |
 | Edit Alert | `/editalert` | MainLayout | Update alert status (admin only) |
 | Server Logs | `/serverlogs` | MainLayout | Live and archived log viewer with real-time webhook updates |
+| Configuration | `/configuration` | MainLayout | Admin-only page for managing Backup Tool API server credentials and webhook secret |
 | Error | `/Error` | - | Error display page |
 
 ### ServerStatusReporter (Data Collector)
@@ -217,7 +225,7 @@ A console application that runs on each monitored machine. It periodically check
 
 | Service | Responsibility |
 |---|---|
-| `ApplicationService` | Periodic monitoring orchestrator with configurable timer |
+| `ApplicationService` | Periodic monitoring orchestrator with configurable timer. Checks existing events before registering to avoid duplicates within the server's event interval |
 | `PidFileService` | Reads PID files to identify tracked server processes |
 
 #### Monitoring Components
@@ -294,7 +302,7 @@ A console application that detects missed or outdated status events and raises a
 ### User Roles
 
 - Standard users can view status and report alerts
-- Admin users (`IsAdmin` setting) can edit alert statuses
+- Admin users (`IsAdmin` setting) can edit alert statuses, view server logs, and manage Backup Tool API configuration
 
 ### Web Security
 
@@ -339,7 +347,7 @@ A console application that detects missed or outdated status events and raises a
   <add key="AuthPayloadLocation" value="<path to Authorise.json>" />
   <add key="RefreshTime" value="<interval in minutes>" />
   <add key="HostName" value="<machine hostname>" />
-  <add key="Games" value="<comma-separated game names>" />
+  <add key="Servers" value="<comma-separated server names>" />
   <add key="Components" value="<comma-separated component names>" />
 </appSettings>
 ```
@@ -433,6 +441,7 @@ Log entries are prefixed with a contextual identifier:
 
 - **Integration:** Live and archived log retrieval with real-time webhook streaming
 - **Used by:** ServerStatusSite (Server Logs page)
+- **URL construction:** Server names are normalised for URL construction (spaces removed, lowercased) to produce valid subdomains
 - **Protocol:** REST over HTTPS with Basic Auth (per-server credentials)
 - **Endpoints called:** `GET /logs` (paginated live logs), `GET /logs/archived` (archive list), `GET /logs/archived/{file}` (archived logs), `POST /webhooks` (register webhook), `DELETE /webhooks/{id}` (unregister webhook)
 - **Webhook receiver:** `POST /webhooks/webhook` on the Site, authenticated via HMAC-SHA256 signature in `X-Webhook-Secret` header

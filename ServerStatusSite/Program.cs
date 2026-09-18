@@ -1,6 +1,7 @@
 // Copyright � - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
@@ -57,6 +58,7 @@ namespace ServerStatusSite
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddSingleton<IExtendedFileSystem, ExtendedFileSystemWrapper>();
             builder.Services.AddSingleton<IRestClientWrapper, RestClientWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();

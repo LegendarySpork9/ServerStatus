@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
@@ -95,7 +96,7 @@ namespace ServerStatusSite.Components.Pages
 
             if (Servers != null)
             {
-                ServerNames.AddRange(Servers.Where(s => s.IsActive)
+                ServerNames.AddRange(Servers.Where(s => s.IsActive && BackupToolSettings.Servers.ContainsKey(s.Name))
                     .Select(s => s.Name));
             }
 

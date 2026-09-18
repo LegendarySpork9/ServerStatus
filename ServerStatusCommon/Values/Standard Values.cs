@@ -1,8 +1,8 @@
-﻿// Copyright © - 05/10/2025 - Toby Hunter
+// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 
-namespace ServerStatusCommon.Converters
+namespace ServerStatusCommon.Values
 {
     public static class StandardValues
     {

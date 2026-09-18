@@ -149,6 +149,8 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
                 .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
             _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
@@ -217,6 +219,8 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
                 .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
             _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
@@ -280,6 +284,8 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
                 .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
             _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
@@ -344,6 +350,8 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
                 .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
             _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
@@ -377,6 +385,366 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
                     e => e.Component == "Connection" && e.Status == "Offline")),
+                Times.Once);
+        }
+        /// <summary>
+        /// Checks whether the Run method registers a Server Offline event when the server process is not running.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunRegistersServerOfflineEvent()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = ["Server"];
+
+            ServerModel server = CreateTestServer();
+            PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
+            EventModel createdEvent = CreateEventModel();
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            _mockFileSystem.Setup(fs => fs.FileExists(It.IsAny<string>())).Returns(false);
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
+            _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
+                .ReturnsAsync((createdEvent, (ResponseModel?)null));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(new DateTime(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc));
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(c => c.RegisterServerEvent(
+                It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(e => e.Component == "Server" && e.Status == "Offline")),
+                Times.Once);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method skips event registration when the server is not found in the API.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunServerNotFoundInAPI()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["UnknownServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+
+            PagedResponseModel<ServerModel> emptyResponse = new()
+            {
+                Entries = [],
+                EntryCount = 0,
+                PageNumber = 1,
+                PageSize = 10,
+                TotalPageCount = 1,
+                TotalCount = 0
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((emptyResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(new DateTime(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc));
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(c => c.RegisterServerEvent(
+                It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()),
+                Times.Never);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method skips event registration when a recent event with the same status exists.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunSkipsEventWhenRecentSameStatusExists()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+
+            ServerModel server = CreateTestServer();
+            PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
+
+            DateTime testTime = new(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc);
+
+            EventModel recentEvent = new()
+            {
+                Id = 1,
+                Component = "PC",
+                Status = "Online",
+                DateOccured = testTime.AddMinutes(-2),
+                Server = new()
+                {
+                    Id = 1,
+                    Name = "TestServer",
+                    HostName = "test-host",
+                    Game = "TestGame",
+                    GameVersion = "1.0"
+                }
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel> { recentEvent }, true));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(testTime);
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(c => c.RegisterServerEvent(
+                It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()),
+                Times.Never);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method registers an event when a recent event with a different status exists.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunRegistersEventWhenRecentDifferentStatusExists()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = ["Server"];
+
+            ServerModel server = CreateTestServer();
+            PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
+            EventModel createdEvent = CreateEventModel();
+
+            DateTime testTime = new(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc);
+
+            EventModel recentEvent = new()
+            {
+                Id = 1,
+                Component = "Server",
+                Status = "Online",
+                DateOccured = testTime.AddMinutes(-2),
+                Server = new()
+                {
+                    Id = 1,
+                    Name = "TestServer",
+                    HostName = "test-host",
+                    Game = "TestGame",
+                    GameVersion = "1.0"
+                }
+            };
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            _mockFileSystem.Setup(fs => fs.FileExists(It.IsAny<string>())).Returns(false);
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel> { recentEvent }, true));
+            _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
+                .ReturnsAsync((createdEvent, (ResponseModel?)null));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(testTime);
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
+                    e => e.Component == "Server" && e.Status == "Offline")),
+                Times.Once);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method registers an event when the existing event is stale.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunRegistersEventWhenExistingEventIsStale()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+
+            ServerModel server = CreateTestServer();
+            PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
+            EventModel createdEvent = CreateEventModel();
+
+            DateTime testTime = new(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc);
+
+            EventModel staleEvent = new()
+            {
+                Id = 1,
+                Component = "PC",
+                Status = "Online",
+                DateOccured = testTime.AddMinutes(-10),
+                Server = new()
+                {
+                    Id = 1,
+                    Name = "TestServer",
+                    HostName = "test-host",
+                    Game = "TestGame",
+                    GameVersion = "1.0"
+                }
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel> { staleEvent }, true));
+            _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
+                .ReturnsAsync((createdEvent, (ResponseModel?)null));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(testTime);
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
+                    e => e.Component == "PC" && e.Status == "Online")),
                 Times.Once);
         }
     }
