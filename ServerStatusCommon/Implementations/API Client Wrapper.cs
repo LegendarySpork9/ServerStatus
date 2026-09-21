@@ -994,7 +994,7 @@ namespace ServerStatusCommon.Implementations
                 };
                 request.AddHeader(
                     "Authorization",
-                    SharedSettings.Credentials);
+                    $"Bearer {BearerToken}");
                 request.AddHeader(
                     "Accept",
                     "application/json");
@@ -1091,7 +1091,7 @@ namespace ServerStatusCommon.Implementations
                 };
                 request.AddHeader(
                     "Authorization",
-                    SharedSettings.Credentials);
+                    $"Bearer {BearerToken}");
                 request.AddHeader(
                     "Accept",
                     "application/json");
