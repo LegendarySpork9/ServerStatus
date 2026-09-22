@@ -60,10 +60,11 @@ namespace ServerStatusSite.Components.Pages
         private string ErrorMessage = string.Empty;
         private int? NextAfterCursor;
         private ElementReference ConsoleRef;
+        private ElementReference LogCountRef;
+        private bool HasJsAppendedEntries;
         private IJSObjectReference? JsModule;
         private DotNetObjectReference<ServerLogs>? DotNetRef;
         private readonly SemaphoreSlim LogLock = new(1, 1);
-        private Timer? RenderDebounceTimer;
 
         /// <summary>
         /// Loads the active servers from the API.
@@ -137,6 +138,15 @@ namespace ServerStatusSite.Components.Pages
                         StandardValues.LoggerValues.Warning,
                         $"Failed to initialise scroll detection: {ex.Message}");
                 }
+            }
+
+            if (HasJsAppendedEntries && JsModule != null)
+            {
+                HasJsAppendedEntries = false;
+
+                await JsModule.InvokeVoidAsync(
+                    "clearAppendedEntries",
+                    ConsoleRef);
             }
 
             if (ScrollAfterRender && JsModule != null)
@@ -403,13 +413,17 @@ namespace ServerStatusSite.Components.Pages
                 LogLock.Release();
             }
 
-            ScrollAfterRender = true;
-            RenderDebounceTimer?.Dispose();
-            RenderDebounceTimer = new Timer(
-                _ => InvokeAsync(StateHasChanged),
-                null,
-                150,
-                Timeout.Infinite);
+            if (JsModule != null)
+            {
+                await JsModule.InvokeVoidAsync(
+                    "appendLogEntries",
+                    ConsoleRef,
+                    newLogs,
+                    LogCountRef,
+                    LogEntries.Count);
+
+                HasJsAppendedEntries = true;
+            }
         }
 
         /// <summary>
@@ -569,7 +583,6 @@ namespace ServerStatusSite.Components.Pages
                 }
             }
 
-            RenderDebounceTimer?.Dispose();
             LogLock.Dispose();
 
             _Logger.LogMessage(
