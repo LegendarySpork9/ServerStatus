@@ -65,8 +65,11 @@ export function appendLogEntries(element, logs, countElement, totalCount) {
         message.textContent = log.message;
 
         entry.appendChild(timestamp);
+        entry.appendChild(document.createTextNode('\n'));
         entry.appendChild(level);
+        entry.appendChild(document.createTextNode('\n'));
         entry.appendChild(type);
+        entry.appendChild(document.createTextNode('\n'));
         entry.appendChild(message);
 
         if (commandDivider) {
