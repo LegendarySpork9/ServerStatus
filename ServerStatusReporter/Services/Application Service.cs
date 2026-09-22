@@ -168,7 +168,6 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 "PC",
                                 server.Id,
-                                determinedStatus,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
@@ -201,7 +200,6 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 "Server",
                                 server.Id,
-                                determinedStatus,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
@@ -250,7 +248,6 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 "Connection",
                                 server.Id,
-                                determinedStatus,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
@@ -331,7 +328,6 @@ namespace ServerStatusReporter.Services
             Dictionary<string, List<EventModel>> componentStatuses,
             string component,
             int serverId,
-            string status,
             int eventInterval)
         {
             bool skipRegistration = false;
@@ -346,11 +342,11 @@ namespace ServerStatusReporter.Services
                 {
                     DateTime refreshPeriod = _Clock.UtcNow.AddMinutes(-eventInterval);
 
-                    if (existingEvent.DateOccured >= refreshPeriod && existingEvent.Status == status)
+                    if (existingEvent.DateOccured >= refreshPeriod)
                     {
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
-                            $"Skipping {component} event registration - recent event with same status exists");
+                            $"Skipping {component} event registration - recent event exists");
 
                         skipRegistration = true;
                     }

@@ -31,7 +31,7 @@ namespace ServerStatusReporter.Implementations
             {
                 using (Process process = Process.GetProcessById(processId))
                 {
-                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTime;
+                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTime.ToUniversalTime();
                 }
 
                 _Logger.LogMessage(

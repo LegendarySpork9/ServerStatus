@@ -22,7 +22,6 @@ namespace ServerStatusCommon.Services
             Func<Task<T>> action,
             Func<T, bool> isSuccess,
             Func<Task>? onBeforeRetry,
-            string operationName,
             int maxRetries = 4,
             int delaySeconds = 10)
         {
@@ -64,10 +63,6 @@ namespace ServerStatusCommon.Services
                         ex.ToString());
                 }
             }
-
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Info,
-                $"Failed to {operationName}");
 
             return result;
         }

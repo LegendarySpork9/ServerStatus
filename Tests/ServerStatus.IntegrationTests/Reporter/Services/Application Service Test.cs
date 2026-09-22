@@ -589,10 +589,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         }
 
         /// <summary>
-        /// Checks whether the Run method registers an event when a recent event with a different status exists.
+        /// Checks whether the Run method skips registration when a recent event with a different status exists.
         /// </summary>
         [TestMethod]
-        public async Task TestRunRegistersEventWhenRecentDifferentStatusExists()
+        public async Task TestRunSkipsRegistrationWhenRecentDifferentStatusExists()
         {
             SharedSettingsModel sharedSettings = new()
             {
@@ -664,9 +664,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             await _applicationService.Start();
 
             _mockAPIClient.Verify(
-                c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "Server" && e.Status == "Offline")),
-                Times.Once);
+                c => c.RegisterServerEvent(
+                    It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()),
+                Times.Never);
         }
 
         /// <summary>

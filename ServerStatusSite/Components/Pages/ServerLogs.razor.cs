@@ -63,6 +63,7 @@ namespace ServerStatusSite.Components.Pages
         private IJSObjectReference? JsModule;
         private DotNetObjectReference<ServerLogs>? DotNetRef;
         private readonly SemaphoreSlim LogLock = new(1, 1);
+        private Timer? RenderDebounceTimer;
 
         /// <summary>
         /// Loads the active servers from the API.
@@ -403,7 +404,12 @@ namespace ServerStatusSite.Components.Pages
             }
 
             ScrollAfterRender = true;
-            await InvokeAsync(StateHasChanged);
+            RenderDebounceTimer?.Dispose();
+            RenderDebounceTimer = new Timer(
+                _ => InvokeAsync(StateHasChanged),
+                null,
+                150,
+                Timeout.Infinite);
         }
 
         /// <summary>
@@ -563,6 +569,7 @@ namespace ServerStatusSite.Components.Pages
                 }
             }
 
+            RenderDebounceTimer?.Dispose();
             LogLock.Dispose();
 
             _Logger.LogMessage(

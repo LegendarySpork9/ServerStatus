@@ -109,7 +109,7 @@ else
                         Context="log"
                         ItemSize="24"
                     >
-                        <div class="log-entry log-@log.Level.ToLower()">
+                        <div @key="log.Id" class="log-entry log-@log.Level.ToLower()">
                             <span class="log-timestamp">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</span>
                             <span class="log-level">[@log.Level]</span>
                             <span class="log-type">[@log.Type]</span>
