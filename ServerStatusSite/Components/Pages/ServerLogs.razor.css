@@ -54,24 +54,24 @@
             background-color: #777;
         }
 
-.log-entry {
+.console-window ::deep .log-entry {
     white-space: nowrap;
     padding: 1px 0;
 }
 
-.log-timestamp {
+.console-window ::deep .log-timestamp {
     color: #858585;
     margin-right: 0.5rem;
 }
 
-.log-level {
+.console-window ::deep .log-level {
     display: inline-block;
     width: 3.5rem;
     text-align: center;
     margin-right: 0.25rem;
 }
 
-.log-type {
+.console-window ::deep .log-type {
     display: inline-block;
     width: 4.5rem;
     text-align: center;
@@ -79,27 +79,27 @@
     margin-right: 0.5rem;
 }
 
-.log-message {
+.console-window ::deep .log-message {
     color: #d4d4d4;
 }
 
-.log-info .log-level {
+.console-window ::deep .log-info .log-level {
     color: #4ec9b0;
 }
 
-.log-debug .log-level {
+.console-window ::deep .log-debug .log-level {
     color: #9cdcfe;
 }
 
-.log-warn .log-level {
+.console-window ::deep .log-warn .log-level {
     color: #dcdcaa;
 }
 
-.log-error .log-level {
+.console-window ::deep .log-error .log-level {
     color: #f44747;
 }
 
-.log-error .log-message {
+.console-window ::deep .log-error .log-message {
     color: #f44747;
 }
 
