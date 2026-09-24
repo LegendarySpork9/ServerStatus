@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using ServerStatusCommon.Abstractions;
+using ServerStatusCommon.Services;
+using ServerStatusSite.Abstractions;
 using ServerStatusSite.Models;
 using ServerStatusSite.Models.Responses.Related;
 using ServerStatusSite.Services;
@@ -18,6 +20,7 @@ namespace ServerStatus.IntegrationTests.Site.Webhooks
         private const string WebhookSecret = "test-secret";
 
         private readonly Mock<ILoggerService> _MockLogger = new();
+        private readonly Mock<IBackupToolAPIClient> _MockBackupToolClient = new();
 
         private static string ComputeSignature(
             string body,
@@ -33,16 +36,23 @@ namespace ServerStatus.IntegrationTests.Site.Webhooks
                 .ToLower();
         }
 
-        private static LogWebhookController CreateController(
+        private LogWebhookController CreateController(
             ILoggerService logger,
             LogStreamService logStream,
             BackupToolSettingsModel settings,
             string body,
             string? signature)
         {
+            RetryService retryService = new(_MockLogger.Object);
+            BackupToolAPIService backupToolApi = new(
+                logger,
+                _MockBackupToolClient.Object,
+                retryService);
+
             LogWebhookController controller = new(
                 logger,
                 logStream,
+                backupToolApi,
                 settings);
 
             DefaultHttpContext httpContext = new();

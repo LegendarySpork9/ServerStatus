@@ -6,6 +6,7 @@ using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 using ServerStatusSite.Components.Pages;
 
 namespace ServerStatus.IntegrationTests.Site.Components.Pages
@@ -86,15 +87,15 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                 TotalCount = 1
             };
 
-            List<ComponentModel> components = [new() { Id = 1, Name = "PC" }];
+            List<ComponentModel> components = [new() { Id = 1, Name = StandardValues.ComponentValues.PC }];
 
             List<EventModel> events =
             [
                 new()
                 {
                     Id = 1,
-                    Component = "PC",
-                    Status = "Online",
+                    Component = StandardValues.ComponentValues.PC,
+                    Status = StandardValues.StatusValues.Online,
                     DateOccured = DateTime.UtcNow,
                     Server = new()
                     {
@@ -135,7 +136,7 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             IRenderedComponent<Home> cut = _Context.RenderComponent<Home>();
 
             Assert.IsTrue(cut.Markup.Contains("TestServer"));
-            Assert.IsTrue(cut.Markup.Contains("Online"));
+            Assert.IsTrue(cut.Markup.Contains(StandardValues.StatusValues.Online));
         }
 
         /// <summary>

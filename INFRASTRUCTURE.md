@@ -139,7 +139,7 @@ The common library provides shared abstractions, services, models, and utilities
 
 | Value Class | Responsibility |
 |---|---|
-| `StandardValues` | Constants for log levels, default settings, alert defaults, and missing value placeholders |
+| `StandardValues` | Constants for log levels, component names (PC, Server, Connection), status values (Online, Offline, Unknown), default settings, and alert defaults |
 
 ### ServerStatusSite (Web Application)
 
@@ -194,7 +194,7 @@ Services are registered in `Program.cs`:
 
 | Endpoint | Route | Purpose |
 |---|---|---|
-| `LogWebhookController` | `POST /webhooks/webhook` | Receives log payloads from the Backup Tool API. Validates HMAC-SHA256 signature, then publishes logs to subscribers via `LogStreamService` |
+| `LogWebhookController` | `POST /webhooks/serverlogs` | Receives log payloads from the Backup Tool API. Validates HMAC-SHA256 signature, then publishes logs to subscribers via `LogStreamService`. Detects orphaned webhooks via `X-Webhook-Id` header and triggers cleanup by calling the Backup Tool API to unregister them |
 
 #### Pages
 
@@ -206,7 +206,7 @@ Services are registered in `Program.cs`:
 | Alerts | `/alerts` | MainLayout | Paginated alert list with server name filtering and admin editing |
 | Register Alert | `/registeralert` | MainLayout | Report a new server alert |
 | Edit Alert | `/editalert` | MainLayout | Update alert status (admin only) |
-| Server Logs | `/serverlogs` | MainLayout | Live and archived log viewer with real-time webhook updates |
+| Server Logs | `/serverlogs` | MainLayout | Live and archived log viewer with real-time webhook updates. Uses JS interop to append new log entries directly to the DOM (bypassing Blazor re-renders) and flexbox-based log entry layout for consistent column spacing |
 | Configuration | `/configuration` | MainLayout | Admin-only page for managing Backup Tool API server credentials and webhook secret |
 | Error | `/Error` | - | Error display page |
 
@@ -225,7 +225,7 @@ A console application that runs on each monitored machine. It periodically check
 
 | Service | Responsibility |
 |---|---|
-| `ApplicationService` | Periodic monitoring orchestrator with configurable timer. Checks existing events before registering to avoid duplicates within the server's event interval |
+| `ApplicationService` | Periodic monitoring orchestrator with configurable timer. Checks existing events before registering to avoid duplicates within the server's event interval. Skips all component checks for a server during its configured downtime window |
 | `PidFileService` | Reads PID files to identify tracked server processes |
 
 #### Monitoring Components

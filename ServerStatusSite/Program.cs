@@ -95,7 +95,13 @@ namespace ServerStatusSite
                 StandardValues.LoggerValues.Debug,
                 "Configured HTTPS Redirection");
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = context =>
+                {
+                    context.Context.Response.Headers.CacheControl = "no-cache";
+                }
+            });
 
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,

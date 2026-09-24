@@ -7,6 +7,7 @@ using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 
 namespace ServerStatus.IntegrationTests.Automation.Services
 {
@@ -122,23 +123,23 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel outdatedEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = utcNow.AddMinutes(-10),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-10),
                 Server = CreateRelatedServer()
             };
 
             EventModel createdEvent = new()
             {
                 Id = 2,
-                Component = "PC",
-                Status = "Unknown",
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Unknown,
                 DateOccured = utcNow,
                 Server = CreateRelatedServer()
             };
@@ -156,8 +157,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Unknown",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Unknown,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -192,7 +193,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<EventRequestModel>(
-                    e => e.Component == "PC" && e.Status == "Unknown")),
+                    e => e.Component == StandardValues.ComponentValues.PC && e.Status == StandardValues.StatusValues.Unknown)),
                 Times.Once);
         }
 
@@ -220,15 +221,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel recentEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -296,15 +297,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -322,8 +323,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -365,7 +366,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterAlert(It.Is<AlertRequestModel>(
-                    a => a.Component == "PC" && a.ComponentStatus == "Offline" && a.Reporter == "Automation")),
+                    a => a.Component == StandardValues.ComponentValues.PC && a.ComponentStatus == StandardValues.StatusValues.Offline && a.Reporter == "Automation")),
                 Times.Once);
         }
 
@@ -393,15 +394,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -409,10 +410,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
-                AlertDate = utcNow.AddMinutes(-10),
+                AlertDate = utcNow.AddSeconds(-10),
                 Server = CreateRelatedServer()
             };
 
@@ -487,15 +488,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -503,10 +504,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Resolved",
-                AlertDate = utcNow.AddMinutes(-30),
+                AlertDate = utcNow.AddSeconds(-30),
                 Server = CreateRelatedServer()
             };
 
@@ -524,8 +525,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 2,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -567,7 +568,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterAlert(It.Is<AlertRequestModel>(
-                    a => a.Component == "PC" && a.ComponentStatus == "Offline" && a.Reporter == "Automation")),
+                    a => a.Component == StandardValues.ComponentValues.PC && a.ComponentStatus == StandardValues.StatusValues.Offline && a.Reporter == "Automation")),
                 Times.Once);
         }
     }

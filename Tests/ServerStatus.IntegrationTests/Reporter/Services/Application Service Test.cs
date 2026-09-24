@@ -5,6 +5,7 @@ using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 using ServerStatusReporter.Abstractions;
 using ServerStatusReporter.Services;
 using System.Configuration;
@@ -70,8 +71,8 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             return new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
                 DateOccured = DateTime.UtcNow,
                 Server = new()
                 {
@@ -136,9 +137,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
-            ConfigurationManager.AppSettings.Set("Components", "PC");
+            ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.PC);
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -183,7 +184,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "PC" && e.Status == "Online")),
+                    e => e.Component == StandardValues.ComponentValues.PC && e.Status == StandardValues.StatusValues.Online)),
                 Times.Once);
         }
 
@@ -199,9 +200,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
-            ConfigurationManager.AppSettings.Set("Components", "Server");
+            ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Server);
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["Server"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Server];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -252,7 +253,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "Server" && e.Status == "Online")),
+                    e => e.Component == StandardValues.ComponentValues.Server && e.Status == StandardValues.StatusValues.Online)),
                 Times.Once);
         }
 
@@ -268,9 +269,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
-            ConfigurationManager.AppSettings.Set("Components", "Connection");
+            ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Connection);
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["Connection"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Connection];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -318,7 +319,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "Connection" && e.Status == "Online")),
+                    e => e.Component == StandardValues.ComponentValues.Connection && e.Status == StandardValues.StatusValues.Online)),
                 Times.Once);
         }
 
@@ -334,9 +335,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
-            ConfigurationManager.AppSettings.Set("Components", "Connection");
+            ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Connection);
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["Connection"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Connection];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -384,7 +385,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "Connection" && e.Status == "Offline")),
+                    e => e.Component == StandardValues.ComponentValues.Connection && e.Status == StandardValues.StatusValues.Offline)),
                 Times.Once);
         }
         /// <summary>
@@ -399,7 +400,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["Server"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Server];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -445,7 +446,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             await _applicationService.Start();
 
             _mockAPIClient.Verify(c => c.RegisterServerEvent(
-                It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(e => e.Component == "Server" && e.Status == "Offline")),
+                It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(e => e.Component == StandardValues.ComponentValues.Server && e.Status == StandardValues.StatusValues.Offline)),
                 Times.Once);
         }
 
@@ -461,7 +462,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["UnknownServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
 
             PagedResponseModel<ServerModel> emptyResponse = new()
             {
@@ -525,7 +526,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -535,9 +536,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             EventModel recentEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = testTime.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = testTime.AddSeconds(-2),
                 Server = new()
                 {
                     Id = 1,
@@ -600,7 +601,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["Server"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Server];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -611,9 +612,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             EventModel recentEvent = new()
             {
                 Id = 1,
-                Component = "Server",
-                Status = "Online",
-                DateOccured = testTime.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.Server,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = testTime.AddSeconds(-2),
                 Server = new()
                 {
                     Id = 1,
@@ -681,7 +682,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             };
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
-            ServerStatusReporter.Models.AppSettingsModel.Components = ["PC"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
 
             ServerModel server = CreateTestServer();
             PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
@@ -692,9 +693,9 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             EventModel staleEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = testTime.AddMinutes(-10),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = testTime.AddSeconds(-10),
                 Server = new()
                 {
                     Id = 1,
@@ -744,8 +745,73 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<ServerStatusCommon.Models.Requests.Create.EventRequestModel>(
-                    e => e.Component == "PC" && e.Status == "Online")),
+                    e => e.Component == StandardValues.ComponentValues.PC && e.Status == StandardValues.StatusValues.Online)),
                 Times.Once);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method skips event registration when the server is in its downtime window.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunSkipsRegistrationDuringDowntime()
+        {
+            SharedSettingsModel sharedSettings = new()
+            {
+                RefreshTime = 5
+            };
+
+            ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
+            ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
+
+            DateTime testTime = new(2026, 09, 01, 03, 0, 0, DateTimeKind.Utc);
+
+            ServerModel server = CreateTestServer();
+            server.Downtime = new()
+            {
+                Time = "03:00:00",
+                Duration = 300
+            };
+
+            PagedResponseModel<ServerModel> pagedResponse = CreatePagedResponse(server);
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedResponse, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService);
+
+            Mock<IFileSystem> _mockFileSystem = new();
+            PidFileService _pidFileService = new(
+                _MockLogger.Object,
+                _mockFileSystem.Object);
+
+            ApplicationService _applicationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockTCPClient.Object,
+                _MockProcessService.Object,
+                _apiService,
+                _pidFileService,
+                sharedSettings);
+
+            _applicationService.Setup();
+
+            _MockClock.Setup(c => c.UtcNow).Returns(testTime);
+
+            await _applicationService.Start();
+
+            _mockAPIClient.Verify(c => c.RegisterServerEvent(
+                It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()),
+                Times.Never);
         }
     }
 }

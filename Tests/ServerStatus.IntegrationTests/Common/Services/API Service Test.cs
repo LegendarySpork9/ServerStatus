@@ -6,6 +6,7 @@ using ServerStatusCommon.Models.Requests.Update;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 
 namespace ServerStatus.IntegrationTests.Common.Services
 {
@@ -361,8 +362,8 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 new()
                 {
                     Id = 1,
-                    Component = "PC",
-                    Status = "Offline",
+                    Component = StandardValues.ComponentValues.PC,
+                    Status = StandardValues.StatusValues.Offline,
                     DateOccured = new(2025, 10, 03, 20, 02, 53, DateTimeKind.Utc),
                     Server = new()
                     {
@@ -390,7 +391,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<EventModel> actual = await _apiService.GetServerEvents("PC");
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
 
             Assert.AreEqual(
                 expected[0].Id,
@@ -527,7 +528,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                         Id = 1,
                         Reporter = "UnitTester",
                         Component = "component",
-                        ComponentStatus = "Offline",
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                         Server = new()
@@ -615,7 +616,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                         Id = 1,
                         Reporter = "UnitTester",
                         Component = "component",
-                        ComponentStatus = "Offline",
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                         Server = new()
@@ -699,7 +700,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -776,7 +777,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Investigating",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -832,7 +833,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -864,7 +865,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             {
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 ServerId = 1,
                 Name = "LocalHost",
@@ -922,7 +923,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 new()
                 {
                     Id = 1,
-                    Name = "PC"
+                    Name = StandardValues.ComponentValues.PC
                 },
                 new()
                 {
@@ -1303,7 +1304,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<EventModel> actual = await _apiService.GetServerEvents("PC");
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
 
             Assert.AreEqual(
                 0,
@@ -1335,7 +1336,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<EventModel> actual = await _apiService.GetServerEvents("PC");
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
 
             Assert.IsTrue(actual == null || actual.Count == 0);
         }
@@ -1547,7 +1548,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             {
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 ServerId = 1,
                 Name = "LocalHost",
@@ -1583,7 +1584,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             EventRequestModel request = new()
             {
                 Component = "component",
-                Status = "Offline",
+                Status = StandardValues.StatusValues.Offline,
                 ServerId = 1,
                 Name = "LocalHost",
                 HostName = "LocalHost",
@@ -1632,7 +1633,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             {
                 Id = 1,
                 Component = "component",
-                Status = "Offline",
+                Status = StandardValues.StatusValues.Offline,
                 DateOccured = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
                 {
@@ -1662,7 +1663,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             EventRequestModel request = new()
             {
                 Component = "component",
-                Status = "Offline",
+                Status = StandardValues.StatusValues.Offline,
                 ServerId = 1,
                 Name = "LocalHost",
                 HostName = "LocalHost",

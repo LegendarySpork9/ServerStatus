@@ -46,6 +46,26 @@ namespace ServerStatusCommon.Values
         }
 
         /// <summary>
+        /// Standard Component Values.
+        /// </summary>
+        public static class ComponentValues
+        {
+            public const string PC = "PC";
+            public const string Server = "Server";
+            public const string Connection = "Connection";
+        }
+
+        /// <summary>
+        /// Standard Status Values.
+        /// </summary>
+        public static class StatusValues
+        {
+            public const string Online = "Online";
+            public const string Offline = "Offline";
+            public const string Unknown = "Unknown";
+        }
+
+        /// <summary>
         /// Standard Alert Values.
         /// </summary>
         public static class AlertValues
@@ -55,7 +75,7 @@ namespace ServerStatusCommon.Values
                 Id = 0,
                 Reporter = "",
                 Component = "",
-                ComponentStatus = "Offline",
+                ComponentStatus = StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = DateTime.UtcNow,
                 Server = new()

@@ -150,6 +150,31 @@ namespace ServerStatusReporter.Services
 
                 if (server != null)
                 {
+                    if (server.Downtime != null)
+                    {
+                        DateTime now = _Clock.UtcNow;
+
+                        DateTime downtimeStart = DateTime.SpecifyKind(
+                            DateTime.Parse(server.Downtime.Time),
+                            DateTimeKind.Utc);
+
+                        if (downtimeStart < now)
+                        {
+                            downtimeStart = downtimeStart.AddDays(1);
+                        }
+
+                        DateTime downtimeEnd = downtimeStart.AddSeconds(server.Downtime.Duration);
+
+                        if (now >= downtimeStart && now <= downtimeEnd)
+                        {
+                            _Logger.LogMessage(
+                                StandardValues.LoggerValues.Info,
+                                $"Skipping event registration for {server.Name} - server in downtime");
+
+                            continue;
+                        }
+                    }
+
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         $"Registering Events for {server.Name}");
@@ -160,19 +185,19 @@ namespace ServerStatusReporter.Services
                             StandardValues.LoggerValues.Debug,
                             $"Component: {component}");
 
-                        if (component == "PC")
+                        if (component == StandardValues.ComponentValues.PC)
                         {
-                            string determinedStatus = "Online";
+                            string determinedStatus = StandardValues.StatusValues.Online;
 
                             if (!ShouldSkipRegistration(
                                 componentStatuses,
-                                "PC",
+                                StandardValues.ComponentValues.PC,
                                 server.Id,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
-                                    Component = "PC",
+                                    Component = StandardValues.ComponentValues.PC,
                                     Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
@@ -192,19 +217,21 @@ namespace ServerStatusReporter.Services
                             }
                         }
 
-                        if (component == "Server")
+                        if (component == StandardValues.ComponentValues.Server)
                         {
-                            string determinedStatus = await ServerRunning(server.Name) ? "Online" : "Offline";
+                            string determinedStatus = await ServerRunning(server.Name)
+                                ? StandardValues.StatusValues.Online
+                                : StandardValues.StatusValues.Offline;
 
                             if (!ShouldSkipRegistration(
                                 componentStatuses,
-                                "Server",
+                                StandardValues.ComponentValues.Server,
                                 server.Id,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
-                                    Component = "Server",
+                                    Component = StandardValues.ComponentValues.Server,
                                     Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
@@ -224,7 +251,7 @@ namespace ServerStatusReporter.Services
                             }
                         }
 
-                        if (component == "Connection")
+                        if (component == StandardValues.ComponentValues.Connection)
                         {
                             _Logger.LogMessage(
                                 StandardValues.LoggerValues.Debug,
@@ -239,20 +266,20 @@ namespace ServerStatusReporter.Services
 
                             string determinedStatus = pingStatus switch
                             {
-                                "Success" => "Online",
-                                "Failed" => "Offline",
-                                _ => "Unknown"
+                                "Success" => StandardValues.StatusValues.Online,
+                                "Failed" => StandardValues.StatusValues.Offline,
+                                _ => StandardValues.StatusValues.Unknown
                             };
 
                             if (!ShouldSkipRegistration(
                                 componentStatuses,
-                                "Connection",
+                                StandardValues.ComponentValues.Connection,
                                 server.Id,
                                 server.EventInterval))
                             {
                                 EventRequestModel newEvent = new()
                                 {
-                                    Component = "Connection",
+                                    Component = StandardValues.ComponentValues.Connection,
                                     Status = determinedStatus,
                                     ServerId = server.Id,
                                     Name = server.Name,
@@ -340,9 +367,9 @@ namespace ServerStatusReporter.Services
 
                 if (existingEvent != null)
                 {
-                    DateTime refreshPeriod = _Clock.UtcNow.AddMinutes(-eventInterval);
+                    DateTime refreshPeriod = _Clock.UtcNow.AddSeconds(-eventInterval);
 
-                    if (existingEvent.DateOccured >= refreshPeriod)
+                    if (existingEvent.DateOccured > refreshPeriod)
                     {
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,

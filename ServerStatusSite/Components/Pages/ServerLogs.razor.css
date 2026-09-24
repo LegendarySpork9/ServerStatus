@@ -54,52 +54,54 @@
             background-color: #777;
         }
 
-.console-window ::deep .log-entry {
-    white-space: nowrap;
+.log-entry {
+    display: flex;
+    gap: 0.5rem;
     padding: 1px 0;
 }
 
-.console-window ::deep .log-timestamp {
+.log-timestamp {
+    width: 9.5rem;
     color: #858585;
-    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
-.console-window ::deep .log-level {
-    display: inline-block;
+.log-level {
     width: 3.5rem;
     text-align: center;
-    margin-right: 0.25rem;
+    flex-shrink: 0;
 }
 
-.console-window ::deep .log-type {
-    display: inline-block;
+.log-type {
     width: 4.5rem;
     text-align: center;
     color: #858585;
-    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
-.console-window ::deep .log-message {
+.log-message {
     color: #d4d4d4;
+    flex-shrink: 0;
+    padding-left: 0.5rem;
 }
 
-.console-window ::deep .log-info .log-level {
+.log-info .log-level {
     color: #4ec9b0;
 }
 
-.console-window ::deep .log-debug .log-level {
+.log-debug .log-level {
     color: #9cdcfe;
 }
 
-.console-window ::deep .log-warn .log-level {
+.log-warn .log-level {
     color: #dcdcaa;
 }
 
-.console-window ::deep .log-error .log-level {
+.log-error .log-level {
     color: #f44747;
 }
 
-.console-window ::deep .log-error .log-message {
+.log-error .log-message {
     color: #f44747;
 }
 

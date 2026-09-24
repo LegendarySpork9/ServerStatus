@@ -9,6 +9,7 @@ using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Requests.Update;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
+using ServerStatusCommon.Values;
 using System.Net;
 
 namespace ServerStatus.PersistenceTests.Common.Implementations
@@ -213,8 +214,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             EventModel expected = new()
             {
                 Id = 42,
-                Component = "PC",
-                Status = "Online",
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
                 DateOccured = DateTime.UtcNow,
                 Server = new()
                 {
@@ -243,8 +244,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
 
             EventRequestModel newEvent = new()
             {
-                Component = "PC",
-                Status = "Online",
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
                 ServerId = 1,
                 Name = "TestServer",
                 HostName = "test-host",
@@ -271,9 +272,9 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             {
                 Entries = new[]
                 {
-                    new { Name = "PC" },
-                    new { Name = "Server" },
-                    new { Name = "Connection" }
+                    new { Name = StandardValues.ComponentValues.PC },
+                    new { Name = StandardValues.ComponentValues.Server },
+                    new { Name = StandardValues.ComponentValues.Connection }
                 }
             };
 
@@ -437,8 +438,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
                 new()
                 {
                     Id = 1,
-                    Component = "PC",
-                    Status = "Online",
+                    Component = StandardValues.ComponentValues.PC,
+                    Status = StandardValues.StatusValues.Online,
                     DateOccured = DateTime.UtcNow,
                     Server = new()
                     {
@@ -452,8 +453,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
                 new()
                 {
                     Id = 2,
-                    Component = "PC",
-                    Status = "Offline",
+                    Component = StandardValues.ComponentValues.PC,
+                    Status = StandardValues.StatusValues.Offline,
                     DateOccured = DateTime.UtcNow.AddMinutes(-5),
                     Server = new()
                     {
@@ -481,7 +482,7 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
 
             _wrapper.SetBearerToken("test-token");
 
-            (List<EventModel> events, bool success) = await _wrapper.GetServerEvents([new("component", "PC")]);
+            (List<EventModel> events, bool success) = await _wrapper.GetServerEvents([new("component", StandardValues.ComponentValues.PC)]);
 
             Assert.IsTrue(success);
             Assert.AreEqual(
@@ -585,8 +586,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
                     {
                         Id = 1,
                         Reporter = "UnitTester",
-                        Component = "PC",
-                        ComponentStatus = "Offline",
+                        Component = StandardValues.ComponentValues.PC,
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = DateTime.UtcNow,
                         Server = new()
@@ -643,8 +644,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             {
                 Id = 1,
                 Reporter = "UnitTester",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Investigating",
                 AlertDate = DateTime.UtcNow,
                 Server = new()
@@ -694,8 +695,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             {
                 Id = 1,
                 Reporter = "UnitTester",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Resolved",
                 AlertDate = DateTime.UtcNow,
                 Server = new()
@@ -749,8 +750,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = DateTime.UtcNow,
                 Server = new()
@@ -781,8 +782,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
             AlertRequestModel request = new()
             {
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 ServerId = 1,
                 Name = "TestServer",

@@ -6,6 +6,7 @@ using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 using ServerStatusSite.Components.Pages.Alerts;
 
 namespace ServerStatus.IntegrationTests.Site.Components.Pages
@@ -94,8 +95,8 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                     {
                         Id = 1,
                         Reporter = "Tester",
-                        Component = "PC",
-                        ComponentStatus = "Offline",
+                        Component = StandardValues.ComponentValues.PC,
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = new DateTime(2026, 09, 01, 10, 0, 0, DateTimeKind.Utc),
                         Server = new()

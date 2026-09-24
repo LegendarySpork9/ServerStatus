@@ -142,7 +142,7 @@ namespace ServerStatusAutomation.Services
                     $"Checking Status for {server.Name}");
 
                 DateTime now = _Clock.UtcNow;
-                DateTime refreshPeriod = now.AddMinutes(-server.EventInterval);
+                DateTime refreshPeriod = now.AddSeconds(-server.EventInterval);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -171,7 +171,7 @@ namespace ServerStatusAutomation.Services
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
-                        $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(duration.Value)}");
+                        $"Downtime Period: {downtime} -> {downtime.Value.AddSeconds(duration.Value)}");
                 }
 
                 foreach (var (componentName, statuses) in componentStatuses)
@@ -182,18 +182,18 @@ namespace ServerStatusAutomation.Services
                         StandardValues.LoggerValues.Debug,
                         $"Current {componentName} Status: {status?.Status ?? "No Status"}");
 
-                    if (status != null && (status.DateOccured < refreshPeriod || status.Status != "Online"))
+                    if (status != null && (status.DateOccured < refreshPeriod || status.Status != StandardValues.StatusValues.Online))
                     {
-                        if (status.Status != "Unknown" && (status.Status == "Online" || status.DateOccured < refreshPeriod))
+                        if (status.Status != StandardValues.StatusValues.Unknown && (status.Status == StandardValues.StatusValues.Online || status.DateOccured < refreshPeriod))
                         {
-                            status.Status = "Unknown";
+                            status.Status = StandardValues.StatusValues.Unknown;
 
                             _Logger.LogMessage(
                                 StandardValues.LoggerValues.Debug,
                                 $"Updated {componentName} Status to Unknown");
                         }
 
-                        if (downtime == null || (status.DateOccured < downtime || status.DateOccured > downtime.Value.AddMinutes(duration.Value)))
+                        if (downtime == null || (status.DateOccured < downtime || status.DateOccured > downtime.Value.AddSeconds(duration.Value)))
                         {
                             await AlertsHandler(
                                 alerts?.Entries ?? [],

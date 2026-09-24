@@ -1,5 +1,6 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 
 namespace ServerStatus.UnitTests.Common.Converters
 {
@@ -75,7 +76,7 @@ namespace ServerStatus.UnitTests.Common.Converters
         public void TestGetStatusClassOnline()
         {
             string expected = "online";
-            string actual = APIConverter.GetStatusClass("Online");
+            string actual = APIConverter.GetStatusClass(StandardValues.StatusValues.Online);
 
             Assert.AreEqual(
                 expected,
@@ -89,7 +90,7 @@ namespace ServerStatus.UnitTests.Common.Converters
         public void TestGetStatusClassOffline()
         {
             string expected = "offline";
-            string actual = APIConverter.GetStatusClass("Offline");
+            string actual = APIConverter.GetStatusClass(StandardValues.StatusValues.Offline);
 
             Assert.AreEqual(
                 expected,
@@ -103,7 +104,7 @@ namespace ServerStatus.UnitTests.Common.Converters
         public void TestGetStatusClassUnknown()
         {
             string expected = "unknown";
-            string actual = APIConverter.GetStatusClass("Unknown");
+            string actual = APIConverter.GetStatusClass(StandardValues.StatusValues.Unknown);
 
             Assert.AreEqual(
                 expected,
