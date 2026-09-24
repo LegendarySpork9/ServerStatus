@@ -154,15 +154,10 @@ namespace ServerStatusReporter.Services
                     {
                         DateTime now = _Clock.UtcNow;
 
+                        TimeSpan downtimeTime = TimeSpan.Parse(server.Downtime.Time);
                         DateTime downtimeStart = DateTime.SpecifyKind(
-                            DateTime.Parse(server.Downtime.Time),
+                            now.Date.Add(downtimeTime),
                             DateTimeKind.Utc);
-
-                        if (downtimeStart < now)
-                        {
-                            downtimeStart = downtimeStart.AddDays(1);
-                        }
-
                         DateTime downtimeEnd = downtimeStart.AddSeconds(server.Downtime.Duration);
 
                         if (now >= downtimeStart && now <= downtimeEnd)

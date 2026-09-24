@@ -153,20 +153,10 @@ namespace ServerStatusAutomation.Services
 
                 if (server.Downtime != null)
                 {
-                    DateTime time = DateTime.SpecifyKind(
-                        DateTime.Parse(server.Downtime.Time),
+                    TimeSpan downtimeTime = TimeSpan.Parse(server.Downtime.Time);
+                    downtime = DateTime.SpecifyKind(
+                        now.Date.Add(downtimeTime),
                         DateTimeKind.Utc);
-
-                    if (time < _Clock.UtcNow)
-                    {
-                        downtime = time.AddDays(1);
-                    }
-
-                    else
-                    {
-                        downtime = time;
-                    }
-
                     duration = server.Downtime.Duration;
 
                     _Logger.LogMessage(
