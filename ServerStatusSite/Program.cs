@@ -44,6 +44,12 @@ namespace ServerStatusSite
                 "AppSettings",
                 sharedSettings);
 
+            SiteSettingsModel siteSettings = new();
+
+            builder.Configuration.Bind(
+                "AppSettings",
+                siteSettings);
+
             BackupToolSettingsModel backupToolSettings = builder.Configuration.GetSection("BackupToolAPI")
                 .Get<BackupToolSettingsModel>()!;
 
@@ -54,6 +60,7 @@ namespace ServerStatusSite
                 "Loaded Configuration");
 
             builder.Services.AddSingleton(sharedSettings);
+            builder.Services.AddSingleton(siteSettings);
             builder.Services.AddSingleton(backupToolSettings);
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();

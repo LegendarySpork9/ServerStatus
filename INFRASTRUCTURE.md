@@ -154,6 +154,7 @@ Services are registered in `Program.cs`:
 | Registration | Lifetime | Purpose |
 |---|---|---|
 | `SharedSettingsModel` | Singleton | Application configuration |
+| `SiteSettingsModel` | Singleton | Site-specific configuration (refresh time) |
 | `BackupToolSettingsModel` | Singleton | Backup Tool API configuration (per-server credentials) |
 | `ILoggerService` | Singleton | Logging |
 | `IClock` | Singleton | Time operations |
@@ -225,7 +226,7 @@ A console application that runs on each monitored machine. It periodically check
 
 | Service | Responsibility |
 |---|---|
-| `ApplicationService` | Periodic monitoring orchestrator with configurable timer. Checks existing events before registering to avoid duplicates within the server's event interval. Skips all component checks for a server during its configured downtime window |
+| `ApplicationService` | Per-server monitoring orchestrator. Each configured server gets its own timer based on its `eventInterval` from the API. Checks existing events before registering to avoid duplicates. Sends the timer fire time as `DateOccured` to the API for accurate event timestamps. Skips all component checks for a server during its configured downtime window |
 | `PidFileService` | Reads PID files to identify tracked server processes |
 
 #### Monitoring Components
@@ -244,10 +245,11 @@ A console application that detects missed or outdated status events and raises a
 
 | Service | Responsibility |
 |---|---|
-| `AutomationService` | Periodic check for stale/offline statuses, alert creation, and Discord notification |
+| `AutomationService` | Per-server check for stale/offline statuses, alert creation, and Discord notification. Each active server gets its own timer based on its `eventInterval` from the API |
 
 #### Alert Logic
 
+- Each server has its own timer that fires at the server's configured event interval
 - Checks each server's event timestamps against the refresh period
 - Registers "Unknown" status if events are outdated or missing
 - Creates alerts for offline or unknown components
@@ -259,8 +261,8 @@ A console application that detects missed or outdated status events and raises a
 
 ### Data Flow
 
-1. **ServerStatusReporter** runs on each monitored machine, checking PC, Server, and Connection status
-2. Reporter sends status events to the **API** at each refresh interval
+1. **ServerStatusReporter** runs on each monitored machine, checking PC, Server, and Connection status per server at that server's configured event interval
+2. Reporter sends status events to the **API** with the timer fire time as the event timestamp
 3. **ServerStatusAutomation** periodically queries the API for all server events
 4. Automation detects missing or outdated events and raises alerts
 5. Automation sends **Discord notifications** to each server's configured webhook channel
@@ -345,7 +347,6 @@ A console application that detects missed or outdated status events and raises a
   <add key="BaseURL" value="<API base URL>" />
   <add key="Credentials" value="<Base64-encoded Basic auth>" />
   <add key="AuthPayloadLocation" value="<path to Authorise.json>" />
-  <add key="RefreshTime" value="<interval in minutes>" />
   <add key="HostName" value="<machine hostname>" />
   <add key="Servers" value="<comma-separated server names>" />
   <add key="Components" value="<comma-separated component names>" />
@@ -362,7 +363,6 @@ A console application that detects missed or outdated status events and raises a
   <add key="BaseURL" value="<API base URL>" />
   <add key="Credentials" value="<Base64-encoded Basic auth>" />
   <add key="AuthPayloadLocation" value="<path to Authorise.json>" />
-  <add key="RefreshTime" value="<interval in minutes>" />
 </appSettings>
 ```
 
@@ -379,7 +379,6 @@ All three applications load configuration into a `SharedSettingsModel` with the 
 | `BaseURL` | API base URL |
 | `Credentials` | Base64-encoded Basic auth credentials |
 | `AuthPayloadLocation` | Path to authentication payload JSON |
-| `RefreshTime` | Refresh interval in minutes |
 
 ## Data Persistence
 

@@ -8,6 +8,7 @@ using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
 using ServerStatusCommon.Values;
 using ServerStatusSite.Components.Pages.Alerts;
+using ServerStatusSite.Models;
 
 namespace ServerStatus.IntegrationTests.Site.Components.Pages
 {
@@ -131,12 +132,14 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                 ExpiryTime = new DateTime(2026, 09, 01, 16, 0, 0, DateTimeKind.Utc)
             };
 
-            SharedSettingsModel sharedSettings = new() { RefreshTime = 5 };
+            SharedSettingsModel sharedSettings = new();
+            SiteSettingsModel siteSettings = new() { RefreshTime = 5 };
 
             _Context.Services.AddSingleton(_MockLogger.Object);
             _Context.Services.AddSingleton<IClock>(_MockClock.Object);
             _Context.Services.AddSingleton(apiService);
             _Context.Services.AddSingleton(sharedSettings);
+            _Context.Services.AddSingleton(siteSettings);
             _Context.Services.AddSingleton(CreateUser());
 
             IRenderedComponent<Alerts> cut = _Context.RenderComponent<Alerts>();
@@ -187,15 +190,14 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                 ExpiryTime = new DateTime(2026, 09, 01, 16, 0, 0, DateTimeKind.Utc)
             };
 
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
+            SiteSettingsModel siteSettings = new() { RefreshTime = 5 };
 
             _Context.Services.AddSingleton(_MockLogger.Object);
             _Context.Services.AddSingleton<IClock>(_MockClock.Object);
             _Context.Services.AddSingleton(apiService);
             _Context.Services.AddSingleton(sharedSettings);
+            _Context.Services.AddSingleton(siteSettings);
             _Context.Services.AddSingleton(CreateUser());
 
             IRenderedComponent<Alerts> cut = _Context.RenderComponent<Alerts>();
@@ -244,12 +246,14 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
                 ExpiryTime = new DateTime(2026, 09, 01, 16, 0, 0, DateTimeKind.Utc)
             };
 
-            SharedSettingsModel sharedSettings = new() { RefreshTime = 5 };
+            SharedSettingsModel sharedSettings = new();
+            SiteSettingsModel siteSettings = new() { RefreshTime = 5 };
 
             _Context.Services.AddSingleton(_MockLogger.Object);
             _Context.Services.AddSingleton<IClock>(_MockClock.Object);
             _Context.Services.AddSingleton(apiService);
             _Context.Services.AddSingleton(sharedSettings);
+            _Context.Services.AddSingleton(siteSettings);
             _Context.Services.AddSingleton(CreateUser());
 
             IRenderedComponent<Alerts> cut = _Context.RenderComponent<Alerts>();

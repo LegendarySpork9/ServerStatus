@@ -9,6 +9,7 @@ using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
 using ServerStatusSite.Converters;
+using ServerStatusSite.Models;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
@@ -26,6 +27,8 @@ namespace ServerStatusSite.Components.Pages.Alerts
         private APIService APIService { get; set; } = default!;
         [Inject]
         private SharedSettingsModel SharedSettings { get; set; } = default!;
+        [Inject]
+        private SiteSettingsModel SiteSettings { get; set; } = default!;
         [Inject]
         private UserModel User { get; set; } = default!;
 
@@ -61,7 +64,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
+                $"Timer Duration: {SiteSettings.RefreshTime} minutes");
 
             Servers = await APIService.GetServers();
 
@@ -73,7 +76,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
             ReportedAlerts = await APIService.GetAlerts(PageNumber) ?? StandardValues.AlertValues.DefaultAlertInfo;
 
             DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
+            NextElapse = currentTime.AddMinutes(SiteSettings.RefreshTime)
                 .AddMilliseconds(-currentTime.Millisecond);
 
             RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
@@ -161,7 +164,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             try
             {
-                NextElapse = NextElapse.AddMinutes(SharedSettings.RefreshTime);
+                NextElapse = NextElapse.AddMinutes(SiteSettings.RefreshTime);
 
                 string? serverName = string.IsNullOrEmpty(SelectedServer) ? null : SelectedServer;
                 ReportedAlerts = await APIService.GetAlerts(PageNumber, serverName);

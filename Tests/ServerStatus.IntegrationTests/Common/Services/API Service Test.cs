@@ -1589,7 +1589,8 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Name = "LocalHost",
                 HostName = "LocalHost",
                 Game = "Minecraft",
-                GameVersion = "1.7.10"
+                GameVersion = "1.7.10",
+                DateOccured = DateTime.UtcNow
             };
 
             (EventModel? actual, ResponseModel? _) = await _apiService.RegisterServerEvent(request);
@@ -1668,7 +1669,8 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Name = "LocalHost",
                 HostName = "LocalHost",
                 Game = "Minecraft",
-                GameVersion = "1.7.10"
+                GameVersion = "1.7.10",
+                DateOccured = DateTime.UtcNow
             };
 
             (EventModel? actual, ResponseModel? _) = await _apiService.RegisterServerEvent(request);

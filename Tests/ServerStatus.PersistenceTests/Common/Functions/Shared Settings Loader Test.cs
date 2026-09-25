@@ -60,8 +60,7 @@ namespace ServerStatus.PersistenceTests.Common.Functions
                 RecipientId = 123456789,
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",
-                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json"
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
@@ -85,8 +84,7 @@ namespace ServerStatus.PersistenceTests.Common.Functions
             {
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",
-                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json"
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
@@ -116,9 +114,6 @@ namespace ServerStatus.PersistenceTests.Common.Functions
             Assert.AreEqual(
                 "https://localhost/api",
                 result.BaseURL);
-            Assert.AreEqual(
-                0,
-                result.RefreshTime);
         }
 
         /// <summary>
@@ -136,9 +131,6 @@ namespace ServerStatus.PersistenceTests.Common.Functions
                 @"Mocks\Configs\Test.config")));
 
             Assert.IsNull(result.BaseURL);
-            Assert.AreEqual(
-                0,
-                result.RefreshTime);
         }
     }
 }

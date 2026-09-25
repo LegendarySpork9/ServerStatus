@@ -43,9 +43,6 @@ namespace ServerStatusReporter
                 $"API Auth Payload Location: {sharedSettings.AuthPayloadLocation}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Refresh Time: {sharedSettings.RefreshTime}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
                 $"Servers: {string.Join(',', AppSettingsModel.Servers)}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,

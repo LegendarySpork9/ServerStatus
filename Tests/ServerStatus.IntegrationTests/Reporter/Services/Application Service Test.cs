@@ -91,10 +91,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public void TestSetup()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             Mock<IAPIClient> _mockAPIClient = new();
             RetryService _retryService = new(_MockLogger.Object);
@@ -131,10 +128,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersPCEvent()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
             ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.PC);
@@ -194,10 +188,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersServerOnlineEvent()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
             ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Server);
@@ -263,10 +254,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersConnectionOnlineEvent()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
             ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Connection);
@@ -329,10 +317,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersConnectionOfflineEvent()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ConfigurationManager.AppSettings.Set("Servers", "TestServer");
             ConfigurationManager.AppSettings.Set("Components", StandardValues.ComponentValues.Connection);
@@ -394,10 +379,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersServerOfflineEvent()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Server];
@@ -456,10 +438,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunServerNotFoundInAPI()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["UnknownServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
@@ -520,10 +499,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunSkipsEventWhenRecentSameStatusExists()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
@@ -595,10 +571,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunSkipsRegistrationWhenRecentDifferentStatusExists()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.Server];
@@ -676,10 +649,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunRegistersEventWhenExistingEventIsStale()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];
@@ -755,10 +725,7 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
         [TestMethod]
         public async Task TestRunSkipsRegistrationDuringDowntime()
         {
-            SharedSettingsModel sharedSettings = new()
-            {
-                RefreshTime = 5
-            };
+            SharedSettingsModel sharedSettings = new();
 
             ServerStatusReporter.Models.AppSettingsModel.Servers = ["TestServer"];
             ServerStatusReporter.Models.AppSettingsModel.Components = [StandardValues.ComponentValues.PC];

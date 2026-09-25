@@ -250,7 +250,8 @@ namespace ServerStatus.PersistenceTests.Common.Implementations
                 Name = "TestServer",
                 HostName = "test-host",
                 Game = "TestGame",
-                GameVersion = "1.0"
+                GameVersion = "1.0",
+                DateOccured = DateTime.UtcNow
             };
 
             (EventModel? createdEvent, ResponseModel? apiResponse) = await _wrapper.RegisterServerEvent(newEvent);

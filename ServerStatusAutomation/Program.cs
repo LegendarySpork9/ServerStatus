@@ -43,9 +43,6 @@ namespace ServerStatusAutomation
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 $"API Auth Payload Location: {sharedSettings.AuthPayloadLocation}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Refresh Time: {sharedSettings.RefreshTime}");
 
             IClock _clock = new SystemClockProvider();
             IRestClientWrapper _restClient = new RestClientWrapper();

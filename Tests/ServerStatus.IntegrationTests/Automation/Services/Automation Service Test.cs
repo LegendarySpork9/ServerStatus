@@ -64,8 +64,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
                 SendAlerts = false,
                 BaseURL = "https://api.example.com",
                 Credentials = "Basic dGVzdDp0ZXN0",
-                AuthPayloadLocation = "payload.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "payload.json"
             };
         }
 
