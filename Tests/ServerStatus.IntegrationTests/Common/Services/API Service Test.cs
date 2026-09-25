@@ -6,6 +6,7 @@ using ServerStatusCommon.Models.Requests.Update;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 
 namespace ServerStatus.IntegrationTests.Common.Services
 {
@@ -361,8 +362,8 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 new()
                 {
                     Id = 1,
-                    Component = "PC",
-                    Status = "Offline",
+                    Component = StandardValues.ComponentValues.PC,
+                    Status = StandardValues.StatusValues.Offline,
                     DateOccured = new(2025, 10, 03, 20, 02, 53, DateTimeKind.Utc),
                     Server = new()
                     {
@@ -390,7 +391,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<EventModel> actual = await _apiService.GetServerEvents("PC");
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
 
             Assert.AreEqual(
                 expected[0].Id,
@@ -527,7 +528,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                         Id = 1,
                         Reporter = "UnitTester",
                         Component = "component",
-                        ComponentStatus = "Offline",
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                         Server = new()
@@ -615,7 +616,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                         Id = 1,
                         Reporter = "UnitTester",
                         Component = "component",
-                        ComponentStatus = "Offline",
+                        ComponentStatus = StandardValues.StatusValues.Offline,
                         AlertStatus = "Reported",
                         AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                         Server = new()
@@ -699,7 +700,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -776,7 +777,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Investigating",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -832,7 +833,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 Id = 1,
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
@@ -864,7 +865,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             {
                 Reporter = "UnitTester",
                 Component = "component",
-                ComponentStatus = "Offline",
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 ServerId = 1,
                 Name = "LocalHost",
@@ -922,7 +923,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 new()
                 {
                     Id = 1,
-                    Name = "PC"
+                    Name = StandardValues.ComponentValues.PC
                 },
                 new()
                 {
@@ -960,6 +961,670 @@ namespace ServerStatus.IntegrationTests.Common.Services
         }
 
         /// <summary>
+        /// Checks whether the Authorise method handles a null authentication response.
+        /// </summary>
+        [TestMethod]
+        public async Task TestAuthoriseNullResponse()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.Authorise())
+                .ReturnsAsync((
+                    (AuthenticationModel?)null,
+                    (ResponseModel?)null));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService);
+
+            await _apiService.Authorise();
+
+            Assert.AreEqual(
+                default(DateTime),
+                _apiService.ExpiryTime);
+        }
+
+        /// <summary>
+        /// Checks whether the Authorise method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestAuthoriseException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.Authorise())
+                .ThrowsAsync(new Exception("Connection refused"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService);
+
+            ResponseModel? result = await _apiService.Authorise();
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUsers method returns an empty list when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetUsersFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUsers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    (PagedResponseModel<UserModel>?)null,
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<UserModel> actual = await _apiService.GetUsers();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUsers method returns an empty list when an exception is thrown.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetUsersException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUsers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<UserModel> actual = await _apiService.GetUsers();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUserSettings method does not update settings when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetUserSettingsFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUserSettings(It.IsAny<int>()))
+                .ReturnsAsync((
+                    new List<UserSettingModel>(),
+                    false));
+
+            List<SettingModel> originalSettings = [new() { Id = 99, Name = "Original", Value = "Unchanged" }];
+
+            UserModel user = new()
+            {
+                Id = 1,
+                Username = "Test",
+                Password = "HashedString",
+                Scopes = ["User"],
+                Settings = originalSettings
+            };
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            UserModel actual = await _apiService.GetUserSettings(user);
+
+            Assert.AreEqual(
+                "Original",
+                actual.Settings[0].Name);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUserSettings method does not update settings when the list is empty.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetUserSettingsEmptyList()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUserSettings(It.IsAny<int>()))
+                .ReturnsAsync((
+                    new List<UserSettingModel>(),
+                    true));
+
+            List<SettingModel> originalSettings = [new() { Id = 99, Name = "Original", Value = "Unchanged" }];
+
+            UserModel user = new()
+            {
+                Id = 1,
+                Username = "Test",
+                Password = "HashedString",
+                Scopes = ["User"],
+                Settings = originalSettings
+            };
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            UserModel actual = await _apiService.GetUserSettings(user);
+
+            Assert.AreEqual(
+                "Original",
+                actual.Settings[0].Name);
+        }
+
+        /// <summary>
+        /// Checks whether the GetUserSettings method does not update settings when an exception is thrown.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetUserSettingsException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetUserSettings(It.IsAny<int>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            List<SettingModel> originalSettings = [new() { Id = 99, Name = "Original", Value = "Unchanged" }];
+
+            UserModel user = new()
+            {
+                Id = 1,
+                Username = "Test",
+                Password = "HashedString",
+                Scopes = ["User"],
+                Settings = originalSettings
+            };
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            UserModel actual = await _apiService.GetUserSettings(user);
+
+            Assert.AreEqual(
+                "Original",
+                actual.Settings[0].Name);
+        }
+
+        /// <summary>
+        /// Checks whether the GetComponents method returns an empty list when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetComponentsFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetComponents())
+                .ReturnsAsync((
+                    new List<ComponentModel>(),
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<string> actual = await _apiService.GetComponents();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetComponents method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetComponentsException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetComponents())
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<string> actual = await _apiService.GetComponents();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetServers method returns an empty list when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetServersFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    (PagedResponseModel<ServerModel>?)null,
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<ServerModel> actual = await _apiService.GetServers();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetServers method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetServersException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<ServerModel> actual = await _apiService.GetServers();
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetServerEvents method returns an empty list when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetServerEventsFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    new List<EventModel>(),
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
+
+            Assert.AreEqual(
+                0,
+                actual.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetServerEvents method handles an exception from the retry service.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetServerEventsException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.Authorise())
+                .ReturnsAsync((
+                    (AuthenticationModel?)null,
+                    (ResponseModel?)null));
+            _mockAPIClient.Setup(api => api.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            RetryService fastRetry = new(_MockLogger.Object);
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                fastRetry)
+            {
+                ExpiryTime = Expires
+            };
+
+            List<EventModel> actual = await _apiService.GetServerEvents(StandardValues.ComponentValues.PC);
+
+            Assert.IsTrue(actual == null || actual.Count == 0);
+        }
+
+        /// <summary>
+        /// Checks whether the UpdateUserSettings method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestUpdateUserSettingsException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.UpdateUserSettings(
+                    It.IsAny<int>(),
+                    It.IsAny<UserSettingUpdateRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            (SettingModel? actual, ResponseModel? _) = await _apiService.UpdateUserSettings(
+                1,
+                new() { Value = "False" });
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the UpdateUser method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestUpdateUserException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.UpdateUser(
+                    It.IsAny<int>(),
+                    It.IsAny<UserUpdateRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            (UserModel? actual, ResponseModel? _) = await _apiService.UpdateUser(
+                1,
+                new() { Password = "HashedString" });
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the GetAlerts method returns null when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetAlertsFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    (PagedResponseModel<AlertModel>?)null,
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            PagedResponseModel<AlertModel>? actual = await _apiService.GetAlerts(1);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the GetAlerts method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetAlertsException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            PagedResponseModel<AlertModel>? actual = await _apiService.GetAlerts(1);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the GetAlert method returns null when the API call fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetAlertFailure()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetAlert(It.IsAny<int>()))
+                .ReturnsAsync((
+                    (AlertModel?)null,
+                    false));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AlertModel? actual = await _apiService.GetAlert(1);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the GetAlert method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetAlertException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.GetAlert(It.IsAny<int>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AlertModel? actual = await _apiService.GetAlert(1);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the UpdateAlert method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestUpdateAlertException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.UpdateAlert(
+                    It.IsAny<int>(),
+                    It.IsAny<AlertUpdateRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            (AlertModel? actual, ResponseModel? _) = await _apiService.UpdateAlert(
+                1,
+                new() { Status = "Investigating" });
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the RegisterAlert method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRegisterAlertException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.RegisterAlert(It.IsAny<AlertRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AlertRequestModel request = new()
+            {
+                Reporter = "UnitTester",
+                Component = "component",
+                ComponentStatus = StandardValues.StatusValues.Offline,
+                AlertStatus = "Reported",
+                ServerId = 1,
+                Name = "LocalHost",
+                HostName = "LocalHost",
+                Game = "Minecraft",
+                GameVersion = "1.7.10"
+            };
+
+            (AlertModel? actual, ResponseModel? _) = await _apiService.RegisterAlert(request);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the RegisterServerEvent method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRegisterServerEventException()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(api => api.RegisterServerEvent(It.IsAny<EventRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            EventRequestModel request = new()
+            {
+                Component = "component",
+                Status = StandardValues.StatusValues.Offline,
+                ServerId = 1,
+                Name = "LocalHost",
+                HostName = "LocalHost",
+                Game = "Minecraft",
+                GameVersion = "1.7.10",
+                DateOccured = DateTime.UtcNow
+            };
+
+            (EventModel? actual, ResponseModel? _) = await _apiService.RegisterServerEvent(request);
+
+            Assert.IsNull(actual);
+        }
+
+        /// <summary>
+        /// Checks whether the SetLogger method updates the logger.
+        /// </summary>
+        [TestMethod]
+        public void TestSetLogger()
+        {
+            Mock<IAPIClient> _mockAPIClient = new();
+            Mock<ILoggerService> newLogger = new();
+
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService);
+
+            _apiService.SetLogger(newLogger.Object);
+
+            _apiService.Authorise().Wait();
+
+            newLogger.Verify(
+                l => l.LogMessage(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()),
+                Times.AtLeastOnce);
+        }
+
+        /// <summary>
         /// Checks whether the RegisterServerEvent method works as expected.
         /// </summary>
         [TestMethod]
@@ -969,7 +1634,7 @@ namespace ServerStatus.IntegrationTests.Common.Services
             {
                 Id = 1,
                 Component = "component",
-                Status = "Offline",
+                Status = StandardValues.StatusValues.Offline,
                 DateOccured = new(2025, 06, 14, 15, 39, 21, DateTimeKind.Utc),
                 Server = new()
                 {
@@ -999,12 +1664,13 @@ namespace ServerStatus.IntegrationTests.Common.Services
             EventRequestModel request = new()
             {
                 Component = "component",
-                Status = "Offline",
+                Status = StandardValues.StatusValues.Offline,
                 ServerId = 1,
                 Name = "LocalHost",
                 HostName = "LocalHost",
                 Game = "Minecraft",
-                GameVersion = "1.7.10"
+                GameVersion = "1.7.10",
+                DateOccured = DateTime.UtcNow
             };
 
             (EventModel? actual, ResponseModel? _) = await _apiService.RegisterServerEvent(request);

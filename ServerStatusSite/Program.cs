@@ -1,6 +1,7 @@
 // Copyright � - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
@@ -43,6 +44,12 @@ namespace ServerStatusSite
                 "AppSettings",
                 sharedSettings);
 
+            SiteSettingsModel siteSettings = new();
+
+            builder.Configuration.Bind(
+                "AppSettings",
+                siteSettings);
+
             BackupToolSettingsModel backupToolSettings = builder.Configuration.GetSection("BackupToolAPI")
                 .Get<BackupToolSettingsModel>()!;
 
@@ -53,10 +60,12 @@ namespace ServerStatusSite
                 "Loaded Configuration");
 
             builder.Services.AddSingleton(sharedSettings);
+            builder.Services.AddSingleton(siteSettings);
             builder.Services.AddSingleton(backupToolSettings);
             builder.Services.AddSingleton<ILoggerService, LoggerServiceWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddSingleton<IExtendedFileSystem, ExtendedFileSystemWrapper>();
             builder.Services.AddSingleton<IRestClientWrapper, RestClientWrapper>();
             builder.Services.AddSingleton<IAPIClient, APIClientWrapper>();
             builder.Services.AddSingleton<IHTTPClient, HTTPClientWrapper>();
@@ -93,7 +102,13 @@ namespace ServerStatusSite
                 StandardValues.LoggerValues.Debug,
                 "Configured HTTPS Redirection");
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = context =>
+                {
+                    context.Context.Response.Headers.CacheControl = "no-cache";
+                }
+            });
 
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,

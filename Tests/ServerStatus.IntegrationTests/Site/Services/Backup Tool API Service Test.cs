@@ -261,5 +261,261 @@ namespace ServerStatus.IntegrationTests.Site.Services
 
             Assert.IsFalse(result);
         }
+        /// <summary>
+        /// Checks whether the GetLogArchives method returns null when the request fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetLogArchives_ReturnsNull_WhenFailed()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetLogArchives("TestServer"))
+                .ReturnsAsync(((LogArchivesResponseModel?)null, false));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            LogArchivesResponseModel? result = await service.GetLogArchives("TestServer");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the GetArchivedLogs method returns the expected logs when successful.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetArchivedLogs_ReturnsLogs_WhenSuccessful()
+        {
+            ArchivedLogsResponseModel expected = new()
+            {
+                ServerName = "TestServer",
+                ArchiveName = "2026-08-28.zip",
+                Logs =
+                [
+                    new()
+                    {
+                        FileName = "server.log",
+                        Content =
+                        [
+                            new() { Id = 1, Timestamp = DateTime.UtcNow, Level = "Info", Type = "Tool", Message = "Line 1" },
+                            new() { Id = 2, Timestamp = DateTime.UtcNow, Level = "Info", Type = "Tool", Message = "Line 2" }
+                        ]
+                    }
+                ]
+            };
+
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetArchivedLogs(
+                    "TestServer",
+                    "2026-08-28.zip"))
+                .ReturnsAsync((expected, true));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            ArchivedLogsResponseModel? result = await service.GetArchivedLogs(
+                "TestServer",
+                "2026-08-28.zip");
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(
+                1,
+                result.Logs.Count);
+        }
+
+        /// <summary>
+        /// Checks whether the GetArchivedLogs method returns null when the request fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetArchivedLogs_ReturnsNull_WhenFailed()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetArchivedLogs(
+                    "TestServer",
+                    "2026-08-28.zip"))
+                .ReturnsAsync(((ArchivedLogsResponseModel?)null, false));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            ArchivedLogsResponseModel? result = await service.GetArchivedLogs(
+                "TestServer",
+                "2026-08-28.zip");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the RegisterWebhook method returns null when the request fails.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRegisterWebhook_ReturnsNull_WhenFailed()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.RegisterWebhook(
+                    "TestServer",
+                    It.IsAny<string>()))
+                .ReturnsAsync(((WebhookRegistrationResponseModel?)null, false));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            WebhookRegistrationResponseModel? result = await service.RegisterWebhook(
+                "TestServer",
+                "https://example.com/webhook");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the GetLogs method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetLogs_ReturnsNull_WhenException()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetLogs(
+                    "TestServer",
+                    It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            LogsResponseModel? result = await service.GetLogs("TestServer");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the GetLogArchives method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetLogArchives_ReturnsNull_WhenException()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetLogArchives("TestServer"))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            LogArchivesResponseModel? result = await service.GetLogArchives("TestServer");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the GetArchivedLogs method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetArchivedLogs_ReturnsNull_WhenException()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.GetArchivedLogs(
+                    "TestServer",
+                    "2026-08-28.zip"))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            ArchivedLogsResponseModel? result = await service.GetArchivedLogs(
+                "TestServer",
+                "2026-08-28.zip");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the RegisterWebhook method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRegisterWebhook_ReturnsNull_WhenException()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.RegisterWebhook(
+                    "TestServer",
+                    It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            WebhookRegistrationResponseModel? result = await service.RegisterWebhook(
+                "TestServer",
+                "https://example.com/webhook");
+
+            Assert.IsNull(result);
+        }
+
+        /// <summary>
+        /// Checks whether the UnregisterWebhook method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestUnregisterWebhook_ReturnsFalse_WhenException()
+        {
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.UnregisterWebhook(
+                    "TestServer",
+                    "webhook-id"))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            bool result = await service.UnregisterWebhook(
+                "TestServer",
+                "webhook-id");
+
+            Assert.IsFalse(result);
+        }
+
+        /// <summary>
+        /// Checks whether the SendCommand method handles an exception.
+        /// </summary>
+        [TestMethod]
+        public async Task TestSendCommand_ReturnsFalse_WhenException()
+        {
+            CommandRequestModel command = new()
+            {
+                Target = "Server",
+                Command = "stop"
+            };
+
+            Mock<IBackupToolAPIClient> _mockClient = new();
+            _mockClient.Setup(c => c.SendCommand(
+                    "TestServer",
+                    It.IsAny<CommandRequestModel>()))
+                .ThrowsAsync(new Exception("Network error"));
+
+            BackupToolAPIService service = new(
+                _MockLogger.Object,
+                _mockClient.Object,
+                _RetryService);
+
+            bool result = await service.SendCommand(
+                "TestServer",
+                command);
+
+            Assert.IsFalse(result);
+        }
     }
 }

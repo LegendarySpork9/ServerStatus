@@ -1,6 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusReporter.Abstractions;
 using System.Diagnostics;
 
@@ -30,7 +31,7 @@ namespace ServerStatusReporter.Implementations
             {
                 using (Process process = Process.GetProcessById(processId))
                 {
-                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTime;
+                    running = !process.HasExited && process.StartTime.ToUniversalTime() == expectedStartTime.ToUniversalTime();
                 }
 
                 _Logger.LogMessage(
