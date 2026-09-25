@@ -2,6 +2,7 @@ let isLoading = false;
 let hasMore = true;
 let isAtBottom = true;
 let savedScrollHeight = 0;
+let commandKeydownHandler = null;
 
 export function initScrollDetection(element, dotNetHelper) {
     isLoading = false;
@@ -106,11 +107,17 @@ export function clearCommandText() {
 export function initCommandInput(dotNetHelper) {
     const input = document.getElementById('commandInput');
     if (input) {
-        input.addEventListener('keydown', async (e) => {
+        if (commandKeydownHandler) {
+            input.removeEventListener('keydown', commandKeydownHandler);
+        }
+
+        commandKeydownHandler = async (e) => {
             if (e.key === 'Enter' && input.value.trim()) {
                 await dotNetHelper.invokeMethodAsync('OnCommandSubmit');
             }
-        });
+        };
+
+        input.addEventListener('keydown', commandKeydownHandler);
     }
 }
 

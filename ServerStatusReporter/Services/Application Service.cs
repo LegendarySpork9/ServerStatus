@@ -131,6 +131,8 @@ namespace ServerStatusReporter.Services
         /// </summary>
         private async Task Run()
         {
+            DateTime runStartTime = _Clock.UtcNow;
+
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Running Event Register");
@@ -188,7 +190,8 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 StandardValues.ComponentValues.PC,
                                 server.Id,
-                                server.EventInterval))
+                                server.EventInterval,
+                                runStartTime))
                             {
                                 EventRequestModel newEvent = new()
                                 {
@@ -222,7 +225,8 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 StandardValues.ComponentValues.Server,
                                 server.Id,
-                                server.EventInterval))
+                                server.EventInterval,
+                                runStartTime))
                             {
                                 EventRequestModel newEvent = new()
                                 {
@@ -270,7 +274,8 @@ namespace ServerStatusReporter.Services
                                 componentStatuses,
                                 StandardValues.ComponentValues.Connection,
                                 server.Id,
-                                server.EventInterval))
+                                server.EventInterval,
+                                runStartTime))
                             {
                                 EventRequestModel newEvent = new()
                                 {
@@ -350,7 +355,8 @@ namespace ServerStatusReporter.Services
             Dictionary<string, List<EventModel>> componentStatuses,
             string component,
             int serverId,
-            int eventInterval)
+            int eventInterval,
+            DateTime runStartTime)
         {
             bool skipRegistration = false;
 
@@ -362,7 +368,7 @@ namespace ServerStatusReporter.Services
 
                 if (existingEvent != null)
                 {
-                    DateTime refreshPeriod = _Clock.UtcNow.AddSeconds(-eventInterval);
+                    DateTime refreshPeriod = runStartTime.AddSeconds(-eventInterval);
 
                     if (existingEvent.DateOccured > refreshPeriod)
                     {

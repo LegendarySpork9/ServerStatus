@@ -119,6 +119,8 @@ namespace ServerStatusAutomation.Services
         /// </summary>
         private async Task Run()
         {
+            DateTime runStartTime = _Clock.UtcNow;
+
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Running Automatic Status Checks");
@@ -141,12 +143,11 @@ namespace ServerStatusAutomation.Services
                     StandardValues.LoggerValues.Info,
                     $"Checking Status for {server.Name}");
 
-                DateTime now = _Clock.UtcNow;
-                DateTime refreshPeriod = now.AddSeconds(-server.EventInterval);
+                DateTime refreshPeriod = runStartTime.AddSeconds(-server.EventInterval);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Refresh Period: {refreshPeriod} -> {now}");
+                    $"Refresh Period: {refreshPeriod} -> {runStartTime}");
 
                 DateTime? downtime = null;
                 int? duration = null;
@@ -155,7 +156,7 @@ namespace ServerStatusAutomation.Services
                 {
                     TimeSpan downtimeTime = TimeSpan.Parse(server.Downtime.Time);
                     downtime = DateTime.SpecifyKind(
-                        now.Date.Add(downtimeTime),
+                        runStartTime.Date.Add(downtimeTime),
                         DateTimeKind.Utc);
                     duration = server.Downtime.Duration;
 
