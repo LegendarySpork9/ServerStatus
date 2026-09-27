@@ -111,7 +111,7 @@ namespace ServerStatusAutomation.Services
                 DateTime runStartTime = _Clock.UtcNow;
 
                 _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
+                    StandardValues.LoggerValues.Info,
                     $"Timer Triggered for {serverName}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

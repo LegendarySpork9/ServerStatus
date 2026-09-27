@@ -1,6 +1,5 @@
 // Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
 using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
@@ -9,7 +8,6 @@ using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
 using ServerStatusReporter.Abstractions;
 using ServerStatusReporter.Models;
-using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace ServerStatusReporter.Services
@@ -131,7 +129,7 @@ namespace ServerStatusReporter.Services
                 DateTime runStartTime = _Clock.UtcNow;
 
                 _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
+                    StandardValues.LoggerValues.Info,
                     $"Timer Triggered for {serverName}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
