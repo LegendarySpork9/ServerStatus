@@ -1,13 +1,11 @@
 // Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
 using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
-using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace ServerStatusAutomation.Services
@@ -64,9 +62,14 @@ namespace ServerStatusAutomation.Services
                     StandardValues.LoggerValues.Info,
                     $"Starting timer for {server.Name} with interval {server.EventInterval} seconds");
 
-                await RunForServer(server);
+                DateTime runStartTime = _Clock.UtcNow;
+
+                await RunForServer(
+                    server,
+                    runStartTime);
 
                 TimerFunction _timerFunction = new(_Clock);
+
                 DateTime currentTime = _Clock.UtcNow;
                 DateTime nextElapse = currentTime.AddSeconds(server.EventInterval)
                     .AddMilliseconds(-currentTime.Millisecond);
@@ -105,6 +108,8 @@ namespace ServerStatusAutomation.Services
 
             try
             {
+                DateTime runStartTime = _Clock.UtcNow;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Timer Triggered for {serverName}");
@@ -113,7 +118,7 @@ namespace ServerStatusAutomation.Services
                     $"Token Expiry: {_APIService.ExpiryTime}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Current Time: {_Clock.UtcNow}");
+                    $"Current Time: {runStartTime}");
 
                 _ServerNextElapse[serverId] = _ServerNextElapse[serverId].AddSeconds(eventInterval);
 
@@ -122,7 +127,9 @@ namespace ServerStatusAutomation.Services
 
                 if (server != null)
                 {
-                    await RunForServer(server);
+                    await RunForServer(
+                        server,
+                        runStartTime);
                 }
 
                 else
@@ -153,10 +160,10 @@ namespace ServerStatusAutomation.Services
         /// <summary>
         /// Runs the status checks for a single server.
         /// </summary>
-        private async Task RunForServer(ServerModel server)
+        private async Task RunForServer(
+            ServerModel server,
+            DateTime runStartTime)
         {
-            DateTime runStartTime = _Clock.UtcNow;
-
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Running Automatic Status Checks for {server.Name}");

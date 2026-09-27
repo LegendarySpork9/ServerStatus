@@ -74,9 +74,14 @@ namespace ServerStatusReporter.Services
                         StandardValues.LoggerValues.Info,
                         $"Starting timer for {server.Name} with interval {server.EventInterval} seconds");
 
-                    await RunForServer(server);
+                    DateTime runStartTime = _Clock.UtcNow;
+
+                    await RunForServer(
+                        server,
+                        runStartTime);
 
                     TimerFunction _timerFunction = new(_Clock);
+
                     DateTime currentTime = _Clock.UtcNow;
                     DateTime nextElapse = currentTime.AddSeconds(server.EventInterval)
                         .AddMilliseconds(-currentTime.Millisecond);
@@ -123,6 +128,8 @@ namespace ServerStatusReporter.Services
 
             try
             {
+                DateTime runStartTime = _Clock.UtcNow;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Timer Triggered for {serverName}");
@@ -131,7 +138,7 @@ namespace ServerStatusReporter.Services
                     $"Token Expiry: {_APIService.ExpiryTime}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Current Time: {_Clock.UtcNow}");
+                    $"Current Time: {runStartTime}");
 
                 _ServerNextElapse[serverId] = _ServerNextElapse[serverId].AddSeconds(eventInterval);
 
@@ -140,7 +147,9 @@ namespace ServerStatusReporter.Services
 
                 if (server != null)
                 {
-                    await RunForServer(server);
+                    await RunForServer(
+                        server,
+                        runStartTime);
                 }
 
                 else
@@ -171,10 +180,10 @@ namespace ServerStatusReporter.Services
         /// <summary>
         /// Runs the status checks for a single server.
         /// </summary>
-        private async Task RunForServer(ServerModel server)
+        private async Task RunForServer(
+            ServerModel server,
+            DateTime runStartTime)
         {
-            DateTime runStartTime = _Clock.UtcNow;
-
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Running Event Register for {server.Name}");
