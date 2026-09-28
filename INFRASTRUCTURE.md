@@ -34,7 +34,7 @@ ServerStatus/
 |   +-- Abstractions/                   # Interface definitions
 |   +-- Converters/                     # API converters
 |   +-- Values/                         # Standard value constants and defaults
-|   +-- Functions/                      # Shared settings loader, timer, and URL builder functions
+|   +-- Functions/                      # Shared DateTime, settings loader, timer, and URL builder functions
 |   +-- Implementations/               # Interface implementations (wrappers)
 |   +-- Models/                         # Data models
 |   |   +-- Requests/                   # API request models
@@ -125,8 +125,8 @@ The common library provides shared abstractions, services, models, and utilities
 
 | Function | Responsibility |
 |---|---|
-| `SharedSettingsLoader` | Loads App.config files and maps appSettings to `SharedSettingsModel` via reflection |
 | `DateTimeFunction` | Rounds DateTime values to the nearest whole second for consistent event timestamp comparisons |
+| `SharedSettingsLoader` | Loads App.config files and maps appSettings to `SharedSettingsModel` via reflection |
 | `TimerFunction` | Calculates timer intervals from current time to a target elapse time |
 | `URLBuilderFunction` | Builds API URLs from a base URL, endpoint, entity ID, and query parameters. Used by both `APIClientWrapper` and `BackupToolAPIClientWrapper` |
 
