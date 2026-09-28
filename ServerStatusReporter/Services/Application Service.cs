@@ -398,8 +398,10 @@ namespace ServerStatusReporter.Services
                 if (existingEvent != null)
                 {
                     DateTime refreshPeriod = runStartTime.AddSeconds(-eventInterval);
+                    DateTime eventTime = DateTimeFunction.RoundToNearestSecond(existingEvent.DateOccured);
+                    DateTime refreshTime = DateTimeFunction.RoundToNearestSecond(refreshPeriod);
 
-                    if (existingEvent.DateOccured > refreshPeriod)
+                    if (eventTime > refreshTime)
                     {
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
@@ -442,5 +444,6 @@ namespace ServerStatusReporter.Services
 
             return running;
         }
+
     }
 }

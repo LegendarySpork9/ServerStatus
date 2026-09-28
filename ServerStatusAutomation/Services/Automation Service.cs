@@ -184,6 +184,7 @@ namespace ServerStatusAutomation.Services
                 $"Checking Status for {server.Name}");
 
             DateTime refreshPeriod = runStartTime.AddSeconds(-server.EventInterval);
+            DateTime refreshTime = DateTimeFunction.RoundToNearestSecond(refreshPeriod);
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -208,14 +209,15 @@ namespace ServerStatusAutomation.Services
             foreach (var (componentName, statuses) in componentStatuses)
             {
                 EventModel? status = statuses.Find(c => c.Server.Id == server.Id);
+                DateTime eventTime = status != null ? DateTimeFunction.RoundToNearestSecond(status.DateOccured) : DateTime.MinValue;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Current {componentName} Status: {status?.Status ?? "No Status"}");
 
-                if (status != null && (status.DateOccured < refreshPeriod || status.Status != StandardValues.StatusValues.Online))
+                if (status != null && (eventTime < refreshTime || status.Status != StandardValues.StatusValues.Online))
                 {
-                    if (status.Status != StandardValues.StatusValues.Unknown && (status.Status == StandardValues.StatusValues.Online || status.DateOccured < refreshPeriod))
+                    if (status.Status != StandardValues.StatusValues.Unknown && (status.Status == StandardValues.StatusValues.Online || eventTime < refreshTime))
                     {
                         status.Status = StandardValues.StatusValues.Unknown;
 
@@ -233,7 +235,7 @@ namespace ServerStatusAutomation.Services
                             status.Status);
                     }
 
-                    if (status.DateOccured < refreshPeriod)
+                    if (eventTime < refreshTime)
                     {
                         EventRequestModel newEvent = new()
                         {

@@ -126,6 +126,7 @@ The common library provides shared abstractions, services, models, and utilities
 | Function | Responsibility |
 |---|---|
 | `SharedSettingsLoader` | Loads App.config files and maps appSettings to `SharedSettingsModel` via reflection |
+| `DateTimeFunction` | Rounds DateTime values to the nearest whole second for consistent event timestamp comparisons |
 | `TimerFunction` | Calculates timer intervals from current time to a target elapse time |
 | `URLBuilderFunction` | Builds API URLs from a base URL, endpoint, entity ID, and query parameters. Used by both `APIClientWrapper` and `BackupToolAPIClientWrapper` |
 
