@@ -44,7 +44,7 @@ namespace ServerStatusCommon.Services
         /// </summary>
         private async Task ReauthoriseIfExpired()
         {
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -76,9 +76,10 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Debug,
                         $"Bearer Token: {auth.Token}");
 
-                    ExpiryTime = DateTime.SpecifyKind(
+                    DateTime expiry = DateTime.SpecifyKind(
                         auth.Info.Expires,
                         DateTimeKind.Utc);
+                    ExpiryTime = expiry.AddTicks(-(expiry.Ticks % TimeSpan.TicksPerSecond));
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -114,7 +115,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching users from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -195,7 +196,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching user settings from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -265,7 +266,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching components from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -332,7 +333,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching servers from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -442,7 +443,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching server events from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -545,7 +546,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating user setting, {userSettingId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -608,7 +609,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating user, {userId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -672,7 +673,7 @@ namespace ServerStatusCommon.Services
         {
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Fetching alerts from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -788,7 +789,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Fetching alert, {alertId}, from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -892,7 +893,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating alert, {alertId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -988,7 +989,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Registering alert, {alert.Component} ({alert.ComponentStatus}), in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -1082,7 +1083,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Registering event, {serverEvent.Component} ({serverEvent.Status}), in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }

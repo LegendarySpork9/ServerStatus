@@ -62,7 +62,8 @@ namespace ServerStatusAutomation.Services
                     StandardValues.LoggerValues.Info,
                     $"Starting timer for {server.Name} with interval {server.EventInterval} seconds");
 
-                DateTime runStartTime = _Clock.UtcNow;
+                DateTime now = _Clock.UtcNow;
+                DateTime runStartTime = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
 
                 await RunForServer(
                     server,
@@ -71,8 +72,8 @@ namespace ServerStatusAutomation.Services
                 TimerFunction _timerFunction = new(_Clock);
 
                 DateTime currentTime = _Clock.UtcNow;
-                DateTime nextElapse = currentTime.AddSeconds(server.EventInterval)
-                    .AddMilliseconds(-currentTime.Millisecond);
+                DateTime nextElapse = currentTime.AddSeconds(server.EventInterval);
+                nextElapse = nextElapse.AddTicks(-(nextElapse.Ticks % TimeSpan.TicksPerSecond));
 
                 _ServerNextElapse[server.Id] = nextElapse;
 
@@ -108,7 +109,7 @@ namespace ServerStatusAutomation.Services
 
             try
             {
-                DateTime runStartTime = _Clock.UtcNow;
+                DateTime runStartTime = _ServerNextElapse[serverId];
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -184,7 +185,7 @@ namespace ServerStatusAutomation.Services
                 $"Checking Status for {server.Name}");
 
             DateTime refreshPeriod = runStartTime.AddSeconds(-server.EventInterval);
-            DateTime refreshTime = DateTimeFunction.RoundToNearestSecond(refreshPeriod);
+            DateTime refreshTime = refreshPeriod.AddTicks(-(refreshPeriod.Ticks % TimeSpan.TicksPerSecond));
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -209,7 +210,7 @@ namespace ServerStatusAutomation.Services
             foreach (var (componentName, statuses) in componentStatuses)
             {
                 EventModel? status = statuses.Find(c => c.Server.Id == server.Id);
-                DateTime eventTime = status != null ? DateTimeFunction.RoundToNearestSecond(status.DateOccured) : DateTime.MinValue;
+                DateTime eventTime = status != null ? status.DateOccured.AddTicks(-(status.DateOccured.Ticks % TimeSpan.TicksPerSecond)) : DateTime.MinValue;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -226,7 +227,7 @@ namespace ServerStatusAutomation.Services
                             $"Updated {componentName} Status to Unknown");
                     }
 
-                    if (downtime == null || (status.DateOccured < downtime || status.DateOccured > downtime.Value.AddSeconds(duration.Value)))
+                    if (downtime == null || (eventTime < downtime || eventTime > downtime.Value.AddSeconds(duration.Value)))
                     {
                         await AlertsHandler(
                             alerts?.Entries ?? [],

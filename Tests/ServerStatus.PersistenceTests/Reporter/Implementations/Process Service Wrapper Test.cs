@@ -62,5 +62,43 @@ namespace ServerStatus.PersistenceTests.Reporter.Implementations
 
             Assert.IsFalse(result);
         }
+
+        /// <summary>
+        /// Checks whether the IsRunning method returns true when the start time is within the 1-second tolerance.
+        /// </summary>
+        [TestMethod]
+        public void TestIsRunningReturnsTrueWithinTolerance()
+        {
+            ProcessServiceWrapper wrapper = new(_MockLogger.Object);
+
+            using Process current = Process.GetCurrentProcess();
+            int processId = current.Id;
+            DateTime startTime = current.StartTime.ToUniversalTime().AddMilliseconds(500);
+
+            bool result = wrapper.IsRunning(
+                processId,
+                startTime);
+
+            Assert.IsTrue(result);
+        }
+
+        /// <summary>
+        /// Checks whether the IsRunning method returns false when the start time exceeds the 1-second tolerance.
+        /// </summary>
+        [TestMethod]
+        public void TestIsRunningReturnsFalseOutsideTolerance()
+        {
+            ProcessServiceWrapper wrapper = new(_MockLogger.Object);
+
+            using Process current = Process.GetCurrentProcess();
+            int processId = current.Id;
+            DateTime startTime = current.StartTime.ToUniversalTime().AddSeconds(2);
+
+            bool result = wrapper.IsRunning(
+                processId,
+                startTime);
+
+            Assert.IsFalse(result);
+        }
     }
 }

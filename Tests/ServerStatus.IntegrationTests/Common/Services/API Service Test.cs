@@ -1704,5 +1704,106 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 expected.Server.GameVersion,
                 actual.Server.GameVersion);
         }
+        /// <summary>
+        /// Checks whether reauthorisation is triggered when ExpiryTime equals the current time.
+        /// </summary>
+        [TestMethod]
+        public async Task TestReauthorisesAtExactExpiry()
+        {
+            DateTime utcNow = new(2026, 03, 12, 16, 00, 00, DateTimeKind.Utc);
+
+            Mock<IClock> mockClock = new();
+            mockClock.Setup(c => c.UtcNow)
+                .Returns(utcNow);
+
+            AuthenticationModel authResponse = new()
+            {
+                Type = "Bearer",
+                Token = "NewToken",
+                ExpiresIn = 900,
+                Info = new()
+                {
+                    ApplicationName = "Server Status",
+                    Scopes = ["Server Status API"],
+                    Issued = utcNow,
+                    Expires = utcNow.AddMinutes(15)
+                }
+            };
+
+            Mock<IAPIClient> mockAPIClient = new();
+            mockAPIClient.Setup(api => api.Authorise())
+                .ReturnsAsync((
+                    authResponse,
+                    (ResponseModel?)null));
+            mockAPIClient.Setup(api => api.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((
+                    new PagedResponseModel<ServerModel>()
+                    {
+                        Entries = [],
+                        EntryCount = 0,
+                        PageNumber = 1,
+                        PageSize = 25,
+                        TotalPageCount = 0,
+                        TotalCount = 0
+                    },
+                    true));
+
+            APIService apiService = new(
+                _MockLogger.Object,
+                mockAPIClient.Object,
+                mockClock.Object,
+                _RetryService)
+            {
+                ExpiryTime = utcNow
+            };
+
+            await apiService.GetServers();
+
+            mockAPIClient.Verify(api => api.Authorise(),
+                Times.Once);
+        }
+
+        /// <summary>
+        /// Checks whether ExpiryTime is truncated to whole seconds after authorisation.
+        /// </summary>
+        [TestMethod]
+        public async Task TestExpiryTimeTruncatedToWholeSeconds()
+        {
+            DateTime expiresWithMilliseconds = new(2026, 03, 12, 16, 15, 30, 163, DateTimeKind.Utc);
+            DateTime expectedTruncated = new(2026, 03, 12, 16, 15, 30, 0, DateTimeKind.Utc);
+
+            AuthenticationModel authResponse = new()
+            {
+                Type = "Bearer",
+                Token = "TestToken",
+                ExpiresIn = 900,
+                Info = new()
+                {
+                    ApplicationName = "Server Status",
+                    Scopes = ["Server Status API"],
+                    Issued = new(2026, 03, 12, 16, 00, 30, DateTimeKind.Utc),
+                    Expires = expiresWithMilliseconds
+                }
+            };
+
+            Mock<IAPIClient> mockAPIClient = new();
+            mockAPIClient.Setup(api => api.Authorise())
+                .ReturnsAsync((
+                    authResponse,
+                    (ResponseModel?)null));
+
+            APIService apiService = new(
+                _MockLogger.Object,
+                mockAPIClient.Object,
+                _MockClock.Object,
+                _RetryService);
+
+            await apiService.Authorise();
+
+            Assert.AreEqual(
+                expectedTruncated,
+                apiService.ExpiryTime,
+                "Expected ExpiryTime to be truncated to whole seconds.");
+        }
     }
 }
