@@ -115,5 +115,24 @@ namespace ServerStatus.PersistenceTests.Common.Services
 
             Assert.IsNull(result);
         }
+        /// <summary>
+        /// Checks whether the Read method returns null when an exception is thrown.
+        /// </summary>
+        [TestMethod]
+        public async Task TestReadException()
+        {
+            Mock<ILoggerService> _mockLogger = new();
+            Mock<IFileSystem> _mockFileSystem = new();
+            _mockFileSystem.Setup(fs => fs.FileExists(It.IsAny<string>())).Returns(true);
+            _mockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>())).ThrowsAsync(new IOException("Disk error"));
+
+            PidFileService _pidFileService = new(
+                _mockLogger.Object,
+                _mockFileSystem.Object);
+
+            var result = await _pidFileService.Read("Test Server");
+
+            Assert.IsNull(result);
+        }
     }
 }

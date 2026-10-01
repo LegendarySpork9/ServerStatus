@@ -12,6 +12,5 @@ namespace ServerStatusCommon.Models
         public string BaseURL { get; set; }
         public string Credentials { get; set; }
         public string AuthPayloadLocation { get; set; }
-        public int RefreshTime { get; set; }
     }
 }

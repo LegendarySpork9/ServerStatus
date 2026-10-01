@@ -1,6 +1,7 @@
 // Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Requests.Update;
 using ServerStatusCommon.Models.Responses;
@@ -43,7 +44,7 @@ namespace ServerStatusCommon.Services
         /// </summary>
         private async Task ReauthoriseIfExpired()
         {
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -65,8 +66,7 @@ namespace ServerStatusCommon.Services
                 (AuthenticationModel? auth, apiResponse) = await _RetryService.ExecuteAsync(
                     () => _APIClient.Authorise(),
                     result => result.Item1 != null || result.Item2 != null,
-                    null,
-                    "obtain Bearer token from API");
+                    null);
 
                 if (auth != null)
                 {
@@ -76,9 +76,10 @@ namespace ServerStatusCommon.Services
                         StandardValues.LoggerValues.Debug,
                         $"Bearer Token: {auth.Token}");
 
-                    ExpiryTime = DateTime.SpecifyKind(
+                    DateTime expiry = DateTime.SpecifyKind(
                         auth.Info.Expires,
                         DateTimeKind.Utc);
+                    ExpiryTime = expiry.AddTicks(-(expiry.Ticks % TimeSpan.TicksPerSecond));
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -114,7 +115,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching users from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -133,8 +134,7 @@ namespace ServerStatusCommon.Services
                 (PagedResponseModel<UserModel>? userInfo, bool success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetUsers(queryParameters),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch users from API");
+                    ReauthoriseIfExpired);
 
                 if (success && userInfo != null)
                 {
@@ -196,7 +196,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching user settings from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -206,8 +206,7 @@ namespace ServerStatusCommon.Services
                 (List<UserSettingModel> userSettings, bool success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetUserSettings(user.Id),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch user settings from API");
+                    ReauthoriseIfExpired);
 
                 if (success)
                 {
@@ -267,7 +266,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching components from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -279,8 +278,7 @@ namespace ServerStatusCommon.Services
                 (List<ComponentModel> componentModels, bool success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetComponents(),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch components from API");
+                    ReauthoriseIfExpired);
 
                 if (success)
                 {
@@ -335,7 +333,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching servers from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -357,8 +355,7 @@ namespace ServerStatusCommon.Services
                     (PagedResponseModel<ServerModel>? serverInfo, bool success) = await _RetryService.ExecuteAsync(
                         () => _APIClient.GetServers(queryParameters),
                         result => result.Item2,
-                        ReauthoriseIfExpired,
-                        "fetch servers from API");
+                        ReauthoriseIfExpired);
 
                     if (success && serverInfo != null && serverInfo.EntryCount > 0)
                     {
@@ -446,7 +443,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 "Fetching server events from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -463,8 +460,7 @@ namespace ServerStatusCommon.Services
                 (serverEvents, bool success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetServerEvents(queryParameters),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch server events from API");
+                    ReauthoriseIfExpired);
 
                 if (success)
                 {
@@ -550,7 +546,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating user setting, {userSettingId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -565,8 +561,7 @@ namespace ServerStatusCommon.Services
                         userSettingId,
                         userSetting),
                     result => result.Item1 != null,
-                    ReauthoriseIfExpired,
-                    $"update setting, {userSettingId}, in API");
+                    ReauthoriseIfExpired);
 
                 if (updatedSetting != null)
                 {
@@ -614,7 +609,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating user, {userId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -629,8 +624,7 @@ namespace ServerStatusCommon.Services
                         userId,
                         user),
                     result => result.Item1 != null,
-                    ReauthoriseIfExpired,
-                    $"update user, {userId}, in API");
+                    ReauthoriseIfExpired);
 
                 if (updatedUser != null)
                 {
@@ -679,7 +673,7 @@ namespace ServerStatusCommon.Services
         {
             _Logger.LogMessage(StandardValues.LoggerValues.Info, "Fetching alerts from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -702,8 +696,7 @@ namespace ServerStatusCommon.Services
                 (alerts, success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetAlerts(queryParameters),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    "fetch alerts from API");
+                    ReauthoriseIfExpired);
 
                 if (success)
                 {
@@ -796,7 +789,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Fetching alert, {alertId}, from API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -809,8 +802,7 @@ namespace ServerStatusCommon.Services
                 (alert, success) = await _RetryService.ExecuteAsync(
                     () => _APIClient.GetAlert(alertId),
                     result => result.Item2,
-                    ReauthoriseIfExpired,
-                    $"fetch alert, {alertId}, from API");
+                    ReauthoriseIfExpired);
 
                 if (success)
                 {
@@ -901,7 +893,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Updating alert, {alertId}, in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -916,8 +908,7 @@ namespace ServerStatusCommon.Services
                         alertId,
                         alert),
                     result => result.Item1 != null,
-                    ReauthoriseIfExpired,
-                    $"update alert, {alertId}, in API");
+                    ReauthoriseIfExpired);
 
                 if (updatedAlert != null)
                 {
@@ -998,7 +989,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Registering alert, {alert.Component} ({alert.ComponentStatus}), in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -1011,8 +1002,7 @@ namespace ServerStatusCommon.Services
                 (createdAlert, apiResponse) = await _RetryService.ExecuteAsync(
                     () => _APIClient.RegisterAlert(alert),
                     result => result.Item1 != null,
-                    ReauthoriseIfExpired,
-                    $"register alert, {alert.Component} ({alert.ComponentStatus}), in API");
+                    ReauthoriseIfExpired);
 
                 if (createdAlert != null)
                 {
@@ -1093,7 +1083,7 @@ namespace ServerStatusCommon.Services
                 StandardValues.LoggerValues.Info,
                 $"Registering event, {serverEvent.Component} ({serverEvent.Status}), in API");
 
-            if (ExpiryTime < _Clock.UtcNow)
+            if (ExpiryTime <= _Clock.UtcNow)
             {
                 await Authorise();
             }
@@ -1106,8 +1096,7 @@ namespace ServerStatusCommon.Services
                 (createdEvent, apiResponse) = await _RetryService.ExecuteAsync(
                     () => _APIClient.RegisterServerEvent(serverEvent),
                     result => result.Item1 != null,
-                    ReauthoriseIfExpired,
-                    $"register event, {serverEvent.Component} ({serverEvent.Status}), in API");
+                    ReauthoriseIfExpired);
 
                 if (createdEvent != null)
                 {

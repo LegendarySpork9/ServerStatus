@@ -2,6 +2,7 @@
 using ServerStatusAutomation.Services;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
@@ -42,9 +43,6 @@ namespace ServerStatusAutomation
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 $"API Auth Payload Location: {sharedSettings.AuthPayloadLocation}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Refresh Time: {sharedSettings.RefreshTime}");
 
             IClock _clock = new SystemClockProvider();
             IRestClientWrapper _restClient = new RestClientWrapper();

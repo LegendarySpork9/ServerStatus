@@ -108,6 +108,7 @@ else
                         Items="LogEntries"
                         Context="log"
                         ItemSize="24"
+                        OverscanCount="75"
                     >
                         <div class="log-entry log-@log.Level.ToLower()">
                             <span class="log-timestamp">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</span>
@@ -128,7 +129,7 @@ else
                     <div class="command-divider"></div>
                     <div class="command-row">
                         <select class="command-target"
-                                @bind="SelectedCommandTarget"
+                                id="commandTarget"
                                 disabled="@IsSendingCommand">
                             <option value="Server">Server</option>
                             <option value="Tool">Tool</option>
@@ -136,17 +137,15 @@ else
                         <span class="command-prompt">&gt;</span>
                         <input type="text"
                                class="command-input"
+                               id="commandInput"
                                placeholder="Enter command..."
-                               @bind="CommandText"
-                               @bind:event="oninput"
-                               @onkeydown="OnCommandKeyDown"
                                disabled="@IsSendingCommand" />
                     </div>
                 }
             </div>
 
             <div class="status-bar" style="@StyleConverter.GetTableDarkMode(User.DarkMode)">
-                <span>@LogEntries.Count log(s)</span>
+                <span @ref="LogCountRef">@LogEntries.Count log(s)</span>
 
                 @if (IsWebhookActive)
                 {

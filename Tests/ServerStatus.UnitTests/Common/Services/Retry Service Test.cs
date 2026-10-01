@@ -23,7 +23,6 @@ namespace ServerStatus.UnitTests.Common.Services
                 () => Task.FromResult(42),
                 result => result == 42,
                 null,
-                "test operation",
                 maxRetries: 3,
                 delaySeconds: 0);
 
@@ -51,7 +50,6 @@ namespace ServerStatus.UnitTests.Common.Services
                 },
                 result => result == 99,
                 null,
-                "test operation",
                 maxRetries: 4,
                 delaySeconds: 0);
 
@@ -76,17 +74,12 @@ namespace ServerStatus.UnitTests.Common.Services
                 () => Task.FromResult(0),
                 result => result == 99,
                 null,
-                "test operation",
                 maxRetries: 2,
                 delaySeconds: 0);
 
             Assert.AreEqual(
                 expected,
                 actual);
-
-            _MockLogger.Verify(
-                l => l.LogMessage("Info", It.Is<string>(s => s.Contains("Failed to test operation"))),
-                Times.Once);
         }
 
         /// <summary>
@@ -114,7 +107,6 @@ namespace ServerStatus.UnitTests.Common.Services
                 },
                 result => result == 1,
                 null,
-                "test operation",
                 maxRetries: 2,
                 delaySeconds: 0);
 
@@ -153,7 +145,6 @@ namespace ServerStatus.UnitTests.Common.Services
                     beforeRetryCount++;
                     return Task.CompletedTask;
                 },
-                "test operation",
                 maxRetries: 4,
                 delaySeconds: 0);
 

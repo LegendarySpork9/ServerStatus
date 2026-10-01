@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusSite.Functions;
 using ServerStatusSite.Models;
 using ServerStatusSite.Models.Requests;
@@ -19,16 +20,19 @@ namespace ServerStatusSite.Webhooks
     {
         private readonly ILoggerService _Logger;
         private readonly LogStreamService _LogStream;
+        private readonly BackupToolAPIService _BackupToolApi;
         private readonly BackupToolSettingsModel Settings;
 
         // Sets the class's global variables.
         public LogWebhookController(
             ILoggerService _logger,
             LogStreamService _logStream,
+            BackupToolAPIService _backupToolApi,
             BackupToolSettingsModel settings)
         {
             _Logger = _logger;
             _LogStream = _logStream;
+            _BackupToolApi = _backupToolApi;
             Settings = settings;
         }
 
@@ -73,13 +77,45 @@ namespace ServerStatusSite.Webhooks
                         return BadRequest();
                     }
 
+                    string? webhookId = Request.Headers["X-Webhook-Id"].FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(webhookId) && !_LogStream.IsWebhookActive(webhookId))
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Orphaned webhook detected: {webhookId}");
+
+                        _ = Task.Run(async () =>
+                        {
+                            await _BackupToolApi.UnregisterWebhook(
+                                payload.ServerName,
+                                webhookId);
+                        });
+
+                        return Ok();
+                    }
+
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
                         $"Server: {payload.ServerName}, Logs: {payload.Logs.Count}");
 
-                    await _LogStream.Publish(
+                    List<string> orphanedIds = await _LogStream.Publish(
                         payload.ServerName,
                         payload.Logs);
+
+                    foreach (string orphanedId in orphanedIds)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Cleaning up dead handler webhook: {orphanedId}");
+
+                        _ = Task.Run(async () =>
+                        {
+                            await _BackupToolApi.UnregisterWebhook(
+                                payload.ServerName,
+                                orphanedId);
+                        });
+                    }
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
@@ -87,7 +123,6 @@ namespace ServerStatusSite.Webhooks
 
                     return Ok();
                 }
-                
             }
 
             catch (Exception ex)

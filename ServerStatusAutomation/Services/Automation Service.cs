@@ -1,12 +1,11 @@
-﻿// Copyright © - 05/10/2025 - Toby Hunter
+// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Services;
-using System.Timers;
 using Timer = System.Timers.Timer;
 
 namespace ServerStatusAutomation.Services
@@ -19,8 +18,8 @@ namespace ServerStatusAutomation.Services
         private readonly APIService _APIService;
         private readonly SharedSettingsModel SharedSettings;
 
-        private Timer RefreshTimer;
-        private DateTime NextElapse;
+        private readonly Dictionary<int, Timer> _ServerTimers = [];
+        private readonly Dictionary<int, DateTime> _ServerNextElapse = [];
 
         // Sets the class's global variables.
         public AutomationService(
@@ -38,68 +37,114 @@ namespace ServerStatusAutomation.Services
         }
 
         /// <summary>
-        /// Configures the timer and API service logger.
+        /// Configures the API service logger.
         /// </summary>
         public void Setup()
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Configuring Automation Service");
-
-            RefreshTimer = new()
-            {
-                AutoReset = false
-            };
-            RefreshTimer.Elapsed += async (sender, e) => await TimerElapsed(sender, e);
-
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Timer Duration: {SharedSettings.RefreshTime} minutes");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Configured Automation Service");
         }
 
-        // Performs the first run and starts the timer.
+        /// <summary>
+        /// Performs the first run for each server and starts per-server timers.
+        /// </summary>
         public async Task Start()
         {
-            TimerFunction _timerFunction = new(_Clock);
+            List<ServerModel> servers = await _APIService.GetServers();
 
-            await Run();
+            foreach (ServerModel server in servers)
+            {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Starting timer for {server.Name} with interval {server.EventInterval} seconds");
 
-            DateTime currentTime = _Clock.UtcNow;
-            NextElapse = currentTime.AddMinutes(SharedSettings.RefreshTime)
-                .AddMilliseconds(-currentTime.Millisecond);
+                DateTime now = _Clock.UtcNow;
+                DateTime runStartTime = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
 
-            RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
-            RefreshTimer.Start();
+                await RunForServer(
+                    server,
+                    runStartTime);
+
+                TimerFunction _timerFunction = new(_Clock);
+
+                DateTime currentTime = _Clock.UtcNow;
+                DateTime nextElapse = currentTime.AddSeconds(server.EventInterval);
+                nextElapse = nextElapse.AddTicks(-(nextElapse.Ticks % TimeSpan.TicksPerSecond));
+
+                _ServerNextElapse[server.Id] = nextElapse;
+
+                Timer timer = new()
+                {
+                    AutoReset = false,
+                    Interval = _timerFunction.GetTimerInterval(nextElapse).TotalMilliseconds
+                };
+
+                int serverId = server.Id;
+                string serverName = server.Name;
+                int eventInterval = server.EventInterval;
+
+                timer.Elapsed += async (sender, e) => await ServerTimerElapsed(
+                    serverId,
+                    serverName,
+                    eventInterval);
+
+                _ServerTimers[server.Id] = timer;
+                timer.Start();
+            }
         }
 
-        // Performs a run then restarts the timer.
-        private async Task TimerElapsed(
-            object? sender,
-            ElapsedEventArgs e)
+        /// <summary>
+        /// Performs a run for a specific server then restarts its timer.
+        /// </summary>
+        private async Task ServerTimerElapsed(
+            int serverId,
+            string serverName,
+            int eventInterval)
         {
             TimerFunction _timerFunction = new(_Clock);
 
             try
             {
+                DateTime runStartTime = _ServerNextElapse[serverId];
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Timer Triggered for {serverName}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    "Timer Triggered");
+                    $"Token Expiry: {_APIService.ExpiryTime}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    "Token Expiry: {_APIService.ExpiryTime}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Current Time: {_Clock.UtcNow}");
+                    $"Current Time: {runStartTime}");
 
-                NextElapse = NextElapse.AddMinutes(SharedSettings.RefreshTime);
+                _ServerNextElapse[serverId] = _ServerNextElapse[serverId].AddSeconds(eventInterval);
 
-                await Run();
+                List<ServerModel> servers = await _APIService.GetServers();
+                ServerModel? server = servers.Find(c => c.Id == serverId);
 
-                RefreshTimer.Interval = _timerFunction.GetTimerInterval(NextElapse).TotalMilliseconds;
-                RefreshTimer.Start();
+                if (server != null)
+                {
+                    await RunForServer(
+                        server,
+                        runStartTime);
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Server {serverName} no longer found in API");
+                }
+
+                if (_ServerTimers.TryGetValue(serverId, out Timer? timer))
+                {
+                    timer.Interval = _timerFunction.GetTimerInterval(_ServerNextElapse[serverId]).TotalMilliseconds;
+                    timer.Start();
+                }
             }
 
             catch (Exception ex)
@@ -114,15 +159,16 @@ namespace ServerStatusAutomation.Services
         }
 
         /// <summary>
-        /// Runs the status checks.
+        /// Runs the status checks for a single server.
         /// </summary>
-        private async Task Run()
+        private async Task RunForServer(
+            ServerModel server,
+            DateTime runStartTime)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Running Automatic Status Checks");
+                $"Running Automatic Status Checks for {server.Name}");
 
-            List<ServerModel> servers = await _APIService.GetServers();
             List<string> components = await _APIService.GetComponents();
 
             Dictionary<string, List<EventModel>> componentStatuses = [];
@@ -134,106 +180,100 @@ namespace ServerStatusAutomation.Services
 
             PagedResponseModel<AlertModel>? alerts = await _APIService.GetAlerts(1);
 
-            foreach (ServerModel server in servers)
-            {
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Checking Status for {server.Name}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                $"Checking Status for {server.Name}");
 
-                DateTime now = _Clock.UtcNow;
-                DateTime refreshPeriod = now.AddMinutes(-server.EventInterval);
+            DateTime refreshPeriod = runStartTime.AddSeconds(-server.EventInterval);
+            DateTime refreshTime = refreshPeriod.AddTicks(-(refreshPeriod.Ticks % TimeSpan.TicksPerSecond));
+
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Refresh Period: {refreshPeriod} -> {runStartTime}");
+
+            DateTime? downtime = null;
+            int? duration = null;
+
+            if (server.Downtime != null)
+            {
+                TimeSpan downtimeTime = TimeSpan.Parse(server.Downtime.Time);
+                downtime = DateTime.SpecifyKind(
+                    runStartTime.Date.Add(downtimeTime),
+                    DateTimeKind.Utc);
+                duration = server.Downtime.Duration;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Refresh Period: {refreshPeriod} -> {now}");
+                    $"Downtime Period: {downtime} -> {downtime.Value.AddSeconds(duration.Value)}");
 
-                DateTime? downtime = null;
-                int? duration = null;
-
-                if (server.Downtime != null)
+                if (runStartTime >= downtime && runStartTime <= downtime.Value.AddSeconds(duration.Value))
                 {
-                    DateTime time = DateTime.SpecifyKind(
-                        DateTime.Parse(server.Downtime.Time),
-                        DateTimeKind.Utc);
-
-                    if (time < _Clock.UtcNow)
-                    {
-                        downtime = time.AddDays(1);
-                    }
-
-                    else
-                    {
-                        downtime = time;
-                    }
-
-                    duration = server.Downtime.Duration;
-
                     _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        $"Downtime Period: {downtime} -> {downtime.Value.AddMinutes(duration.Value)}");
+                        StandardValues.LoggerValues.Info,
+                        $"Skipping status checks for {server.Name} - server in downtime");
+
+                    return;
                 }
+            }
 
-                foreach (var (componentName, statuses) in componentStatuses)
-                {
-                    EventModel? status = statuses.Find(c => c.Server.Id == server.Id);
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Debug,
-                        $"Current {componentName} Status: {status?.Status ?? "No Status"}");
-
-                    if (status != null && (status.DateOccured < refreshPeriod || status.Status != "Online"))
-                    {
-                        if (status.Status != "Unknown" && (status.Status == "Online" || status.DateOccured < refreshPeriod))
-                        {
-                            status.Status = "Unknown";
-
-                            _Logger.LogMessage(
-                                StandardValues.LoggerValues.Debug,
-                                $"Updated {componentName} Status to Unknown");
-                        }
-
-                        if (downtime == null || (status.DateOccured < downtime || status.DateOccured > downtime.Value.AddMinutes(duration.Value)))
-                        {
-                            await AlertsHandler(
-                                alerts?.Entries ?? [],
-                                server,
-                                status.Component,
-                                status.Status);
-                        }
-
-                        if (status.DateOccured < refreshPeriod)
-                        {
-                            EventRequestModel newEvent = new()
-                            {
-                                Component = status.Component,
-                                Status = status.Status,
-                                ServerId = server.Id,
-                                Name = server.Name,
-                                HostName = server.HostName,
-                                Game = server.Game,
-                                GameVersion = server.GameVersion
-                            };
-
-                            (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
-
-                            if (createdEvent != null)
-                            {
-                                _Logger.LogMessage(
-                                    StandardValues.LoggerValues.Debug,
-                                    "Server Event Registered");
-                            }
-                        }
-                    }
-                }
+            foreach (var (componentName, statuses) in componentStatuses)
+            {
+                EventModel? status = statuses.Find(c => c.Server.Id == server.Id);
+                DateTime eventTime = status != null ? status.DateOccured.AddTicks(-(status.DateOccured.Ticks % TimeSpan.TicksPerSecond)) : DateTime.MinValue;
 
                 _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Checked Status for {server.Name}");
+                    StandardValues.LoggerValues.Debug,
+                    $"Current {componentName} Status: {status?.Status ?? "No Status"}");
+
+                if (status != null && (eventTime < refreshTime || status.Status != StandardValues.StatusValues.Online))
+                {
+                    if (status.Status != StandardValues.StatusValues.Unknown && (status.Status == StandardValues.StatusValues.Online || eventTime < refreshTime))
+                    {
+                        status.Status = StandardValues.StatusValues.Unknown;
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Debug,
+                            $"Updated {componentName} Status to Unknown");
+                    }
+
+                    if (downtime == null || (eventTime < downtime || eventTime > downtime.Value.AddSeconds(duration.Value)))
+                    {
+                        await AlertsHandler(
+                            alerts?.Entries ?? [],
+                            server,
+                            status.Component,
+                            status.Status);
+                    }
+
+                    if (eventTime < refreshTime)
+                    {
+                        EventRequestModel newEvent = new()
+                        {
+                            Component = status.Component,
+                            Status = status.Status,
+                            ServerId = server.Id,
+                            Name = server.Name,
+                            HostName = server.HostName,
+                            Game = server.Game,
+                            GameVersion = server.GameVersion,
+                            DateOccured = runStartTime
+                        };
+
+                        (EventModel? createdEvent, ResponseModel? apiResponse) = await _APIService.RegisterServerEvent(newEvent);
+
+                        if (createdEvent != null)
+                        {
+                            _Logger.LogMessage(
+                                StandardValues.LoggerValues.Debug,
+                                "Server Event Registered");
+                        }
+                    }
+                }
             }
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Ran Automatic Status Checks");
+                $"Checked Status for {server.Name}");
         }
 
         /// <summary>

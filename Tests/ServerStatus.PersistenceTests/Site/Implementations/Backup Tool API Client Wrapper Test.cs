@@ -376,5 +376,64 @@ namespace ServerStatus.PersistenceTests.Site.Implementations
 
             Assert.IsFalse(success);
         }
+
+        /// <summary>
+        /// Checks whether the GetLogs method normalises the server name in the URL.
+        /// </summary>
+        [TestMethod]
+        public async Task TestGetLogsNormalizesServerNameInUrl()
+        {
+            LogsResponseModel expected = new()
+            {
+                ServerName = "Title In Development",
+                Logs = [],
+                NextAfter = 0
+            };
+
+            string responseJson = JsonConvert.SerializeObject(expected);
+
+            Mock<IRestClientWrapper> _mockRestClient = new();
+            RestResponse response = new()
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = responseJson
+            };
+            _mockRestClient.Setup(rc => rc.ExecuteAsync(
+                    It.Is<string>(url => url.Contains("titleindevelopment.example.com")),
+                    It.IsAny<RestRequest>()))
+                .ReturnsAsync(response);
+
+            BackupToolSettingsModel settings = new()
+            {
+                APIURLTemplate = "https://{0}.example.com/api",
+                WebhookSecret = "test-secret",
+                SiteBaseURL = "https://site.example.com",
+                Servers = new()
+                {
+                    ["Title In Development"] = new()
+                    {
+                        ClientId = "test-client",
+                        ClientSecret = "test-secret"
+                    }
+                }
+            };
+
+            BackupToolAPIClientWrapper _wrapper = new(
+                _MockLogger.Object,
+                _mockRestClient.Object,
+                settings);
+
+            (LogsResponseModel? logs, bool success) = await _wrapper.GetLogs(
+                "Title In Development",
+                []);
+
+            Assert.IsTrue(success);
+
+            _mockRestClient.Verify(
+                rc => rc.ExecuteAsync(
+                    It.Is<string>(url => url.Contains("titleindevelopment.example.com")),
+                    It.IsAny<RestRequest>()),
+                Times.Once);
+        }
     }
 }
