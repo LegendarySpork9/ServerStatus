@@ -570,5 +570,75 @@ namespace ServerStatus.IntegrationTests.Automation.Services
                     a => a.Component == StandardValues.ComponentValues.PC && a.ComponentStatus == StandardValues.StatusValues.Offline && a.Reporter == "Automation")),
                 Times.Once);
         }
+
+        /// <summary>
+        /// Checks whether the Run method skips status checks during the server's downtime window.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunSkipsChecksDuringDowntime()
+        {
+            DateTime utcNow = new(2026, 09, 01, 2, 2, 0, DateTimeKind.Utc);
+            _MockClock.Setup(c => c.UtcNow).Returns(utcNow);
+
+            SharedSettingsModel sharedSettings = CreateSharedSettings();
+            ServerModel server = CreateTestServer();
+            server.Downtime = new()
+            {
+                Time = "02:00:00",
+                Duration = 300
+            };
+
+            PagedResponseModel<ServerModel> pagedServers = new()
+            {
+                Entries = [server],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 200,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedServers, true));
+            _mockAPIClient.Setup(c => c.GetComponents())
+                .ReturnsAsync((new List<ComponentModel>
+                {
+                    new() { Id = 1, Name = StandardValues.ComponentValues.PC }
+                }, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
+            _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AutomationService _automationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockHTTPClient.Object,
+                _apiService,
+                sharedSettings);
+
+            _automationService.Setup();
+            await _automationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterAlert(It.IsAny<AlertRequestModel>()),
+                Times.Never);
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.IsAny<EventRequestModel>()),
+                Times.Never);
+        }
     }
 }

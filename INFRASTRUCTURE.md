@@ -254,7 +254,7 @@ A console application that detects missed or outdated status events and raises a
 - Registers "Unknown" status if events are outdated or missing
 - Creates alerts for offline or unknown components
 - Skips duplicate alerts if an unresolved alert already exists
-- Respects scheduled downtime windows to avoid false positives
+- Skips all status checks for a server during its configured downtime window to avoid false positives
 - Sends Discord notifications to the server's configured webhook channel when new alerts are created
 
 ## Monitoring Pipeline

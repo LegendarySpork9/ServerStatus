@@ -205,6 +205,15 @@ namespace ServerStatusAutomation.Services
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Downtime Period: {downtime} -> {downtime.Value.AddSeconds(duration.Value)}");
+
+                if (runStartTime >= downtime && runStartTime <= downtime.Value.AddSeconds(duration.Value))
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Skipping status checks for {server.Name} - server in downtime");
+
+                    return;
+                }
             }
 
             foreach (var (componentName, statuses) in componentStatuses)
