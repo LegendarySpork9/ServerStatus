@@ -184,7 +184,7 @@ namespace ServerStatusAutomation.Services
                 StandardValues.LoggerValues.Info,
                 $"Checking Status for {server.Name}");
 
-            DateTime refreshPeriod = runStartTime.AddSeconds(-server.EventInterval);
+            DateTime refreshPeriod = runStartTime.AddSeconds(-(server.EventInterval + 10));
             DateTime refreshTime = refreshPeriod.AddTicks(-(refreshPeriod.Ticks % TimeSpan.TicksPerSecond));
 
             _Logger.LogMessage(

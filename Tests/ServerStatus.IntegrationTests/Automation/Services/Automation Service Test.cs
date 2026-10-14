@@ -130,7 +130,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
                 Id = 1,
                 Component = StandardValues.ComponentValues.PC,
                 Status = StandardValues.StatusValues.Online,
-                DateOccured = utcNow.AddSeconds(-10),
+                DateOccured = utcNow.AddSeconds(-20),
                 Server = CreateRelatedServer()
             };
 
@@ -610,6 +610,81 @@ namespace ServerStatus.IntegrationTests.Automation.Services
                 }, true));
             _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((new List<EventModel>(), true));
+            _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
+
+            RetryService _retryService = new(_MockLogger.Object);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AutomationService _automationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockHTTPClient.Object,
+                _apiService,
+                sharedSettings);
+
+            _automationService.Setup();
+            await _automationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterAlert(It.IsAny<AlertRequestModel>()),
+                Times.Never);
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.IsAny<EventRequestModel>()),
+                Times.Never);
+        }
+        /// <summary>
+        /// Checks whether the Run method does not flag an event that falls within the grace period.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunDoesNotFlagEventWithinGracePeriod()
+        {
+            DateTime utcNow = new(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc);
+            _MockClock.Setup(c => c.UtcNow).Returns(utcNow);
+
+            SharedSettingsModel sharedSettings = CreateSharedSettings();
+            ServerModel server = CreateTestServer();
+
+            PagedResponseModel<ServerModel> pagedServers = new()
+            {
+                Entries = [server],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 200,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            List<ComponentModel> components =
+            [
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
+            ];
+
+            EventModel eventWithinGrace = new()
+            {
+                Id = 1,
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-8),
+                Server = CreateRelatedServer()
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedServers, true));
+            _mockAPIClient.Setup(c => c.GetComponents())
+                .ReturnsAsync((components, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(([eventWithinGrace], true));
             _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
 

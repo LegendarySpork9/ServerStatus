@@ -226,7 +226,7 @@ A console application that runs on each monitored machine. It periodically check
 
 | Service | Responsibility |
 |---|---|
-| `ApplicationService` | Per-server monitoring orchestrator. Each configured server gets its own timer based on its `eventInterval` from the API. Checks existing events before registering to avoid duplicates. Sends the timer fire time as `DateOccured` to the API for accurate event timestamps. Skips all component checks for a server during its configured downtime window |
+| `ApplicationService` | Per-server monitoring orchestrator. Each configured server gets its own timer based on its `eventInterval` from the API. Checks existing events before registering to avoid duplicates — only skips registration when a recent Online event exists, allowing the Reporter to override Unknown or Offline events with its ground-truth status. Sends the timer fire time as `DateOccured` to the API for accurate event timestamps. Skips all component checks for a server during its configured downtime window |
 | `PidFileService` | Reads PID files to identify tracked server processes |
 
 #### Monitoring Components
@@ -250,7 +250,7 @@ A console application that detects missed or outdated status events and raises a
 #### Alert Logic
 
 - Each server has its own timer that fires at the server's configured event interval
-- Checks each server's event timestamps against the refresh period
+- Checks each server's event timestamps against the refresh period (with a 10-second grace period to absorb timer offsets between the Reporter and Automation after restarts)
 - Registers "Unknown" status if events are outdated or missing
 - Creates alerts for offline or unknown components
 - Skips duplicate alerts if an unresolved alert already exists

@@ -402,7 +402,7 @@ namespace ServerStatusReporter.Services
                     DateTime eventTime = existingEvent.DateOccured.AddTicks(-(existingEvent.DateOccured.Ticks % TimeSpan.TicksPerSecond));
                     DateTime refreshTime = refreshPeriod.AddTicks(-(refreshPeriod.Ticks % TimeSpan.TicksPerSecond));
 
-                    if (eventTime > refreshTime)
+                    if (eventTime > refreshTime && existingEvent.Status == StandardValues.StatusValues.Online)
                     {
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Debug,
