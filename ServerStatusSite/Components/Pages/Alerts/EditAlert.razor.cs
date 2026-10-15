@@ -1,6 +1,5 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using Microsoft.AspNetCore.Components;
-using ServerStatusCommon.Converters;
 using ServerStatusCommon.Values;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Abstractions;
@@ -144,7 +143,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
                     await _discordService.SendNotification(
                         server.WebhookURL,
                         server.RecipientId,
-                        $"{discordSetting.Value} has updated the alert for {Alert.Server} - {Alert.Component} to the status {Alert.AlertStatus}.");
+                        $"{discordSetting.Value} has updated the alert for {Alert.Server.Name} - {Alert.Component} to the status {Alert.AlertStatus}.");
                 }
             }
 

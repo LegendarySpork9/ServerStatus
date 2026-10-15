@@ -3,7 +3,6 @@ using Moq;
 using ServerStatusCommon.Abstractions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Responses;
-using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
 using ServerStatusCommon.Values;
 using ServerStatusReporter.Abstractions;

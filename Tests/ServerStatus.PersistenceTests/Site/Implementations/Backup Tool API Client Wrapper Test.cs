@@ -7,7 +7,6 @@ using ServerStatusSite.Implementations;
 using ServerStatusSite.Models;
 using ServerStatusSite.Models.Requests;
 using ServerStatusSite.Models.Responses;
-using ServerStatusSite.Models.Responses.Related;
 using System.Net;
 
 namespace ServerStatus.PersistenceTests.Site.Implementations

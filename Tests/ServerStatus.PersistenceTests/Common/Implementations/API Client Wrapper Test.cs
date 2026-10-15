@@ -8,7 +8,6 @@ using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Requests.Update;
 using ServerStatusCommon.Models.Responses;
-using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Values;
 using System.Net;
 
