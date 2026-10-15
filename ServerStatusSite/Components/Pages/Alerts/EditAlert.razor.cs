@@ -136,14 +136,14 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 SaveSuccess = true;
 
                 SettingModel discordSetting = User.Settings.First(s => s.Name == "DiscordName");
-                ServerModel? server = Servers?.FirstOrDefault(s => s.Id == Alert.Server.Id);
+                ServerModel? server = Servers?.FirstOrDefault(s => s.Id == alert.Server.Id);
 
                 if (server != null)
                 {
                     await _discordService.SendNotification(
                         server.WebhookURL,
                         server.RecipientId,
-                        $"{discordSetting.Value} has updated the alert for {Alert.Server.Name} - {Alert.Component} to the status {Alert.AlertStatus}.");
+                        $"{discordSetting.Value} has updated the alert for {alert.Server.Name} - {alert.Component} to the status {alert.AlertStatus}.");
                 }
             }
 
