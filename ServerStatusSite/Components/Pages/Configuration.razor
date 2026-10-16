@@ -1,0 +1,129 @@
+@page "/configuration"
+
+<PageTitle>Configuration</PageTitle>
+
+@if (!IsAuthorised)
+{
+    <div class="alert alert-danger">You are not authorised to access this page.</div>
+}
+
+else
+{
+    <div class="section">
+        <h5>Webhook Secret</h5>
+
+        <div class="webhook-row">
+            @if (!string.IsNullOrEmpty(GeneratedSecret))
+            {
+                <input type="text" style="@GetStyle("Input")" value="@GeneratedSecret" readonly />
+                <button class="btn btn-success btn-sm" @onclick="CopySecret">Copy</button>
+            }
+
+            else if (!string.IsNullOrEmpty(BackupToolSettings.WebhookSecret))
+            {
+                <span>********</span>
+            }
+
+            else
+            {
+                <span class="text-muted">Not set</span>
+            }
+
+            <button class="btn btn-primary btn-sm" @onclick="GenerateWebhookSecret">
+                @(string.IsNullOrEmpty(BackupToolSettings.WebhookSecret) ? "Generate" : "Regenerate")
+            </button>
+        </div>
+
+        @if (WebhookSuccess)
+        {
+            <label class="text-success">Webhook secret updated!</label>
+        }
+    </div>
+
+    <div class="section">
+        <h5>Backup Tool API Servers</h5>
+
+        @if (!IsAdding)
+        {
+            <button class="btn btn-primary" @onclick="ToggleAddServer">Add Server</button>
+        }
+
+        @if (BackupToolSettings.Servers.Any(s => !string.IsNullOrWhiteSpace(s.Key)))
+        {
+            <div class="@GetStyle("Data")">
+                <div class="table-responsive">
+                    <table class="table" style="@GetStyle("Table")">
+                        <thead>
+                            <tr>
+                                <th>Server Name</th>
+                                <th>Client ID</th>
+                                <th>Client Secret</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var server in BackupToolSettings.Servers.Where(s => !string.IsNullOrWhiteSpace(s.Key)))
+                            {
+                                <tr>
+                                    <td>@server.Key</td>
+
+                                    @if (EditingServerName == server.Key)
+                                    {
+                                        <td><input type="text" style="@GetStyle("Input")" @bind="EditClientId" /></td>
+                                        <td><input type="text" style="@GetStyle("Input")" @bind="EditClientSecret" /></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" @onclick="() => SaveEdit(server.Key)">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>********</td>
+                                        <td>********</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm" @onclick="() => EditServer(server.Key)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => RemoveServer(server.Key)">Remove</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No servers configured.</p>
+        }
+
+        @if (IsAdding)
+        {
+            <div class="@GetStyle("Form") form-grid">
+                <label>Server Name:</label>
+                <input type="text" style="@GetStyle("Input")" @bind="NewServerName" />
+
+                <label>Client ID:</label>
+                <input type="text" style="@GetStyle("Input")" @bind="NewClientId" />
+
+                <label>Client Secret:</label>
+                <input type="text" style="@GetStyle("Input")" @bind="NewClientSecret" />
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <label class="form-fail">@ErrorMessage</label>
+                }
+
+                @if (SaveSuccess)
+                {
+                    <label class="form-full-row text-success">Saved successfully!</label>
+                }
+
+                <div class="form-full-row">
+                    <button class="btn btn-primary" @onclick="AddServer">Add</button>
+                    <button class="btn btn-secondary" @onclick="ToggleAddServer">Cancel</button>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -13,5 +13,6 @@ namespace ServerStatusCommon.Models.Requests.Create
         public required string HostName { get; set; }
         public required string Game { get; set; }
         public required string GameVersion { get; set; }
+        public required DateTime DateOccured { get; set; }
     }
 }

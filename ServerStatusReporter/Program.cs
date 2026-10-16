@@ -1,6 +1,6 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Implementations;
 using ServerStatusCommon.Models;
@@ -40,9 +40,6 @@ namespace ServerStatusReporter
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 $"API Auth Payload Location: {sharedSettings.AuthPayloadLocation}");
-            _logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"Refresh Time: {sharedSettings.RefreshTime}");
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 $"Servers: {string.Join(',', AppSettingsModel.Servers)}");

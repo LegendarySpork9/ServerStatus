@@ -1,7 +1,7 @@
 ﻿// Copyright © - 05/10/2025 - Toby Hunter
 using Microsoft.AspNetCore.Components;
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Responses;

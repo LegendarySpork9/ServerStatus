@@ -167,5 +167,30 @@ namespace ServerStatus.IntegrationTests.Site.Services
 
             Assert.IsTrue(invoked);
         }
+        /// <summary>
+        /// Checks whether the Unsubscribe method handles an unknown server gracefully.
+        /// </summary>
+        [TestMethod]
+        public void TestUnsubscribe_UnknownServer_DoesNotThrow()
+        {
+            LogStreamService service = new();
+
+            service.Unsubscribe(
+                "UnknownServer",
+                _ => Task.CompletedTask);
+        }
+
+        /// <summary>
+        /// Checks whether the Publish method handles a server with no subscribers gracefully.
+        /// </summary>
+        [TestMethod]
+        public async Task TestPublish_NoSubscribers_DoesNotThrow()
+        {
+            LogStreamService service = new();
+
+            await service.Publish(
+                "UnknownServer",
+                [new() { Id = 1, Timestamp = DateTime.UtcNow, Level = "Info", Type = "Tool", Message = "Test" }]);
+        }
     }
 }

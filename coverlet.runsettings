@@ -9,7 +9,10 @@
             [ServerStatusSite]ServerStatusSite.Program,
             [ServerStatusReporter]ServerStatusReporter.Program,
             [ServerStatusAutomation]ServerStatusAutomation.Program,
-            [*]*.Models.*
+            [*]*.Models.*,
+            [ServerStatusCommon]ServerStatusCommon.Values.*,
+            [ServerStatusCommon]ServerStatusCommon.Services.LoggerService,
+            [ServerStatusCommon]ServerStatusCommon.Implementations.LoggerServiceWrapper
           </Exclude>
           <ExcludeByAttribute>
             GeneratedCodeAttribute,

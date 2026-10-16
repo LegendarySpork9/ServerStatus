@@ -60,8 +60,7 @@ namespace ServerStatus.PersistenceTests.Common.Functions
                 RecipientId = 123456789,
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",
-                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json"
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
@@ -85,8 +84,7 @@ namespace ServerStatus.PersistenceTests.Common.Functions
             {
                 BaseURL = "https://localhost/api",
                 Credentials = "Basic TestCreds",
-                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "C:\\Server Status Site\\Payload\\Authorise.json"
             };
 
             SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
@@ -98,6 +96,41 @@ namespace ServerStatus.PersistenceTests.Common.Functions
                 @"Mocks\Configs\ReporterTest.config")));
 
             result.Should().BeEquivalentTo(expectedSharedSettings);
+        }
+        /// <summary>
+        /// Checks the LoadSettingsFromConfig method handles an invalid value without throwing.
+        /// </summary>
+        [TestMethod]
+        public void TestLoadSettingsFromConfigInvalidValue()
+        {
+            SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
+                Path.GetFullPath(Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "..",
+                    "..",
+                    "..")),
+                @"Mocks\Configs\InvalidTest.config")));
+
+            Assert.AreEqual(
+                "https://localhost/api",
+                result.BaseURL);
+        }
+
+        /// <summary>
+        /// Checks the LoadSettingsFromConfig method ignores properties not present in the config.
+        /// </summary>
+        [TestMethod]
+        public void TestLoadSettingsFromConfigMissingProperties()
+        {
+            SharedSettingsModel result = SharedSettingsLoader.LoadSettingsFromConfig(SharedSettingsLoader.LoadConfig(Path.Combine(
+                Path.GetFullPath(Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "..",
+                    "..",
+                    "..")),
+                @"Mocks\Configs\Test.config")));
+
+            Assert.IsNull(result.BaseURL);
         }
     }
 }

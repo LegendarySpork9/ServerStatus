@@ -71,7 +71,7 @@ else
                 }
 
                 <div class="form-full-row">
-                    <button class="btn btn-primary" disabled="@IsLoading" @onclick="RegisterClick">
+                    <button class="btn btn-primary" disabled="@(IsLoading || RegisterSuccess)" @onclick="RegisterClick">
                         @if (IsLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
