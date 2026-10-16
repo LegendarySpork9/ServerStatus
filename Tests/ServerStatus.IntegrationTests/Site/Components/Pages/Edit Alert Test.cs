@@ -61,7 +61,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
 
         private void RegisterServices()
         {
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,

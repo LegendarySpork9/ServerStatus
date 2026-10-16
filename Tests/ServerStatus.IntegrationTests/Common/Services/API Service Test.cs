@@ -22,7 +22,10 @@ namespace ServerStatus.IntegrationTests.Common.Services
         // Sets the class's global variables.
         public APIServiceTest()
         {
-            _RetryService = new RetryService(_MockLogger.Object);
+            _RetryService = new RetryService(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
         }
 
         /// <summary>
@@ -1325,13 +1328,11 @@ namespace ServerStatus.IntegrationTests.Common.Services
             _mockAPIClient.Setup(api => api.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ThrowsAsync(new Exception("Network error"));
 
-            RetryService fastRetry = new(_MockLogger.Object);
-
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
                 _MockClock.Object,
-                fastRetry)
+                _RetryService)
             {
                 ExpiryTime = Expires
             };

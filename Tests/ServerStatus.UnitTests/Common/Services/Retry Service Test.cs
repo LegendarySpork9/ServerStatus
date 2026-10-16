@@ -16,15 +16,16 @@ namespace ServerStatus.UnitTests.Common.Services
         [TestMethod]
         public async Task TestExecuteAsyncSuccessFirstAttempt()
         {
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 3);
 
             int expected = 42;
             int actual = await _retryService.ExecuteAsync(
                 () => Task.FromResult(42),
                 result => result == 42,
-                null,
-                maxRetries: 3,
-                delaySeconds: 0);
+                null);
 
             Assert.AreEqual(
                 expected,
@@ -37,7 +38,10 @@ namespace ServerStatus.UnitTests.Common.Services
         [TestMethod]
         public async Task TestExecuteAsyncSuccessAfterRetry()
         {
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
 
             int callCount = 0;
 
@@ -49,9 +53,7 @@ namespace ServerStatus.UnitTests.Common.Services
                     return Task.FromResult(callCount >= 3 ? 99 : 0);
                 },
                 result => result == 99,
-                null,
-                maxRetries: 4,
-                delaySeconds: 0);
+                null);
 
             Assert.AreEqual(
                 expected,
@@ -67,15 +69,16 @@ namespace ServerStatus.UnitTests.Common.Services
         [TestMethod]
         public async Task TestExecuteAsyncAllRetriesFail()
         {
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 2);
 
             int expected = 0;
             int actual = await _retryService.ExecuteAsync(
                 () => Task.FromResult(0),
                 result => result == 99,
-                null,
-                maxRetries: 2,
-                delaySeconds: 0);
+                null);
 
             Assert.AreEqual(
                 expected,
@@ -88,7 +91,10 @@ namespace ServerStatus.UnitTests.Common.Services
         [TestMethod]
         public async Task TestExecuteAsyncExceptionHandling()
         {
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 2);
 
             int callCount = 0;
 
@@ -106,9 +112,7 @@ namespace ServerStatus.UnitTests.Common.Services
                     return Task.FromResult(1);
                 },
                 result => result == 1,
-                null,
-                maxRetries: 2,
-                delaySeconds: 0);
+                null);
 
             Assert.AreEqual(
                 expected,
@@ -128,7 +132,10 @@ namespace ServerStatus.UnitTests.Common.Services
         [TestMethod]
         public async Task TestExecuteAsyncCallsOnBeforeRetry()
         {
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
 
             int beforeRetryCount = 0;
             int callCount = 0;
@@ -144,9 +151,7 @@ namespace ServerStatus.UnitTests.Common.Services
                 {
                     beforeRetryCount++;
                     return Task.CompletedTask;
-                },
-                maxRetries: 4,
-                delaySeconds: 0);
+                });
 
             Assert.AreEqual(
                 2,

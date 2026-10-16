@@ -7,11 +7,24 @@ namespace ServerStatusCommon.Services
     public class RetryService
     {
         private readonly ILoggerService _Logger;
+        private readonly int _DelaySeconds = 10;
+        private readonly int _MaxRetries = 4;
 
         // Sets the class's global variables.
         public RetryService(ILoggerService _logger)
         {
             _Logger = _logger;
+        }
+
+        // Set's the class's global variables.
+        internal RetryService(
+            ILoggerService _logger,
+            int delaySeconds,
+            int maxRetries)
+        {
+            _Logger = _logger;
+            _DelaySeconds = delaySeconds;
+            _MaxRetries = maxRetries;
         }
 
         /// <summary>
@@ -20,26 +33,24 @@ namespace ServerStatusCommon.Services
         public async Task<T> ExecuteAsync<T>(
             Func<Task<T>> action,
             Func<T, bool> isSuccess,
-            Func<Task>? onBeforeRetry,
-            int maxRetries = 4,
-            int delaySeconds = 10)
+            Func<Task>? onBeforeRetry)
         {
             T result = default!;
 
-            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            for (int attempt = 0; attempt <= _MaxRetries; attempt++)
             {
                 if (attempt > 0)
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Warning,
-                        $"Retry {attempt} of {maxRetries}");
+                        $"Retry {attempt} of {_MaxRetries}");
 
                     if (onBeforeRetry != null)
                     {
                         await onBeforeRetry();
                     }
 
-                    await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+                    await Task.Delay(TimeSpan.FromSeconds(_DelaySeconds));
                 }
 
                 try

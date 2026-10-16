@@ -106,7 +106,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedServers, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -218,7 +221,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedServers, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,

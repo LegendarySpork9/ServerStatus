@@ -93,7 +93,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             SharedSettingsModel sharedSettings = new();
 
             Mock<IAPIClient> _mockAPIClient = new();
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -148,7 +151,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -215,7 +221,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -277,7 +286,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -340,7 +352,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -400,7 +415,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -460,7 +478,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((new List<EventModel>(), true));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -532,7 +553,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((new List<EventModel> { recentEvent }, true));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -610,7 +634,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -685,7 +712,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -748,7 +778,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((new List<EventModel>(), true));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -822,7 +855,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -898,7 +934,10 @@ namespace ServerStatus.IntegrationTests.Reporter.Services
             _mockAPIClient.Setup(c => c.RegisterServerEvent(It.IsAny<ServerStatusCommon.Models.Requests.Create.EventRequestModel>()))
                 .ReturnsAsync((createdEvent, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,

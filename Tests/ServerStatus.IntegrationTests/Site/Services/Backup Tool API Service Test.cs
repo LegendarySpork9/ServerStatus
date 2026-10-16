@@ -17,7 +17,10 @@ namespace ServerStatus.IntegrationTests.Site.Services
 
         public BackupToolAPIServiceTest()
         {
-            _RetryService = new RetryService(_MockLogger.Object);
+            _RetryService = new RetryService(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
         }
 
         /// <summary>

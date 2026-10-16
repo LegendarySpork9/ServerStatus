@@ -32,7 +32,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
 
             _MockClock.Setup(c => c.UtcNow).Returns(new DateTime(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,

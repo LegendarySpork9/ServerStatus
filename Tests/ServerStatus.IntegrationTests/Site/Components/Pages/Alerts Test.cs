@@ -123,7 +123,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -181,7 +184,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((emptyAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -237,7 +243,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((emptyAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -314,7 +323,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -405,7 +417,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((emptyAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,
@@ -499,7 +514,10 @@ namespace ServerStatus.IntegrationTests.Site.Components.Pages
             _MockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((pagedAlerts, true));
 
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService apiService = new(
                 _MockLogger.Object,
                 _MockAPIClient.Object,

@@ -43,7 +43,10 @@ namespace ServerStatus.IntegrationTests.Site.Webhooks
             string body,
             string? signature)
         {
-            RetryService retryService = new(_MockLogger.Object);
+            RetryService retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             BackupToolAPIService backupToolApi = new(
                 logger,
                 _MockBackupToolClient.Object,
