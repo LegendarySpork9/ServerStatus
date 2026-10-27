@@ -320,8 +320,9 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<ServerModel> actual = await _apiService.GetServers();
+            (List<ServerModel> actual, bool success) = await _apiService.GetServers();
 
+            Assert.IsTrue(success);
             Assert.AreEqual(
                 expected.Entries[0].Id,
                 actual[0].Id);
@@ -1253,8 +1254,9 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<ServerModel> actual = await _apiService.GetServers();
+            (List<ServerModel> actual, bool success) = await _apiService.GetServers();
 
+            Assert.IsFalse(success);
             Assert.AreEqual(
                 0,
                 actual.Count);
@@ -1279,8 +1281,9 @@ namespace ServerStatus.IntegrationTests.Common.Services
                 ExpiryTime = Expires
             };
 
-            List<ServerModel> actual = await _apiService.GetServers();
+            (List<ServerModel> actual, bool success) = await _apiService.GetServers();
 
+            Assert.IsFalse(success);
             Assert.AreEqual(
                 0,
                 actual.Count);

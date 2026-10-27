@@ -52,7 +52,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
 
             IsLoading = true;
 
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
             ComponentNames = await APIService.GetComponents();
 
             if (Servers != null)

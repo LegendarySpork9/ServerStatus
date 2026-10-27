@@ -60,7 +60,7 @@ namespace ServerStatusSite.Components.Pages
                 StandardValues.LoggerValues.Debug,
                 $"Timer Duration: {SiteSettings.RefreshTime} minutes");
 
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
             Components = await APIService.GetComponents();
 
             foreach (string component in Components)
@@ -93,7 +93,7 @@ namespace ServerStatusSite.Components.Pages
             try
             {
                 NextElapse = NextElapse.AddMinutes(SiteSettings.RefreshTime);
-                Servers = await APIService.GetServers();
+                (Servers, _) = await APIService.GetServers();
 
                 await InvokeAsync(StateHasChanged);
 

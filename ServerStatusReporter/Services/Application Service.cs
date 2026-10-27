@@ -60,7 +60,7 @@ namespace ServerStatusReporter.Services
         /// </summary>
         public async Task Start()
         {
-            List<ServerModel> servers = await _APIService.GetServers();
+            (List<ServerModel> servers, bool fetchSuccess) = await _APIService.GetServers();
 
             for (int i = 0; i < AppSettingsModel.Servers.Length; i++)
             {
@@ -141,7 +141,7 @@ namespace ServerStatusReporter.Services
 
                 _ServerNextElapse[serverId] = _ServerNextElapse[serverId].AddSeconds(eventInterval);
 
-                List<ServerModel> servers = await _APIService.GetServers();
+                (List<ServerModel> servers, bool fetchSuccess) = await _APIService.GetServers();
                 ServerModel? server = servers.Find(c => c.Id == serverId);
 
                 if (server != null)
@@ -151,11 +151,18 @@ namespace ServerStatusReporter.Services
                         runStartTime);
                 }
 
-                else
+                else if (fetchSuccess)
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         $"Server {serverName} no longer found in API");
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        $"Failed to fetch servers from API, skipping run for {serverName}");
                 }
 
                 if (_ServerTimers.TryGetValue(serverId, out Timer? timer))

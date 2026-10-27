@@ -90,7 +90,7 @@ namespace ServerStatusSite.Components.Pages
 
             IsLoading = true;
 
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
 
             if (Servers != null)
             {

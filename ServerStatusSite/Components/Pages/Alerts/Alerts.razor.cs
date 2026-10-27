@@ -65,7 +65,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
                 StandardValues.LoggerValues.Debug,
                 $"Timer Duration: {SiteSettings.RefreshTime} minutes");
 
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
 
             if (Servers != null)
             {

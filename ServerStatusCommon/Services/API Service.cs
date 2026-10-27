@@ -326,7 +326,7 @@ namespace ServerStatusCommon.Services
         /// <summary>
         /// Gets a list of active servers.
         /// </summary>
-        public async Task<List<ServerModel>> GetServers()
+        public async Task<(List<ServerModel> Servers, bool Success)> GetServers()
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -338,6 +338,7 @@ namespace ServerStatusCommon.Services
             }
 
             List<ServerModel> servers = [];
+            bool fetchSuccess = true;
             bool nextPage = true;
             int pageNumber = 1;
 
@@ -374,6 +375,7 @@ namespace ServerStatusCommon.Services
                     else
                     {
                         nextPage = false;
+                        fetchSuccess = false;
 
                         _Logger.LogMessage(
                             StandardValues.LoggerValues.Info,
@@ -419,6 +421,8 @@ namespace ServerStatusCommon.Services
 
             catch (Exception ex)
             {
+                fetchSuccess = false;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
                     ex.Message);
@@ -430,7 +434,9 @@ namespace ServerStatusCommon.Services
                     "Failed to fetch servers from API");
             }
 
-            return servers;
+            return (
+                servers,
+                fetchSuccess);
         }
 
         /// <summary>

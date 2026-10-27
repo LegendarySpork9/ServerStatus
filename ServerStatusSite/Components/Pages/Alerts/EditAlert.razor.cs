@@ -66,7 +66,7 @@ namespace ServerStatusSite.Components.Pages.Alerts
             }
 
             Alert = await APIService.GetAlert(AlertId);
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
 
             if (Alert != null)
             {
