@@ -33,7 +33,7 @@ namespace ServerStatusCommon.Functions
                     {
                         KeyValuePair<string, object> queryParameter = queryParameters[x];
 
-                        query += $"{queryParameter.Key}={queryParameter.Value}";
+                        query += $"{queryParameter.Key}={Uri.EscapeDataString(queryParameter.Value.ToString())}";
 
                         if (x != (queryParameters.Count - 1))
                         {
@@ -46,7 +46,7 @@ namespace ServerStatusCommon.Functions
                 {
                     foreach (KeyValuePair<string, object> queryParameter in queryParameters)
                     {
-                        query += $"&{queryParameter.Key}={queryParameter.Value}";
+                        query += $"&{queryParameter.Key}={Uri.EscapeDataString(queryParameter.Value.ToString())}";
                     }
                 }
             }

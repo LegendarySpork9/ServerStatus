@@ -127,7 +127,7 @@ The common library provides shared abstractions, services, models, and utilities
 |---|---|
 | `SharedSettingsLoader` | Loads App.config files and maps appSettings to `SharedSettingsModel` via reflection |
 | `TimerFunction` | Calculates timer intervals from current time to a target elapse time |
-| `URLBuilderFunction` | Builds API URLs from a base URL, endpoint, entity ID, and query parameters. Used by both `APIClientWrapper` and `BackupToolAPIClientWrapper` |
+| `URLBuilderFunction` | Builds API URLs from a base URL, endpoint, entity ID, and query parameters. Query parameter values are URL-encoded with `Uri.EscapeDataString`. Used by both `APIClientWrapper` and `BackupToolAPIClientWrapper` |
 
 #### Shared Converters
 
@@ -290,7 +290,7 @@ A console application that detects missed or outdated status events and raises a
 ### Site Authentication
 
 - Username and password login with server-side username filtering
-- Passwords hashed with **SHA512** before comparison
+- Passwords hashed with **SHA512** before comparison and before debug logging
 - Session managed via Blazor's `ProtectedSessionStorage` (encrypted browser session)
 - IP address logged for all requests (supports Cloudflare CF-Connecting-IP and X-Forwarded-For headers)
 
