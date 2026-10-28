@@ -21,4 +21,9 @@
     <PackageReference Include="RestSharp" Version="112.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ServerStatus.IntegrationTests" />
+    <InternalsVisibleTo Include="ServerStatus.UnitTests" />
+  </ItemGroup>
+
 </Project>

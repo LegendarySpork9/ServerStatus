@@ -23,7 +23,7 @@ namespace ServerStatusCommon.Functions
 
             if (interval < TimeSpan.Zero)
             {
-                interval = TimeSpan.Zero;
+                interval = TimeSpan.FromMilliseconds(1);
             }
 
             return interval;

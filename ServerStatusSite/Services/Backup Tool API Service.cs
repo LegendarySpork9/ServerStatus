@@ -1,7 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using Newtonsoft.Json;
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Services;
 using ServerStatusSite.Abstractions;
 using ServerStatusSite.Models.Requests;
@@ -62,8 +62,7 @@ namespace ServerStatusSite.Services
                         serverName,
                         queryParameters),
                     result => result.Item2,
-                    null,
-                    $"fetch logs from Backup Tool API for {serverName}");
+                    null);
 
                 if (success && logs != null)
                 {
@@ -141,8 +140,7 @@ namespace ServerStatusSite.Services
                 (archives, bool success) = await _RetryService.ExecuteAsync(
                     () => _BackupToolAPIClient.GetLogArchives(serverName),
                     result => result.Item2,
-                    null,
-                    $"fetch log archives from Backup Tool API for {serverName}");
+                    null);
 
                 if (success && archives != null)
                 {
@@ -215,8 +213,7 @@ namespace ServerStatusSite.Services
                         serverName,
                         fileName),
                     result => result.Item2,
-                    null,
-                    $"fetch archived logs from Backup Tool API for {serverName} ({fileName})");
+                    null);
 
                 if (success && archivedLogs != null)
                 {
@@ -294,8 +291,7 @@ namespace ServerStatusSite.Services
                         serverName,
                         body),
                     result => result.Item2,
-                    null,
-                    $"register webhook in Backup Tool API for {serverName}");
+                    null);
 
                 if (success && registration != null)
                 {
@@ -354,8 +350,7 @@ namespace ServerStatusSite.Services
                         serverName,
                         webhookId),
                     result => result.Item1,
-                    null,
-                    $"unregister webhook, {webhookId}, from Backup Tool API for {serverName}");
+                    null);
 
                 if (success)
                 {
@@ -408,8 +403,7 @@ namespace ServerStatusSite.Services
                         serverName,
                         command),
                     result => result.Item1,
-                    null,
-                    $"send command to Backup Tool API for {serverName}");
+                    null);
 
                 if (success)
                 {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using RestSharp;
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Functions;
 using ServerStatusCommon.Models;
 using ServerStatusCommon.Models.Requests.Create;
@@ -993,7 +993,7 @@ namespace ServerStatusCommon.Implementations
                 };
                 request.AddHeader(
                     "Authorization",
-                    SharedSettings.Credentials);
+                    $"Bearer {BearerToken}");
                 request.AddHeader(
                     "Accept",
                     "application/json");
@@ -1090,7 +1090,7 @@ namespace ServerStatusCommon.Implementations
                 };
                 request.AddHeader(
                     "Authorization",
-                    SharedSettings.Credentials);
+                    $"Bearer {BearerToken}");
                 request.AddHeader(
                     "Accept",
                     "application/json");

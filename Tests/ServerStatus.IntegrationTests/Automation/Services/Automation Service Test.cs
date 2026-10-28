@@ -7,6 +7,7 @@ using ServerStatusCommon.Models.Requests.Create;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
+using ServerStatusCommon.Values;
 
 namespace ServerStatus.IntegrationTests.Automation.Services
 {
@@ -63,8 +64,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
                 SendAlerts = false,
                 BaseURL = "https://api.example.com",
                 Credentials = "Basic dGVzdDp0ZXN0",
-                AuthPayloadLocation = "payload.json",
-                RefreshTime = 5
+                AuthPayloadLocation = "payload.json"
             };
         }
 
@@ -77,7 +77,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             SharedSettingsModel sharedSettings = CreateSharedSettings();
 
             Mock<IAPIClient> _mockAPIClient = new();
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -122,23 +125,23 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel outdatedEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = utcNow.AddMinutes(-10),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-20),
                 Server = CreateRelatedServer()
             };
 
             EventModel createdEvent = new()
             {
                 Id = 2,
-                Component = "PC",
-                Status = "Unknown",
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Unknown,
                 DateOccured = utcNow,
                 Server = CreateRelatedServer()
             };
@@ -156,8 +159,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Unknown",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Unknown,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -170,7 +173,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             _mockAPIClient.Setup(c => c.RegisterAlert(It.IsAny<AlertRequestModel>()))
                 .ReturnsAsync((createdAlert, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -192,7 +198,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterServerEvent(It.Is<EventRequestModel>(
-                    e => e.Component == "PC" && e.Status == "Unknown")),
+                    e => e.Component == StandardValues.ComponentValues.PC && e.Status == StandardValues.StatusValues.Unknown)),
                 Times.Once);
         }
 
@@ -220,15 +226,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel recentEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Online",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -244,7 +250,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -296,15 +305,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -322,8 +331,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -343,7 +352,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             _mockAPIClient.Setup(c => c.RegisterAlert(It.IsAny<AlertRequestModel>()))
                 .ReturnsAsync((createdAlert, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -365,7 +377,7 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterAlert(It.Is<AlertRequestModel>(
-                    a => a.Component == "PC" && a.ComponentStatus == "Offline" && a.Reporter == "Automation")),
+                    a => a.Component == StandardValues.ComponentValues.PC && a.ComponentStatus == StandardValues.StatusValues.Offline && a.Reporter == "Automation")),
                 Times.Once);
         }
 
@@ -393,15 +405,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -409,10 +421,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
-                AlertDate = utcNow.AddMinutes(-10),
+                AlertDate = utcNow.AddSeconds(-10),
                 Server = CreateRelatedServer()
             };
 
@@ -438,7 +450,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
                 .ReturnsAsync((alerts, true));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -487,15 +502,15 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             List<ComponentModel> components =
             [
-                new() { Id = 1, Name = "PC" }
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
             ];
 
             EventModel offlineEvent = new()
             {
                 Id = 1,
-                Component = "PC",
-                Status = "Offline",
-                DateOccured = utcNow.AddMinutes(-2),
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Offline,
+                DateOccured = utcNow.AddSeconds(-2),
                 Server = CreateRelatedServer()
             };
 
@@ -503,10 +518,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 1,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Resolved",
-                AlertDate = utcNow.AddMinutes(-30),
+                AlertDate = utcNow.AddSeconds(-30),
                 Server = CreateRelatedServer()
             };
 
@@ -524,8 +539,8 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             {
                 Id = 2,
                 Reporter = "Automation",
-                Component = "PC",
-                ComponentStatus = "Offline",
+                Component = StandardValues.ComponentValues.PC,
+                ComponentStatus = StandardValues.StatusValues.Offline,
                 AlertStatus = "Reported",
                 AlertDate = utcNow,
                 Server = CreateRelatedServer()
@@ -545,7 +560,10 @@ namespace ServerStatus.IntegrationTests.Automation.Services
             _mockAPIClient.Setup(c => c.RegisterAlert(It.IsAny<AlertRequestModel>()))
                 .ReturnsAsync((createdAlert, (ResponseModel?)null));
 
-            RetryService _retryService = new(_MockLogger.Object);
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
             APIService _apiService = new(
                 _MockLogger.Object,
                 _mockAPIClient.Object,
@@ -567,8 +585,159 @@ namespace ServerStatus.IntegrationTests.Automation.Services
 
             _mockAPIClient.Verify(
                 c => c.RegisterAlert(It.Is<AlertRequestModel>(
-                    a => a.Component == "PC" && a.ComponentStatus == "Offline" && a.Reporter == "Automation")),
+                    a => a.Component == StandardValues.ComponentValues.PC && a.ComponentStatus == StandardValues.StatusValues.Offline && a.Reporter == "Automation")),
                 Times.Once);
+        }
+
+        /// <summary>
+        /// Checks whether the Run method skips status checks during the server's downtime window.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunSkipsChecksDuringDowntime()
+        {
+            DateTime utcNow = new(2026, 09, 01, 2, 2, 0, DateTimeKind.Utc);
+            _MockClock.Setup(c => c.UtcNow).Returns(utcNow);
+
+            SharedSettingsModel sharedSettings = CreateSharedSettings();
+            ServerModel server = CreateTestServer();
+            server.Downtime = new()
+            {
+                Time = "02:00:00",
+                Duration = 300
+            };
+
+            PagedResponseModel<ServerModel> pagedServers = new()
+            {
+                Entries = [server],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 200,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedServers, true));
+            _mockAPIClient.Setup(c => c.GetComponents())
+                .ReturnsAsync((new List<ComponentModel>
+                {
+                    new() { Id = 1, Name = StandardValues.ComponentValues.PC }
+                }, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((new List<EventModel>(), true));
+            _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
+
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AutomationService _automationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockHTTPClient.Object,
+                _apiService,
+                sharedSettings);
+
+            _automationService.Setup();
+            await _automationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterAlert(It.IsAny<AlertRequestModel>()),
+                Times.Never);
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.IsAny<EventRequestModel>()),
+                Times.Never);
+        }
+        /// <summary>
+        /// Checks whether the Run method does not flag an event that falls within the grace period.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunDoesNotFlagEventWithinGracePeriod()
+        {
+            DateTime utcNow = new(2026, 09, 01, 12, 0, 0, DateTimeKind.Utc);
+            _MockClock.Setup(c => c.UtcNow).Returns(utcNow);
+
+            SharedSettingsModel sharedSettings = CreateSharedSettings();
+            ServerModel server = CreateTestServer();
+
+            PagedResponseModel<ServerModel> pagedServers = new()
+            {
+                Entries = [server],
+                EntryCount = 1,
+                PageNumber = 1,
+                PageSize = 200,
+                TotalPageCount = 1,
+                TotalCount = 1
+            };
+
+            List<ComponentModel> components =
+            [
+                new() { Id = 1, Name = StandardValues.ComponentValues.PC }
+            ];
+
+            EventModel eventWithinGrace = new()
+            {
+                Id = 1,
+                Component = StandardValues.ComponentValues.PC,
+                Status = StandardValues.StatusValues.Online,
+                DateOccured = utcNow.AddSeconds(-8),
+                Server = CreateRelatedServer()
+            };
+
+            Mock<IAPIClient> _mockAPIClient = new();
+            _mockAPIClient.Setup(c => c.Authorise())
+                .ReturnsAsync(((AuthenticationModel?)null, (ResponseModel?)null));
+            _mockAPIClient.Setup(c => c.GetServers(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync((pagedServers, true));
+            _mockAPIClient.Setup(c => c.GetComponents())
+                .ReturnsAsync((components, true));
+            _mockAPIClient.Setup(c => c.GetServerEvents(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(([eventWithinGrace], true));
+            _mockAPIClient.Setup(c => c.GetAlerts(It.IsAny<List<KeyValuePair<string, object>>>()))
+                .ReturnsAsync(((PagedResponseModel<AlertModel>?)null, true));
+
+            RetryService _retryService = new(
+                _MockLogger.Object,
+                delaySeconds: 0,
+                maxRetries: 4);
+            APIService _apiService = new(
+                _MockLogger.Object,
+                _mockAPIClient.Object,
+                _MockClock.Object,
+                _retryService)
+            {
+                ExpiryTime = Expires
+            };
+
+            AutomationService _automationService = new(
+                _MockLogger.Object,
+                _MockClock.Object,
+                _MockHTTPClient.Object,
+                _apiService,
+                sharedSettings);
+
+            _automationService.Setup();
+            await _automationService.Start();
+
+            _mockAPIClient.Verify(
+                c => c.RegisterAlert(It.IsAny<AlertRequestModel>()),
+                Times.Never);
+            _mockAPIClient.Verify(
+                c => c.RegisterServerEvent(It.IsAny<EventRequestModel>()),
+                Times.Never);
         }
     }
 }

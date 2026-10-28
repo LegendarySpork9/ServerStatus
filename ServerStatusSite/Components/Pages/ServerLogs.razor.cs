@@ -1,9 +1,8 @@
 // Copyright © - Unpublished - Toby Hunter
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using ServerStatusCommon.Abstractions;
-using ServerStatusCommon.Converters;
+using ServerStatusCommon.Values;
 using ServerStatusCommon.Models.Responses;
 using ServerStatusCommon.Models.Responses.Related;
 using ServerStatusCommon.Services;
@@ -45,20 +44,20 @@ namespace ServerStatusSite.Components.Pages
         private bool IsFetchingOlder;
         private bool IsWebhookActive;
         private bool ScrollDetectionInitialised;
+        private bool CommandInputInitialised;
         private bool ScrollAfterRender;
         private bool PreserveScrollAfterRender;
+        private bool IsSendingCommand;
 
         private string SelectedServer = string.Empty;
         private string SelectedLogSource = string.Empty;
         private string SelectedLogType = "All";
         private string SelectedArchiveFile = string.Empty;
         private string? WebhookRegistrationId;
-        private bool IsSendingCommand;
-        private string CommandText = string.Empty;
-        private string SelectedCommandTarget = "Server";
         private string ErrorMessage = string.Empty;
         private int? NextAfterCursor;
         private ElementReference ConsoleRef;
+        private ElementReference LogCountRef;
         private IJSObjectReference? JsModule;
         private DotNetObjectReference<ServerLogs>? DotNetRef;
         private readonly SemaphoreSlim LogLock = new(1, 1);
@@ -91,11 +90,11 @@ namespace ServerStatusSite.Components.Pages
 
             IsLoading = true;
 
-            Servers = await APIService.GetServers();
+            (Servers, _) = await APIService.GetServers();
 
             if (Servers != null)
             {
-                ServerNames.AddRange(Servers.Where(s => s.IsActive)
+                ServerNames.AddRange(Servers.Where(s => s.IsActive && BackupToolSettings.Servers.ContainsKey(s.Name))
                     .Select(s => s.Name));
             }
 
@@ -137,6 +136,15 @@ namespace ServerStatusSite.Components.Pages
                 }
             }
 
+            if (!CommandInputInitialised && IsWebhookActive && JsModule != null && DotNetRef != null)
+            {
+                await JsModule.InvokeVoidAsync(
+                    "initCommandInput",
+                    DotNetRef);
+
+                CommandInputInitialised = true;
+            }
+
             if (ScrollAfterRender && JsModule != null)
             {
                 ScrollAfterRender = false;
@@ -161,6 +169,7 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task ServerChanged(ChangeEventArgs e)
         {
+            await ClearJsAppendedAsync();
             await CleanupWebhook();
 
             SelectedServer = e.Value?.ToString() ?? string.Empty;
@@ -183,6 +192,7 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task LogSourceChanged(ChangeEventArgs e)
         {
+            await ClearJsAppendedAsync();
             await CleanupWebhook();
 
             SelectedLogSource = e.Value?.ToString() ?? string.Empty;
@@ -215,6 +225,7 @@ namespace ServerStatusSite.Components.Pages
         private async Task LogTypeChanged(ChangeEventArgs e)
         {
             await CleanupWebhook();
+            await ClearJsAppendedAsync();
 
             SelectedLogType = e.Value?.ToString() ?? "All";
             LogEntries = [];
@@ -234,6 +245,7 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task ArchiveFileChanged(ChangeEventArgs e)
         {
+            await ClearJsAppendedAsync();
             SelectedArchiveFile = e.Value?.ToString() ?? string.Empty;
             LogEntries = [];
             NextAfterCursor = null;
@@ -363,9 +375,11 @@ namespace ServerStatusSite.Components.Pages
                 WebhookRegistrationId = registration.Id;
                 IsWebhookActive = true;
 
+                LogStream.RegisterWebhookId(registration.Id);
                 LogStream.Subscribe(
                     SelectedServer,
-                    OnLogsReceived);
+                    OnLogsReceived,
+                    registration.Id);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -389,11 +403,18 @@ namespace ServerStatusSite.Components.Pages
         /// </summary>
         private async Task OnLogsReceived(List<LogEntryModel> newLogs)
         {
+            List<LogEntryModel> filteredLogs = SelectedLogType == "All" ? newLogs : [.. newLogs.Where(l => l.Type == SelectedLogType)];
+
+            if (filteredLogs.Count == 0)
+            {
+                return;
+            }
+
             await LogLock.WaitAsync();
 
             try
             {
-                LogEntries.AddRange(newLogs);
+                LogEntries.AddRange(filteredLogs);
             }
 
             finally
@@ -401,8 +422,15 @@ namespace ServerStatusSite.Components.Pages
                 LogLock.Release();
             }
 
-            ScrollAfterRender = true;
-            await InvokeAsync(StateHasChanged);
+            if (JsModule != null)
+            {
+                await JsModule.InvokeVoidAsync(
+                    "appendLogEntries",
+                    ConsoleRef,
+                    filteredLogs,
+                    LogCountRef,
+                    LogEntries.Count);
+            }
         }
 
         /// <summary>
@@ -477,38 +505,58 @@ namespace ServerStatusSite.Components.Pages
         }
 
         /// <summary>
-        /// Handles key presses in the command input.
+        /// Handles command submission from the JS input handler.
         /// </summary>
-        private async Task OnCommandKeyDown(KeyboardEventArgs e)
+        [JSInvokable]
+        public async Task OnCommandSubmit()
         {
-            if (e.Key != "Enter" || string.IsNullOrWhiteSpace(CommandText) || IsSendingCommand)
+            if (IsSendingCommand || JsModule == null)
+            {
+                return;
+            }
+
+            string commandText = await JsModule.InvokeAsync<string>("getCommandText");
+
+            if (string.IsNullOrWhiteSpace(commandText))
             {
                 return;
             }
 
             IsSendingCommand = true;
 
+            string commandTarget = await JsModule.InvokeAsync<string>("getCommandTarget");
+
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                $"Sending Command ({SelectedCommandTarget}): {CommandText.Trim()}");
+                $"Sending Command ({commandTarget}): {commandText}");
 
             CommandRequestModel command = new()
             {
-                Target = SelectedCommandTarget,
-                Command = CommandText.Trim()
+                Target = commandTarget,
+                Command = commandText
             };
 
             await BackupToolApi.SendCommand(
                 SelectedServer,
                 command);
 
-            CommandText = string.Empty;
+            await JsModule.InvokeVoidAsync("clearCommandText");
             IsSendingCommand = false;
 
+            await JsModule.InvokeVoidAsync(
+                "scrollToBottom",
+                ConsoleRef);
+        }
+
+        /// <summary>
+        /// Removes JS-appended DOM entries before a Blazor re-render to prevent duplicates.
+        /// </summary>
+        private async Task ClearJsAppendedAsync()
+        {
             if (JsModule != null)
             {
                 await JsModule.InvokeVoidAsync(
-                    "scrollToBottom",
+                    "clearAppendedEntries",
                     ConsoleRef);
             }
         }
@@ -520,6 +568,11 @@ namespace ServerStatusSite.Components.Pages
         {
             if (IsWebhookActive)
             {
+                if (!string.IsNullOrEmpty(WebhookRegistrationId))
+                {
+                    LogStream.UnregisterWebhookId(WebhookRegistrationId);
+                }
+
                 LogStream.Unsubscribe(
                     SelectedServer,
                     OnLogsReceived);
@@ -532,6 +585,7 @@ namespace ServerStatusSite.Components.Pages
                 }
 
                 IsWebhookActive = false;
+                CommandInputInitialised = false;
                 WebhookRegistrationId = null;
 
                 _Logger.LogMessage(
