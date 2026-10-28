@@ -78,7 +78,7 @@ namespace ServerStatusSite.Components.Pages
                 $"Username: {User.Username}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Password: {User.Password}");
+                $"Password: {HashFunction.HashString(User.Password)}");
 
             ResponseModel? apiResponse = await APIService.Authorise();
 
